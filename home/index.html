@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>默语</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ 顶部导航 ============ -->
+<header class="nav">
+  <a class="brand" href="#">
+    <span class="brand-mark">YPC-C</span>
+    <span class="brand-logo">GitHub</span>
+  </a>
+
+  <nav class="menu">
+    <a href="#works" class="menu-link" data-i18n="nav_works">作品</a>
+    <a href="#about" class="menu-link" data-i18n="nav_about">关于我</a>
+    <a href="#contact" class="menu-link" data-i18n="nav_contact">联系我</a>
+  </nav>
+</header>
+
+<!-- ============ 全屏 Hero ============ -->
+<section class="hero">
+
+  <!-- 背景层：明亮冷调（以后可整块替换为 <img class="hero-bg">） -->
+  <div class="hero-bg" aria-hidden="true">
+    <span class="glow g1"></span>
+    <span class="glow g2"></span>
+    <span class="bubble b1"></span>
+    <span class="bubble b2"></span>
+    <span class="grain"></span>
+  </div>
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <!-- 左上角面包屑 -->
+  <p class="crumb">首页 <i>/</i> 作品 <i>·</i>开源</p>
+
+  <!-- 居中主内容 -->
+  <div class="hero-inner">
+    <p class="kicker" data-i18n="kicker">SOFTWARE ENGINEER <i>·</i> 软件工程师</p>
+    <h1 class="title" id="heroTitle" data-i18n="title">用代码创造价值</h1>
+    <p class="subtitle" data-i18n="subtitle">
+      热爱开源与极客文化，期待加入优秀的工程团队一起打磨产品。
+    </p>
+    <div class="cta-row">
+      <a href="#works" class="btn btn-gold" data-i18n="cta_works">查看作品</a>
+      <a href="#about" class="btn btn-ghost" data-i18n="cta_about">了解我</a>
+    </div>
+    <span class="foot-scroll">向下滚动<span class="scroll-line"></span></span>
+  </div>
+</section>
+
+<!-- ============ 作品 ============ -->
+<section class="block" id="works">
+  <div class="wrap">
+    <p class="block-kicker">SELECTED WORKS</p>
+    <h2 class="block-title" data-i18n="works_title">作品</h2>
+    <div class="works-grid">
+      <article class="card">
+        <h3 class="card-title" data-i18n="p1_t">优惠券发放 / 秒杀系统</h3>
+        <p class="card-desc" data-i18n="p1_d"><b>功能：</b>支持优惠券的发放与高并发秒杀场景，在瞬时大流量下保证不超卖、下单顺畅。<br><b>技术：</b>Spring Boot 3 后端 + Vue3 前端；基于 Redis 分布式锁防超卖，Redis 缓存预热 + RabbitMQ 异步削峰解耦，保障峰值稳定。</p>
+        <a class="card-link" href="https://github.com/ypc-c/CouponHub" target="_blank" rel="noopener" data-i18n="card_link">查看项目 →</a>
+      </article>
+      <article class="card">
+        <h3 class="card-title" data-i18n="p2_t">智能预约挂号助手</h3>
+        <p class="card-desc" data-i18n="p2_d"><b>功能：</b>通过自然语言与智能体对话，实现“一句话挂号、一句话退号、一句话查预约”，降低挂号操作门槛。<br><b>技术：</b>基于大模型 / Agent 的意图识别与流程编排，将口语指令映射为挂号系统操作，对接预约接口完成端到端闭环。</p>
+        <a class="card-link" href="https://github.com/ypc-c/register_assistant" target="_blank" rel="noopener" data-i18n="card_link">查看项目 →</a>
+      </article>
+      <article class="card">
+        <h3 class="card-title" data-i18n="p3_t">待办清单微信小程序</h3>
+        <p class="card-desc" data-i18n="p3_d"><b>功能：</b>轻量待办管理，支持任务的添加、完成、分类与提醒，随时记录与回顾。<br><b>技术：</b>微信小程序原生开发，结合微信登录与本地缓存提升体验，数据通过云开发或自有后端持久化。</p>
+        <a class="card-link" href="https://github.com/ypc-c/todo-miniprogram" target="_blank" rel="noopener" data-i18n="card_link">查看项目 →</a>
+      </article>
+      <article class="card">
+        <h3 class="card-title" data-i18n="p4_t">浮窗文字提取小程序</h3>
+        <p class="card-desc" data-i18n="p4_d"><b>功能：</b>在屏幕浮窗中实时提取 / 识别文字，便于跨应用复制与摘录。<br><b>技术：</b>微信小程序能力 + 图像 / 文字识别（OCR），浮窗常驻交互，将识别结果结构化输出。</p>
+        <a class="card-link" href="https://github.com/ypc-c/TextLens" target="_blank" rel="noopener" data-i18n="card_link">查看项目 →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 关于我 ============ -->
+<section class="block" id="about">
+  <div class="wrap about">
+    <div class="about-text">
+      <p class="block-kicker">ABOUT</p>
+      <h2 class="block-title" data-i18n="about_title">关于我</h2>
+      <div class="inner-card">
+        <p class="about-p" data-i18n="about_p1">
+          热爱开源与极客文化，专注于用代码创造价值。熟悉后端高并发与自动化测试，
+          喜欢把重复的工作交给脚本，把精力留给真正的问题。期待加入优秀的工程团队，
+          一起打磨经得起推敲的产品。
+        </p>
+        <p class="about-p" data-i18n="about_p2">
+          日常折腾方向：高并发系统设计、测试左移、前端工程化，以及一切能提升开发体验的小工具。
+        </p>
+      </div>
+    </div>
+    <div class="about-side">
+      <div class="inner-card">
+        <h4 class="side-h" data-i18n="skills_h">技能栈</h4>
+        <div class="card-tags big">
+          <span>Java</span><span>Spring Boot</span><span>Vue3</span><span>Redis</span>
+          <span>RabbitMQ</span><span>MySQL</span><span>JUnit5</span><span>JMeter</span>
+          <span>Docker</span><span>CI/CD</span>
+        </div>
+      </div>
+      <div class="inner-card">
+        <h4 class="side-h" data-i18n="status_h">状态</h4>
+        <p class="about-p small" data-i18n="status_p">正在寻找软件开发、测试等方向的实习或全职机会。</p>
+      </div>
+      <div class="inner-card space-card">
+        <h4 class="side-h" data-i18n="space_h">我的空间</h4>
+        <p class="about-p small" data-i18n="space_d">几个我做的交互小世界：雨夜便利店、气象之间。</p>
+        <a class="space-link" href="../spaces/spaces.html" data-i18n="space_link">进入我的空间 →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 联系我 ============ -->
+<section class="block" id="contact">
+  <div class="wrap contact">
+    <p class="block-kicker">GET IN TOUCH</p>
+    <h2 class="block-title" data-i18n="contact_title">联系我</h2>
+    <p class="contact-p" data-i18n="contact_p">有合适的机会或想聊聊技术，欢迎随时找我。</p>
+    <div class="contact-box">
+      <div class="contact-list">
+        <p class="contact-line">
+          <span class="cl-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2C9.2 2 7 4.2 7 7c0 .8.2 1.6.5 2.3-.9 1.4-1.5 3.1-1.5 4.7 0 1.2.3 2.3.8 3.1-.4.9-.8 2.3-.3 3 .6.9 2.2.3 3.2-.2.7.2 1.5.3 2.3.3s1.6-.1 2.3-.3c1 .5 2.6 1.1 3.2.2.5-.7.1-2.1-.3-3 .5-.8.8-1.9.8-3.1 0-1.6-.6-3.3-1.5-4.7.3-.7.5-1.5.5-2.3 0-2.8-2.2-5-5-5z" fill="currentColor"/><ellipse cx="12" cy="14.2" rx="3.4" ry="4.4" fill="#fff"/></svg>
+          </span>
+          <span class="cl-label">QQ</span>
+          <span class="cl-val">462964508</span>
+        </p>
+        <p class="contact-line">
+          <span class="cl-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 6.5 12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="cl-label">Email</span>
+          <a class="cl-val meta-link" href="mailto:462964508@qq.com">462964508@qq.com</a>
+        </p>
+        <p class="contact-line">
+          <span class="cl-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" fill="currentColor"/></svg>
+          </span>
+          <span class="cl-label">GitHub</span>
+          <span class="cl-val">ypc-c</span>
+        </p>
+      </div>
+      <p class="contact-jump">
+        <a class="jump-link" href="https://github.com/ypc-c" target="_blank" rel="noopener" data-i18n="jump">前往我的 GitHub →</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-foot" data-i18n="footer">© 2026 ypc · 用代码创造价值</footer>
+
+<!-- ============ 右下角语言切换（滑动分段控件） ============ -->
+<div class="lang-switch" id="langSwitch" role="radiogroup" aria-label="语言切换">
+  <span class="lang-thumb" id="langThumb"></span>
+  <button class="lang-opt is-active" type="button" data-lang="zh" role="radio" aria-checked="true">中</button>
+  <button class="lang-opt" type="button" data-lang="en" role="radio" aria-checked="false">EN</button>
+</div>
+
+<script>
+/* ============ 首屏大字动效（移植自 GSAP SplitText，原生 JS） ============ */
+const heroTitle = document.getElementById('heroTitle');
+let titleChars = [], titleSprings = [], titleCenters = null, titleRaf = 0, titleLast = 0;
+const titlePointer = { x: 0, y: 0, inside: false };
+let titleHoverBound = false;
+
+function setupTitle(text, immediate) {
+  if (!heroTitle) return;
+  heroTitle.innerHTML = '';
+  titleChars = [...text].map(ch => {
+    const s = document.createElement('span');
+    s.className = 'split-char';
+    s.textContent = ch;
+    heroTitle.appendChild(s);
+    return s;
+  });
+  titleSprings = titleChars.map(() => ({ y: 0, v: 0 }));
+  titleCenters = null;
+
+  titleChars.forEach((s, i) => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(40px)';
+    s.style.transition =
+      `opacity .9s cubic-bezier(.22,1,.36,1) ${i * 60}ms,` +
+      ` transform .9s cubic-bezier(.34,1.56,.64,1) ${i * 60}ms`;
+  });
+  const reveal = () => requestAnimationFrame(() =>
+    titleChars.forEach(s => { s.style.opacity = '1'; s.style.transform = 'translateY(0)'; })
+  );
+  if (immediate) reveal();
+  else if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(reveal);
+  else reveal();
+
+  if (titleHoverBound || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  titleHoverBound = true;
+
+  const STIFFNESS = 180, DAMPING = 19;
+  const fs = parseFloat(getComputedStyle(heroTitle).fontSize) || 60;
+  const LIFT = fs * 0.2, RADIUS = fs * 1.15;
+
+  const measure = () => {
+    const box = heroTitle.getBoundingClientRect();
+    titleCenters = titleChars.map(c => {
+      const r = c.getBoundingClientRect();
+      return { x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top };
+    });
+  };
+  const tick = now => {
+    titleRaf = 0;
+    const dt = Math.min(0.032, Math.max(0.001, (now - titleLast) / 1000));
+    titleLast = now;
+    let moving = false;
+    titleChars.forEach((c, i) => {
+      const sp = titleSprings[i];
+      let target = 0;
+      if (titlePointer.inside && titleCenters) {
+        const dx = (titleCenters[i].x - titlePointer.x) / RADIUS;
+        const dy = (titleCenters[i].y - titlePointer.y) / (RADIUS * 1.4);
+        target = -LIFT * Math.exp(-(dx * dx + dy * dy) * 0.5);
+      }
+      sp.v += (STIFFNESS * (target - sp.y) - DAMPING * sp.v) * dt;
+      sp.y += sp.v * dt;
+      if (Math.abs(target - sp.y) < 0.02 && Math.abs(sp.v) < 0.05) { sp.y = target; sp.v = 0; }
+      else moving = true;
+      c.style.translate = Math.abs(sp.y) > 0.01 ? `0 ${sp.y.toFixed(2)}px` : '';
+    });
+    if (moving) titleRaf = requestAnimationFrame(tick);
+  };
+  const wake = () => { if (!titleRaf) { titleLast = performance.now(); titleRaf = requestAnimationFrame(tick); } };
+  const locate = e => {
+    const box = heroTitle.getBoundingClientRect();
+    titlePointer.x = e.clientX - box.left;
+    titlePointer.y = e.clientY - box.top;
+  };
+  heroTitle.addEventListener('pointerenter', e => { locate(e); titlePointer.inside = true; measure(); wake(); });
+  heroTitle.addEventListener('pointermove', e => { locate(e); titlePointer.inside = true; wake(); });
+  heroTitle.addEventListener('pointerleave', () => { titlePointer.inside = false; wake(); });
+}
+
+/* ============ 中英文案切换 ============ */
+const I18N = {
+  nav_works: { zh: '作品', en: 'Works' },
+  nav_about: { zh: '关于我', en: 'About' },
+  nav_contact: { zh: '联系我', en: 'Contact' },
+  kicker: { zh: 'SOFTWARE ENGINEER · 软件工程师', en: 'SOFTWARE ENGINEER · Software Engineer' },
+  title: { zh: '用代码创造价值', en: 'Create value with code' },
+  subtitle: { zh: '热爱开源与极客文化，期待加入优秀的工程团队一起打磨产品。', en: 'Passionate about open source and geek culture, hoping to join a great engineering team to craft products together.' },
+  cta_works: { zh: '查看作品', en: 'View Works' },
+  cta_about: { zh: '了解我', en: 'About Me' },
+  works_title: { zh: '作品', en: 'Works' },
+  p1_t: { zh: '优惠券发放 / 秒杀系统', en: 'Coupon / Flash-Sale System' },
+  p1_d: { zh: '<b>功能：</b>支持优惠券的发放与高并发秒杀场景，在瞬时大流量下保证不超卖、下单顺畅。<br><b>技术：</b>Spring Boot 3 后端 + Vue3 前端；基于 Redis 分布式锁防超卖，Redis 缓存预热 + RabbitMQ 异步削峰解耦，保障峰值稳定。', en: '<b>Function:</b> supports coupon distribution and high-concurrency flash sales, preventing oversell and keeping checkout smooth under traffic spikes.<br><b>Tech:</b> Spring Boot 3 backend + Vue3 frontend; Redis distributed lock against oversell, Redis cache warm-up + RabbitMQ async peak-shaving.' },
+  p2_t: { zh: '智能预约挂号助手', en: 'Smart Appointment Assistant' },
+  p2_d: { zh: '<b>功能：</b>通过自然语言与智能体对话，实现“一句话挂号、一句话退号、一句话查预约”，降低挂号操作门槛。<br><b>技术：</b>基于大模型 / Agent 的意图识别与流程编排，将口语指令映射为挂号系统操作，对接预约接口完成端到端闭环。', en: '<b>Function:</b> talk to an agent to register, cancel, or check appointments in one sentence, lowering the barrier to booking.<br><b>Tech:</b> LLM / Agent intent recognition and flow orchestration, mapping natural language to booking operations.' },
+  p3_t: { zh: '待办清单微信小程序', en: 'Todo WeChat Mini Program' },
+  p3_d: { zh: '<b>功能：</b>轻量待办管理，支持任务的添加、完成、分类与提醒，随时记录与回顾。<br><b>技术：</b>微信小程序原生开发，结合微信登录与本地缓存提升体验，数据通过云开发或自有后端持久化。', en: '<b>Function:</b> lightweight todo management with add, complete, categorize and reminders.<br><b>Tech:</b> native WeChat Mini Program with WeChat login and local cache; data persisted via cloud dev or own backend.' },
+  p4_t: { zh: '浮窗文字提取小程序', en: 'Floating Text Extractor' },
+  p4_d: { zh: '<b>功能：</b>在屏幕浮窗中实时提取 / 识别文字，便于跨应用复制与摘录。<br><b>技术：</b>微信小程序能力 + 图像 / 文字识别（OCR），浮窗常驻交互，将识别结果结构化输出。', en: '<b>Function:</b> extract / recognize text in a floating window for cross-app copying and clipping.<br><b>Tech:</b> Mini Program + OCR, persistent floating window, structured output.' },
+  card_link: { zh: '查看项目 →', en: 'View Project →' },
+  about_title: { zh: '关于我', en: 'About' },
+  about_p1: { zh: '热爱开源与极客文化，专注于用代码创造价值。熟悉后端高并发与自动化测试，喜欢把重复的工作交给脚本，把精力留给真正的问题。期待加入优秀的工程团队，一起打磨经得起推敲的产品。', en: 'Passionate about open source and geek culture, focused on creating value with code. Familiar with high-concurrency backends and automation testing; I like handing repetitive work to scripts and saving energy for the real problems. Looking to join a great engineering team to craft products that hold up.' },
+  about_p2: { zh: '日常折腾方向：高并发系统设计、测试左移、前端工程化，以及一切能提升开发体验的小工具。', en: 'Everyday tinkering: high-concurrency system design, shift-left testing, frontend engineering, and any little tool that improves developer experience.' },
+  skills_h: { zh: '技能栈', en: 'Skills' },
+  status_h: { zh: '状态', en: 'Status' },
+  status_p: { zh: '正在寻找软件开发、测试等方向的实习或全职机会。', en: 'Looking for an internship or full-time role in software development / testing.' },
+  contact_title: { zh: '联系我', en: 'Contact' },
+  contact_p: { zh: '有合适的机会或想聊聊技术，欢迎随时找我。', en: 'If there is a good opportunity or you would like to chat about tech, feel free to reach out anytime.' },
+  jump: { zh: '前往我的 GitHub →', en: 'Visit my GitHub →' },
+  space_h: { zh: '我的空间', en: 'My Spaces' },
+  space_d: { zh: '几个我做的交互小世界：雨夜便利店、气象之间。', en: 'Interactive mini-worlds I built: Rainy Night Konbini, Atmosphere Studio.' },
+  space_link: { zh: '进入我的空间 →', en: 'Enter my spaces →' },
+  footer: { zh: '© 2026 ypc · 用代码创造价值', en: '© 2026 ypc · Create value with code' }
+};
+
+function applyLang(lang) {
+  document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const entry = I18N[key];
+    if (!entry) return;
+    const html = key.endsWith('_d');
+    if (html) el.innerHTML = entry[lang];
+    else el.textContent = entry[lang];
+  });
+  // 标题需重跑逐字动画
+  const titleEntry = I18N.title;
+  if (titleEntry) setupTitle(titleEntry[lang], true);
+}
+
+/* ============ 右下角滑动分段控件（原生，含橡皮拖拽） ============ */
+(() => {
+  const sw = document.getElementById('langSwitch');
+  const thumb = document.getElementById('langThumb');
+  const opts = [...sw.querySelectorAll('.lang-opt')];
+  const INSET = 4, RUBBER = 0.55;
+  let bounds = { zh: 0, en: 0, w: 0 };
+  let current = 'zh';
+  let dragging = false, startX = 0, originLeft = 0, hist = [];
+
+  const measure = () => {
+    const rect = sw.getBoundingClientRect();
+    bounds.w = (rect.width - INSET * 2) / 2;
+    bounds.zh = INSET;
+    bounds.en = INSET + bounds.w;
+  };
+  const rubber = (over, dim) => (over * dim * RUBBER) / (dim + RUBBER * Math.abs(over));
+  const setThumb = (left, animate) => {
+    thumb.style.transition = animate
+      ? 'left .3s cubic-bezier(.34,1.4,.64,1)'
+      : 'none';
+    thumb.style.left = left + 'px';
+  };
+  const place = (lang, animate) => {
+    measure();
+    current = lang;
+    setThumb(lang === 'en' ? bounds.en : bounds.zh, animate);
+    opts.forEach(o => {
+      const on = o.dataset.lang === lang;
+      o.classList.toggle('is-active', on);
+      o.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  };
+  const pick = lang => { if (lang !== current) { place(lang, true); applyLang(lang); } };
+
+  // 点击 / 键盘
+  opts.forEach(o => o.addEventListener('click', () => pick(o.dataset.lang)));
+  sw.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      pick(current === 'zh' ? 'en' : 'zh');
+      (current === 'zh' ? opts[0] : opts[1]).focus();
+    }
+  });
+
+  // 拖拽（橡皮回弹）
+  const onDown = e => {
+    if (e.button !== 0) return;
+    measure();
+    dragging = true;
+    startX = e.clientX;
+    originLeft = parseFloat(thumb.style.left) || bounds.zh;
+    hist = [[performance.now(), originLeft]];
+    thumb.style.transition = 'none';
+    try { sw.setPointerCapture(e.pointerId); } catch {}
+  };
+  const onMove = e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    let left = originLeft + dx;
+    if (left < bounds.zh) left = bounds.zh + rubber(left - bounds.zh, bounds.w);
+    else if (left > bounds.en) left = bounds.en + rubber(left - bounds.en, bounds.w);
+    thumb.style.left = left + 'px';
+    hist.push([performance.now(), left]);
+    if (hist.length > 6) hist.shift();
+  };
+  const onUp = e => {
+    if (!dragging) return;
+    dragging = false;
+    const left = parseFloat(thumb.style.left) || bounds.zh;
+    const mid = (bounds.zh + bounds.en) / 2;
+    let target = left < mid ? 'zh' : 'en';
+    // 速度甩动
+    const recent = hist.filter(([t]) => performance.now() - t <= 100);
+    if (recent.length >= 2) {
+      const v = (recent[recent.length - 1][1] - recent[0][1]) / ((recent[recent.length - 1][0] - recent[0][0]) / 1000);
+      if (Math.abs(v) > 120) target = target === 'zh' ? 'en' : 'zh';
+    }
+    pick(target);
+  };
+  sw.addEventListener('pointerdown', onDown);
+  sw.addEventListener('pointermove', onMove);
+  sw.addEventListener('pointerup', onUp);
+  sw.addEventListener('pointercancel', onUp);
+
+  window.addEventListener('resize', () => place(current, false));
+  measure();
+  place('zh', false);
+})();
+
+/* ============ 初始化 ============ */
+setupTitle(I18N.title.zh, false);
+applyLang('zh');
+</script>
+
+</body>
+</html>

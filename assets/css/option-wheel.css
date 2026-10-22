@@ -1,0 +1,56 @@
+/* ============================================================
+   OptionWheel —— 原生版样式
+   布局由 JS 通过 transform/opacity/filter 驱动，这里只负责
+   锚点（居中）、字体、颜色（--ow-* 变量）与交互态。
+   ============================================================ */
+.option-wheel {
+  position: relative;
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  outline: none;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  perspective: 900px;
+  /* 可在挂载时覆盖 */
+  --ow-text-color: #8da3bd;
+  --ow-active-color: #ffffff;
+  --ow-font-size: 2.2rem;
+  --ow-inset: 80px;
+}
+.option-wheel--dragging { cursor: grabbing; }
+
+.option-wheel__item {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(0, -50%);
+  transform-origin: 50% 50%;
+  white-space: nowrap;
+  font-size: var(--ow-font-size);
+  line-height: 1.1;
+  letter-spacing: 3px;
+  font-weight: 500;
+  color: var(--ow-text-color);
+  will-change: transform, opacity, filter;
+  transition: color 0.25s ease;
+  pointer-events: auto;
+}
+/* selected 颜色由 JS 的 --ow-p 平滑过渡更自然，但 class 兜底确保清晰 */
+.option-wheel__item--selected {
+  color: var(--ow-active-color);
+  font-weight: 700;
+}
+
+/* 用 --ow-p（0~1，越靠近中心越大）做颜色混合，比 class 更顺滑 */
+.option-wheel__item {
+  color: color-mix(in srgb, var(--ow-active-color) calc(var(--ow-p, 0) * 100%), var(--ow-text-color));
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .option-wheel__item { color: var(--ow-text-color); }
+}
+
+@media (max-width: 720px) {
+  .option-wheel { height: 200px; }
+}
