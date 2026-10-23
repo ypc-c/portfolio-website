@@ -268,10 +268,12 @@ body {
 }
 
 .block {
+  position: relative;
+  overflow: hidden;
   max-width: 1140px;
   margin: 0 auto 30px;
   padding: 52px 56px;
-  background: var(--card);
+  background: linear-gradient(160deg, #fbfdfe 0%, #eaf6f7 100%);
   border: 1px solid var(--line);
   border-radius: 24px;
   box-shadow: var(--sh-sm);
@@ -279,8 +281,29 @@ body {
   scroll-margin-top: calc(var(--nav-h) + 28px);
 }
 
-/* 作品区紧随开屏之后，单独留出与首屏的间距 */
-#works { margin-top: 64px; }
+/* 各板块差异化的柔和底色（避免三个白块雷同） */
+#works   { margin-top: 64px; background: linear-gradient(160deg, #fbfdfe 0%, #e7f5f6 100%); }
+#about   { background: linear-gradient(160deg, #fbfdfe 0%, #eef5f9 100%); }
+#contact { background: linear-gradient(160deg, #fbfdfe 0%, #e8f6f3 100%); }
+
+/* 背景装饰光斑：让板块背景有层次、不呆板（不干扰内容） */
+.block::before,
+.block::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  z-index: 0;
+  pointer-events: none;
+}
+#works::before   { width: 360px; height: 360px; top: -120px; right: -80px;  background: rgba(84, 229, 232, 0.20); }
+#works::after    { width: 300px; height: 300px; bottom: -120px; left: -90px; background: rgba(60, 165, 167, 0.14); }
+#about::before   { width: 340px; height: 340px; top: -110px; left: -100px;  background: rgba(84, 229, 232, 0.16); }
+#about::after    { width: 280px; height: 280px; bottom: -110px; right: -80px; background: rgba(60, 165, 167, 0.12); }
+#contact::before { width: 420px; height: 420px; top: -160px; left: 50%; transform: translateX(-50%); background: rgba(84, 229, 232, 0.16); }
+
+/* 让板块内所有内容浮在装饰光斑之上 */
+.block > .wrap { position: relative; z-index: 1; }
 .block-kicker {
   font-size: 11px;
   letter-spacing: 4px;
@@ -288,19 +311,39 @@ body {
   margin-bottom: 10px;
 }
 .block-title {
+  position: relative;
+  display: inline-block;
   font-size: 30px;
   font-weight: 700;
   letter-spacing: 4px;
   color: var(--ink);
-  margin-bottom: 36px;
+  margin-bottom: 42px;
 }
+.block-title::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  bottom: -14px;
+  width: 48px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+}
+#contact .block-title::after { left: 50%; transform: translateX(-50%); }
 
 /* 板块内小卡片 */
 .inner-card {
-  background: var(--tint);
+  position: relative;
+  background: linear-gradient(165deg, #ffffff 0%, #f1fafb 100%);
   border: 1px solid var(--line2);
   border-radius: 16px;
   padding: 22px 26px;
+  box-shadow: 0 4px 16px rgba(31, 56, 88, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.inner-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(60, 165, 167, 0.14);
 }
 
 .wrap { max-width: 1080px; margin: 0 auto; }
@@ -312,18 +355,34 @@ body {
   gap: 26px;
 }
 .card {
-  background: var(--card);
+  position: relative;
+  background: linear-gradient(165deg, #ffffff 0%, #f2fbfc 100%);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: var(--sh-sm);
+  border-radius: 16px;
+  padding: 24px 24px 22px;
+  box-shadow: 0 6px 18px rgba(31, 56, 88, 0.06);
+  overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--sh-lg);
-  border-color: var(--accent);
+/* 顶部渐变强调条：悬停时滑出 */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
 }
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(60, 165, 167, 0.18);
+  border-color: rgba(84, 229, 232, 0.6);
+}
+.card:hover::before { transform: scaleX(1); }
 .card-title { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
 .card-desc { font-size: 13.5px; line-height: 1.85; color: var(--ink2); margin-bottom: 14px; }
 .card-desc b { color: var(--ink); font-weight: 600; }
@@ -354,7 +413,24 @@ body {
 .about-p { font-size: 14.5px; line-height: 2; color: var(--ink2); margin-bottom: 14px; }
 .about-p:last-child { margin-bottom: 0; }
 .about-p.small { font-size: 13px; }
-.side-h { font-size: 14px; letter-spacing: 2px; color: var(--ink); margin: 0 0 14px; }
+.side-h {
+  position: relative;
+  padding-left: 14px;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+.side-h::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 4px;
+  height: 15px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+}
 .about-side { display: flex; flex-direction: column; gap: 18px; padding-top: 44px; }
 
 /* --- 关于我：我的空间入口卡片 --- */
@@ -377,9 +453,27 @@ body {
 .contact-p { font-size: 15px; color: var(--ink2); margin-bottom: 34px; }
 
 .contact-box {
-  width: fit-content;
+  position: relative;
+  width: 100%;
+  max-width: 460px;
   margin: 0 auto;
   text-align: left;
+  background: linear-gradient(165deg, #ffffff 0%, #f1fafb 100%);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 30px 34px 26px;
+  box-shadow: 0 8px 26px rgba(31, 56, 88, 0.08);
+  overflow: hidden;
+}
+/* 顶部渐变强调条 */
+.contact-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
 }
 .contact-list {
   display: flex;
@@ -391,7 +485,9 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+  transition: transform 0.25s ease;
 }
+.contact-line:hover { transform: translateX(4px); }
 .cl-icon {
   width: 44px;
   height: 44px;
