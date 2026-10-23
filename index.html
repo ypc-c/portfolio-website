@@ -49,7 +49,17 @@
       <a href="#works" class="btn btn-gold" data-i18n="cta_works">查看作品</a>
       <a href="#about" class="btn btn-ghost" data-i18n="cta_about">了解我</a>
     </div>
-    <span class="foot-scroll">向下滚动<span class="scroll-line"></span></span>
+  </div>
+
+  <!-- 首屏底部：随机一言 + 上下浮动箭头 -->
+  <div class="hero-quote" id="heroQuote">
+    <p class="quote-line">
+      <span class="quote-body" id="quoteBody"></span>
+      <span class="quote-author" id="quoteAuthor"></span>
+    </p>
+    <span class="quote-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </span>
   </div>
 </section>
 
@@ -481,6 +491,53 @@ function applyLang(lang) {
       localStorage.setItem('pv_ever', '1');
       localStorage.setItem('pv_date', today);
     });
+})();
+
+/* ============ 首屏随机一言（技术风:文艺风 = 6:4） ============ */
+(function () {
+  const QUOTES = [
+    /* 极客 / 技术风 —— 9 条 */
+    { t: '先让它跑通，再让它跑对，最后让它跑快。', a: 'Kent Beck' },
+    { t: 'Talk is cheap. Show me the code.', a: 'Linus Torvalds' },
+    { t: '简单是可靠的前提。', a: 'Edsger W. Dijkstra' },
+    { t: '程序首先是写给人读的，其次才是给机器执行的。', a: 'Donald Knuth' },
+    { t: '过早优化是万恶之源。', a: 'Donald Knuth' },
+    { t: '任何足够先进的技术，都与魔法无异。', a: 'Arthur C. Clarke' },
+    { t: '调试之难，两倍于写代码；若把代码写得尽可能巧妙，你按定义就无法调试它。', a: 'Brian Kernighan' },
+    { t: '好的代码本身就是最好的文档。', a: 'Steve McConnell' },
+    { t: '不要重复自己（DRY）。', a: 'Andy Hunt & Dave Thomas' },
+    /* 文艺 / 励志风 —— 6 条 */
+    { t: '细节决定成败，态度决定未来。', a: '佚名' },
+    { t: '你的时间有限，不要浪费在重复别人的生活上。', a: 'Steve Jobs' },
+    { t: '生活不是等待风暴过去，而是学会在雨中起舞。', a: '佚名' },
+    { t: '不要因为没有掌声而放弃梦想，你需要的是坚持，而不是观众。', a: '佚名' },
+    { t: '慢慢来，比较快。', a: '佚名' },
+    { t: '所有的伟大，都源于一个勇敢的开始。', a: '佚名' }
+  ];
+
+  const bodyEl = document.getElementById('quoteBody');
+  const authorEl = document.getElementById('quoteAuthor');
+  if (!bodyEl) return;
+
+  // 避免连续两次刷新抽到同一条（sessionStorage 记录上一条）
+  let last = -1;
+  try {
+    const saved = parseInt(sessionStorage.getItem('heroQuoteIdx'), 10);
+    if (Number.isFinite(saved) && saved >= 0 && saved < QUOTES.length) last = saved;
+  } catch (e) { /* 隐私模式等场景忽略 */ }
+
+  let idx;
+  do { idx = Math.floor(Math.random() * QUOTES.length); }
+  while (QUOTES.length > 1 && idx === last);
+
+  try { sessionStorage.setItem('heroQuoteIdx', String(idx)); } catch (e) {}
+
+  const q = QUOTES[idx];
+  bodyEl.textContent = q.t;
+  if (authorEl) {
+    if (q.a) authorEl.textContent = q.a;
+    else authorEl.remove();
+  }
 })();
 
 /* ============ 初始化 ============ */

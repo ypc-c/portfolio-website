@@ -240,26 +240,46 @@ body {
 }
 
 /* --- 主内容中部的“向下滚动”引导 --- */
-.foot-scroll {
-  display: inline-flex;
+/* 首屏底部：随机一言 + 上下浮动箭头 */
+.hero-quote {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(20px, 5vh, 46px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  margin-top: 42px;
-  font-size: 11px;
-  letter-spacing: 2.5px;
+  width: min(580px, calc(100vw - 56px));
+  text-align: center;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: quoteIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+.quote-line {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.85;
+  letter-spacing: 0.4px;
   color: var(--ink3);
+  font-style: italic;
 }
-.scroll-line {
-  display: inline-block;
-  width: 1px;
-  height: 26px;
-  background: linear-gradient(to bottom, var(--accent-deep), transparent);
-  animation: scrollPulse 1.8s ease-in-out infinite;
+.quote-body { color: var(--ink2); }
+.quote-author { color: var(--ink3); }
+.quote-author:not(:empty)::before { content: ' —— '; letter-spacing: 0; }
+.quote-arrow {
+  display: inline-flex;
+  color: var(--accent-deep);
+  animation: arrowFloat 2.1s ease-in-out infinite;
 }
-@keyframes scrollPulse {
-  0%, 100% { opacity: 0.4; transform: scaleY(0.7); }
-  50%      { opacity: 1; transform: scaleY(1); }
+.quote-arrow svg { width: 18px; height: 18px; }
+@keyframes arrowFloat {
+  0%, 100% { transform: translateY(-2px); opacity: 0.5; }
+  50%      { transform: translateY(6px);  opacity: 1; }
+}
+@keyframes quoteIn {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* ============ 内容板块（作品 / 关于 / 联系） ============ */
@@ -672,5 +692,5 @@ body {
 
 /* ============ 动效偏好 ============ */
 @media (prefers-reduced-motion: reduce) {
-  .hero-bg, .bubble, .scroll-line, .hero-inner { animation: none; }
+  .hero-bg, .bubble, .hero-inner, .hero-quote, .quote-arrow { animation: none; }
 }
