@@ -63,7 +63,8 @@
 
   .panel-label {
     font-size: 11px; letter-spacing: 4px;
-    color: rgba(170, 195, 225, 0.7);
+    color: #ffffff;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
     margin-bottom: 2px;
   }
   #wheel { width: 100%; }
@@ -72,18 +73,13 @@
 
   .panel-hint {
     font-size: 11px; letter-spacing: 1px;
-    color: rgba(170, 195, 225, 0.5);
+    color: rgba(255, 255, 255, 0.72);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
     margin-top: 4px; line-height: 1.7;
   }
 
-  /* 透明浮层下，文字随场景明暗自适应，保证两种背景都清晰 */
-  .panel[data-theme="dark"] .panel-label { color: rgba(200, 220, 245, 0.9); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85); }
-  .panel[data-theme="dark"] .panel-hint  { color: rgba(200, 220, 245, 0.62); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.85); }
-  .panel[data-theme="light"] .panel-label { color: rgba(52, 62, 48, 0.82); text-shadow: 0 1px 6px rgba(255, 255, 255, 0.95); }
-  .panel[data-theme="light"] .panel-hint  { color: rgba(52, 62, 48, 0.58); text-shadow: 0 1px 6px rgba(255, 255, 255, 0.95); }
-
-  .option-wheel.theme-dark .option-wheel__item  { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9); }
-  .option-wheel.theme-light .option-wheel__item { text-shadow: 0 1px 10px rgba(255, 255, 255, 0.98); }
+  /* 轮盘文字（所有场景一致）：当前场景对应项为金色，其余项为白色；深色投影 */
+  .option-wheel__item { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9); }
 
   @media (max-width: 760px) {
     .panel { width: 210px; padding-left: 14px; }
@@ -96,8 +92,9 @@
   <a class="back" href="../index.html#about">← 返回主页</a>
 
   <main class="stage">
-    <iframe id="frame-0" class="is-active" src="rainy-night-konbini.html" title="雨夜便利店"></iframe>
-    <iframe id="frame-1" src="weather-cards.html" title="气象之间"></iframe>
+    <iframe id="frame-0" class="is-active" src="weather-cards.html" title="气象之间"></iframe>
+    <iframe id="frame-1" src="wl%20blog/index.html" title="wl 的博客"></iframe>
+    <iframe id="frame-2" src="rainy-night-konbini.html" title="雨夜便利店"></iframe>
   </main>
   <div class="veil" id="veil"></div>
 
@@ -111,7 +108,8 @@
   <script>
     var frames = [
       document.getElementById('frame-0'),
-      document.getElementById('frame-1')
+      document.getElementById('frame-1'),
+      document.getElementById('frame-2')
     ];
 
     /* 转场：遮罩淡入遮住画面 → 切换 iframe 显隐（iframe 无动画，不与 WebGL 争合成）→ 遮罩淡出 */
@@ -136,32 +134,28 @@
 
     var panel = document.querySelector('.panel');
 
-    // 各场景对应的文字配色：0=雨夜（暗背景→浅字），1=气象（浅背景→深字）
-    var THEME = {
-      0: { theme: 'dark',  text: '#cfe0f2', active: '#ffffff' },
-      1: { theme: 'light', text: '#4a5645', active: '#22301f' }
-    };
+    // 轮盘配色（三个场景一致）：文字统一为白色
+    var WHEEL = { theme: 'dark', text: '#ffffff', active: '#ffffff' };
 
-    function applyTheme(i) {
-      var t = THEME[i] || THEME[0];
-      panel.setAttribute('data-theme', t.theme);
-      wheel.root.classList.toggle('theme-dark', t.theme === 'dark');
-      wheel.root.classList.toggle('theme-light', t.theme === 'light');
-      wheel.root.style.setProperty('--ow-text-color', t.text);
-      wheel.root.style.setProperty('--ow-active-color', t.active);
+    function applyTheme() {
+      panel.setAttribute('data-theme', WHEEL.theme);
+      wheel.root.classList.toggle('theme-dark', WHEEL.theme === 'dark');
+      wheel.root.classList.toggle('theme-light', WHEEL.theme === 'light');
+      wheel.root.style.setProperty('--ow-text-color', WHEEL.text);
+      wheel.root.style.setProperty('--ow-active-color', WHEEL.active);
     }
 
     var wheel = OptionWheel({
-      items: ['雨夜便利店', '气象之间'],
+      items: ['气象之间', 'wl 的博客', '雨夜便利店'],
       defaultSelected: 0,
       side: 'left',
-      fontSize: 1.6,
+      fontSize: 1.3,
       spacing: 1.8,
       tilt: 9,
       curve: 1,
       blur: 1.5,
       fade: 0.3,
-      textColor: '#cfe0f2',
+      textColor: '#ffffff',
       activeColor: '#ffffff',
       onChange: function (i) {
         switchTo(i);
