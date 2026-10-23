@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的空间 · My Spaces</title>
+<link rel="stylesheet" href="../assets/css/option-wheel.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Inter", sans-serif;
+    background: #0a101c;
+    color: #e6eef7;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ---- 画面全屏铺满 ---- */
+  .stage { position: fixed; inset: 0; z-index: 1; background: #0a101c; }
+  /* iframe 不做 transform/opacity 动画：避免与内部 WebGL 渲染争抢合成导致切换卡顿；
+     切换改由 .veil 遮罩过渡完成（见下方） */
+  .stage iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    border: 0; opacity: 0; visibility: hidden;
+  }
+  .stage iframe.is-active { opacity: 1; visibility: visible; }
+
+  /* 转场遮罩：淡入遮住画面 → 切换 iframe → 淡出 */
+  .veil {
+    position: fixed; inset: 0; z-index: 15; pointer-events: none;
+    background: #0a101c; opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .veil.is-on { opacity: 0.96; }
+
+  /* ---- 左上角返回 ---- */
+  .back {
+    position: fixed; top: 18px; left: 22px; z-index: 30;
+    color: rgba(220, 230, 245, 0.9); text-decoration: none;
+    font-size: 13px; letter-spacing: 1px;
+    border: 1px solid rgba(160, 190, 230, 0.4);
+    padding: 8px 16px; border-radius: 999px;
+    background: rgba(14, 22, 38, 0.55);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    transition: background 0.2s, transform 0.15s;
+  }
+  .back:hover { background: rgba(45, 70, 110, 0.85); transform: translateY(-1px); }
+
+  /* ---- 左侧浮层：轮盘 ---- */
+  .panel {
+    position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+    z-index: 20;
+    width: 240px;
+    padding: 16px 0 16px 14px;
+    display: flex; flex-direction: column; justify-content: center;
+    /* 透明浮层：不遮挡画面，仅文字可见 */
+    background: transparent;
+    /* 除轮盘外，空白区域不拦截鼠标，画面可正常拖拽旋转 */
+    pointer-events: none;
+  }
+  .panel > * { pointer-events: auto; }
+
+  .panel-label {
+    font-size: 11px; letter-spacing: 4px;
+    color: #ffffff;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
+    margin-bottom: 2px;
+  }
+  #wheel { width: 100%; }
+  /* 覆盖默认高度，避免小屏溢出；轮盘在浮层内垂直居中 */
+  #wheel .option-wheel { height: clamp(260px, 46vh, 420px); }
+
+  .panel-hint {
+    font-size: 11px; letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.72);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.85);
+    margin-top: 4px; line-height: 1.7;
+  }
+
+  /* 轮盘文字（所有场景一致）：当前场景对应项为金色，其余项为白色；深色投影 */
+  .option-wheel__item { text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9); }
+
+  @media (max-width: 760px) {
+    .panel { width: 210px; padding-left: 14px; }
+    #wheel .option-wheel { height: 200px; }
+    .panel-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="../index.html#about">← 返回主页</a>
+
+  <main class="stage">
+    <iframe id="frame-0" class="is-active" src="weather-cards.html" title="气象之间"></iframe>
+    <iframe id="frame-1" src="wl%20blog/index.html" title="威龙的博客"></iframe>
+    <iframe id="frame-2" src="rainy-night-konbini.html" title="雨夜便利店"></iframe>
+  </main>
+  <div class="veil" id="veil"></div>
+
+  <aside class="panel">
+    <div class="panel-label">选择空间</div>
+    <div id="wheel"></div>
+    <div class="panel-hint">滚轮 / 拖拽 / ↑↓ 切换</div>
+  </aside>
+
+  <script src="../assets/js/option-wheel.js"></script>
+  <script>
+    var frames = [
+      document.getElementById('frame-0'),
+      document.getElementById('frame-1'),
+      document.getElementById('frame-2')
+    ];
+
+    /* 转场：遮罩淡入遮住画面 → 切换 iframe 显隐（iframe 无动画，不与 WebGL 争合成）→ 遮罩淡出 */
+    var veil = document.getElementById('veil');
+    var busy = false, pending = null;
+    function switchTo(i) {
+      if (busy) { pending = i; return; }   // 切换中再次触发则排队，取最新目标
+      busy = true;
+      veil.classList.add('is-on');
+      setTimeout(function () {
+        for (var idx = 0; idx < frames.length; idx++) {
+          frames[idx].classList.toggle('is-active', idx === i);
+        }
+        applyTheme(i);
+        veil.classList.remove('is-on');
+        setTimeout(function () {
+          busy = false;
+          if (pending !== null) { var next = pending; pending = null; switchTo(next); }
+        }, 220);
+      }, 220);
+    }
+
+    var panel = document.querySelector('.panel');
+
+    // 轮盘配色（三个场景一致）：文字统一为白色
+    var WHEEL = { theme: 'dark', text: '#ffffff', active: '#ffffff' };
+
+    function applyTheme() {
+      panel.setAttribute('data-theme', WHEEL.theme);
+      wheel.root.classList.toggle('theme-dark', WHEEL.theme === 'dark');
+      wheel.root.classList.toggle('theme-light', WHEEL.theme === 'light');
+      wheel.root.style.setProperty('--ow-text-color', WHEEL.text);
+      wheel.root.style.setProperty('--ow-active-color', WHEEL.active);
+    }
+
+    var wheel = OptionWheel({
+      items: ['气象之间', '威龙的博客', '雨夜便利店'],
+      defaultSelected: 0,
+      side: 'left',
+      fontSize: 1.3,
+      spacing: 1.8,
+      tilt: 9,
+      curve: 1,
+      blur: 1.5,
+      fade: 0.3,
+      textColor: '#ffffff',
+      activeColor: '#ffffff',
+      onChange: function (i) {
+        switchTo(i);
+      }
+    });
+    document.getElementById('wheel').appendChild(wheel.root);
+    applyTheme(0);
+  </script>
+</body>
+</html>
