@@ -5,7 +5,7 @@
 
 :root {
   --bg1: #f6fafd;
-  --bg2: #e7f3f6;
+  --bg2: #e6eefb;
   --card: #fefeff;
   --tint: #fbfdfe;
   --line: #d4d7da;
@@ -13,8 +13,8 @@
   --ink: #1e1e1e;
   --ink2: #67696a;
   --ink3: #949698;
-  --accent: #54e5e8;
-  --accent-deep: #3ca5a7;
+  --accent: #4d8df6;
+  --accent-deep: #2563eb;
   --glass-nav: rgba(252, 254, 254, 0.82);
   --sh-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 28px rgba(0, 0, 0, 0.1);
   --sh-lg: 0 2px 4px rgba(0, 0, 0, 0.08), 0 24px 50px rgba(0, 0, 0, 0.14);
@@ -106,8 +106,8 @@ body {
   border: 1px solid var(--accent-deep);
 }
 .btn-gold:hover {
-  background: #46c7c9;
-  border-color: #46c7c9;
+  background: #4d8df6;
+  border-color: #4d8df6;
   transform: translateY(-2px);
   box-shadow: var(--sh-sm);
 }
@@ -137,8 +137,8 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 76% 24%, rgba(84, 229, 232, 0.35), transparent 52%),
-    radial-gradient(circle at 18% 82%, rgba(60, 165, 167, 0.18), transparent 58%),
+    radial-gradient(circle at 76% 24%, rgba(77, 141, 246, 0.35), transparent 52%),
+    radial-gradient(circle at 18% 82%, rgba(37, 99, 235, 0.18), transparent 58%),
     linear-gradient(160deg, var(--bg1), var(--bg2));
   animation: drift 22s ease-in-out infinite alternate;
 }
@@ -148,14 +148,14 @@ body {
 }
 
 .glow { position: absolute; border-radius: 50%; filter: blur(80px); }
-.g1 { width: 440px; height: 440px; top: -10%; right: 4%;  background: rgba(84, 229, 232, 0.22); }
-.g2 { width: 380px; height: 380px; bottom: -12%; left: 2%; background: rgba(60, 165, 167, 0.14); }
+.g1 { width: 440px; height: 440px; top: -10%; right: 4%;  background: rgba(77, 141, 246, 0.22); }
+.g2 { width: 380px; height: 380px; bottom: -12%; left: 2%; background: rgba(37, 99, 235, 0.14); }
 
 .bubble {
   position: absolute;
   border-radius: 50%;
-  border: 1.5px solid rgba(60, 165, 167, 0.22);
-  background: radial-gradient(circle at 35% 30%, rgba(60, 165, 167, 0.16), rgba(60, 165, 167, 0.03) 60%);
+  border: 1.5px solid rgba(37, 99, 235, 0.22);
+  background: radial-gradient(circle at 35% 30%, rgba(37, 99, 235, 0.16), rgba(37, 99, 235, 0.03) 60%);
   animation: rise 12s ease-in-out infinite;
 }
 .b1 { width: 74px;  height: 74px;  top: 30%; left: 62%; animation-delay: 0s; }
@@ -293,7 +293,7 @@ body {
   max-width: 1140px;
   margin: 0 auto 30px;
   padding: 52px 56px;
-  background: linear-gradient(160deg, #fbfdfe 0%, #eaf6f7 100%);
+  background: linear-gradient(160deg, #fbfdfe 0%, #eaf0fb 100%);
   border: 1px solid var(--line);
   border-radius: 24px;
   box-shadow: var(--sh-sm);
@@ -302,9 +302,9 @@ body {
 }
 
 /* 各板块差异化的柔和底色（避免三个白块雷同） */
-#works   { margin-top: 64px; background: linear-gradient(160deg, #fbfdfe 0%, #e7f5f6 100%); }
-#about   { background: linear-gradient(160deg, #fbfdfe 0%, #eef5f9 100%); }
-#contact { background: linear-gradient(160deg, #fbfdfe 0%, #e8f6f3 100%); }
+#works   { margin-top: 64px; background: linear-gradient(160deg, #fbfdfe 0%, #e7eefb 100%); }
+#about   { background: linear-gradient(160deg, #fbfdfe 0%, #eef2fb 100%); }
+#contact { background: linear-gradient(160deg, #fbfdfe 0%, #e8eefb 100%); }
 
 /* 背景装饰光斑：让板块背景有层次、不呆板（不干扰内容） */
 .block::before,
@@ -316,11 +316,11 @@ body {
   z-index: 0;
   pointer-events: none;
 }
-#works::before   { width: 360px; height: 360px; top: -120px; right: -80px;  background: rgba(84, 229, 232, 0.20); }
-#works::after    { width: 300px; height: 300px; bottom: -120px; left: -90px; background: rgba(60, 165, 167, 0.14); }
-#about::before   { width: 340px; height: 340px; top: -110px; left: -100px;  background: rgba(84, 229, 232, 0.16); }
-#about::after    { width: 280px; height: 280px; bottom: -110px; right: -80px; background: rgba(60, 165, 167, 0.12); }
-#contact::before { width: 420px; height: 420px; top: -160px; left: 50%; transform: translateX(-50%); background: rgba(84, 229, 232, 0.16); }
+#works::before   { width: 360px; height: 360px; top: -120px; right: -80px;  background: rgba(77, 141, 246, 0.20); }
+#works::after    { width: 300px; height: 300px; bottom: -120px; left: -90px; background: rgba(37, 99, 235, 0.14); }
+#about::before   { width: 340px; height: 340px; top: -110px; left: -100px;  background: rgba(77, 141, 246, 0.16); }
+#about::after    { width: 280px; height: 280px; bottom: -110px; right: -80px; background: rgba(37, 99, 235, 0.12); }
+#contact::before { width: 420px; height: 420px; top: -160px; left: 50%; transform: translateX(-50%); background: rgba(77, 141, 246, 0.16); }
 
 /* 让板块内所有内容浮在装饰光斑之上 */
 .block > .wrap { position: relative; z-index: 1; }
@@ -354,7 +354,7 @@ body {
 /* 板块内小卡片 */
 .inner-card {
   position: relative;
-  background: linear-gradient(165deg, #ffffff 0%, #f1fafb 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #f1f6fb 100%);
   border: 1px solid var(--line2);
   border-radius: 16px;
   padding: 22px 26px;
@@ -363,7 +363,7 @@ body {
 }
 .inner-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(60, 165, 167, 0.14);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.14);
 }
 
 .wrap { max-width: 1080px; margin: 0 auto; }
@@ -376,7 +376,7 @@ body {
 }
 .card {
   position: relative;
-  background: linear-gradient(165deg, #ffffff 0%, #f2fbfc 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #f2f6fb 100%);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 24px 24px 22px;
@@ -399,8 +399,8 @@ body {
 }
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 18px 40px rgba(60, 165, 167, 0.18);
-  border-color: rgba(84, 229, 232, 0.6);
+  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.18);
+  border-color: rgba(77, 141, 246, 0.6);
 }
 .card:hover::before { transform: scaleX(1); }
 .card-title { font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
@@ -410,8 +410,8 @@ body {
 .card-tags span {
   font-size: 11.5px;
   color: var(--accent-deep);
-  background: rgba(60, 165, 167, 0.1);
-  border: 1px solid rgba(60, 165, 167, 0.25);
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.25);
   padding: 3px 10px;
   border-radius: 20px;
 }
@@ -462,7 +462,7 @@ body {
   letter-spacing: 1.5px;
   color: var(--accent-deep);
   text-decoration: none;
-  border-bottom: 1px solid rgba(60, 165, 167, 0.35);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.35);
   padding-bottom: 3px;
   transition: color 0.25s ease, border-color 0.25s ease;
 }
@@ -473,7 +473,7 @@ body {
   grid-column: 1 / -1;
   position: relative;
   margin-top: 6px;
-  background: linear-gradient(165deg, #ffffff 0%, #eef9fa 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #eef4fb 100%);
   border: 1px solid var(--line2);
   border-radius: 16px;
   padding: 22px 26px 24px;
@@ -482,7 +482,7 @@ body {
 }
 .stats-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(60, 165, 167, 0.14);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.14);
 }
 .stats-grid {
   display: grid;
@@ -536,7 +536,7 @@ body {
   max-width: 460px;
   margin: 0 auto;
   text-align: left;
-  background: linear-gradient(165deg, #ffffff 0%, #f1fafb 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #f1f6fb 100%);
   border: 1px solid var(--line);
   border-radius: 20px;
   padding: 30px 34px 26px;
@@ -570,8 +570,8 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 13px;
-  background: rgba(84, 229, 232, 0.16);
-  border: 1px solid rgba(60, 165, 167, 0.18);
+  background: rgba(77, 141, 246, 0.16);
+  border: 1px solid rgba(37, 99, 235, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -580,7 +580,7 @@ body {
   transition: background 0.25s ease, color 0.25s ease;
 }
 .contact-line:hover .cl-icon {
-  background: rgba(84, 229, 232, 0.28);
+  background: rgba(77, 141, 246, 0.28);
   color: var(--accent-deep);
 }
 .cl-icon svg { width: 22px; height: 22px; }
@@ -603,7 +603,7 @@ body {
   letter-spacing: 1.5px;
   color: var(--accent-deep);
   text-decoration: none;
-  border-bottom: 1px solid rgba(60, 165, 167, 0.35);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.35);
   padding-bottom: 3px;
   transition: color 0.25s ease, border-color 0.25s ease;
 }
@@ -638,7 +638,7 @@ body {
   width: 38px;
   background: var(--accent-deep);
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(60, 165, 167, 0.35);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 .lang-opt {
   position: relative;
