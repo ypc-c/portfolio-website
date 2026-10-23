@@ -119,6 +119,33 @@
         <a class="space-link" href="spaces/spaces.html" data-i18n="space_link">进入我的空间 →</a>
       </div>
     </div>
+
+    <!-- 网站数据（累计/今日访客、浏览量与运行时长） -->
+    <div class="stats-card">
+      <h4 class="side-h" data-i18n="stats_h">网站数据</h4>
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-num" id="stat-total-visitors">—</span>
+          <span class="stat-label" data-i18n="stat_total_visitors">累计访客</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="stat-total-views">—</span>
+          <span class="stat-label" data-i18n="stat_total_views">总浏览量</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="stat-today-visitors">—</span>
+          <span class="stat-label" data-i18n="stat_today_visitors">今日访客</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="stat-today-views">—</span>
+          <span class="stat-label" data-i18n="stat_today_views">今日浏览量</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="stat-uptime">—</span>
+          <span class="stat-label" data-i18n="stat_uptime">运行时长(天)</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -280,6 +307,12 @@ const I18N = {
   space_h: { zh: '我的空间', en: 'My Spaces' },
   space_d: { zh: '几个我做的交互小世界：雨夜便利店、气象之间。', en: 'Interactive mini-worlds I built: Rainy Night Konbini, Atmosphere Studio.' },
   space_link: { zh: '进入我的空间 →', en: 'Enter my spaces →' },
+  stats_h: { zh: '网站数据', en: 'Site Stats' },
+  stat_total_visitors: { zh: '累计访客', en: 'Total Visitors' },
+  stat_total_views: { zh: '总浏览量', en: 'Total Views' },
+  stat_today_visitors: { zh: '今日访客', en: "Today's Visitors" },
+  stat_today_views: { zh: '今日浏览量', en: "Today's Views" },
+  stat_uptime: { zh: '运行时长(天)', en: 'Uptime (days)' },
   footer: { zh: '© 2026 ypc · 用代码创造价值', en: '© 2026 ypc · Create value with code' }
 };
 
@@ -385,6 +418,54 @@ function applyLang(lang) {
   window.addEventListener('resize', () => place(current, false));
   measure();
   place('zh', false);
+})();
+
+/* ============ 访客统计（调用 /api/visit） ============ */
+(function () {
+  const today = new Date().toISOString().slice(0, 10);
+  const everVisited = localStorage.getItem('pv_ever') === '1';
+  const lastDate = localStorage.getItem('pv_date');
+  const isNewVisitor = !everVisited;       // 本站从未访问过 → 累计访客 +1
+  const isNewVisitorToday = lastDate !== today; // 今天首次访问 → 今日访客 +1
+
+  const $ = id => document.getElementById(id);
+  const setNum = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+
+  // 数字滚动动画（千位分隔）
+  function animateNum(el, target, dur = 900) {
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(target * eased).toLocaleString('en-US');
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function applyData(d) {
+    if (!d || d.configured === false) {
+      ['stat-total-visitors', 'stat-total-views', 'stat-today-visitors', 'stat-today-views']
+        .forEach(id => setNum(id, '—'));
+      if (d && typeof d.uptime_days === 'number') setNum('stat-uptime', d.uptime_days);
+      return;
+    }
+    animateNum($('stat-total-visitors'), d.total_visitors);
+    animateNum($('stat-total-views'), d.total_views);
+    animateNum($('stat-today-visitors'), d.today_visitors);
+    animateNum($('stat-today-views'), d.today_views);
+    animateNum($('stat-uptime'), d.uptime_days);
+  }
+
+  fetch(`/api/visit?nv=${isNewVisitor ? 1 : 0}&nvt=${isNewVisitorToday ? 1 : 0}`, { cache: 'no-store' })
+    .then(r => (r.ok ? r.json() : null))
+    .then(applyData)
+    .catch(() => { /* 离线或接口未就绪：保持占位符 */ })
+    .finally(() => {
+      // 标记本浏览器已访问，避免刷新重复计入“访客”
+      localStorage.setItem('pv_ever', '1');
+      localStorage.setItem('pv_date', today);
+    });
 })();
 
 /* ============ 初始化 ============ */

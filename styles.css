@@ -448,6 +448,53 @@ body {
 }
 .space-link:hover { color: var(--accent); border-color: var(--accent); }
 
+/* --- 关于我：网站数据卡片 --- */
+.stats-card {
+  grid-column: 1 / -1;
+  position: relative;
+  margin-top: 6px;
+  background: linear-gradient(165deg, #ffffff 0%, #eef9fa 100%);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+  padding: 22px 26px 24px;
+  box-shadow: 0 4px 16px rgba(31, 56, 88, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(60, 165, 167, 0.14);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-top: 2px;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--line2);
+}
+.stat-num {
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent-deep);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.stat-label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--ink2);
+  text-align: center;
+}
+
 /* --- 联系我 --- */
 .contact { text-align: center; }
 .contact-p { font-size: 15px; color: var(--ink2); margin-bottom: 34px; }
@@ -604,6 +651,12 @@ body {
   .about { grid-template-columns: 1fr; gap: 22px; }
   .about-side { padding-top: 0; }
   .inner-card { padding: 18px 20px; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-num { font-size: 23px; }
 }
 
 /* ============ 动效偏好 ============ */
