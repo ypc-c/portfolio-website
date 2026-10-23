@@ -584,6 +584,15 @@ body {
   color: var(--accent-deep);
 }
 .cl-icon svg { width: 22px; height: 22px; }
+.cl-icon .cl-img {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
 .cl-label {
   width: 58px;
   font-size: 12px;
