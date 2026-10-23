@@ -446,13 +446,8 @@ function applyLang(lang) {
 })();
 
 /* ============ 访客统计（调用 /api/visit） ============ */
+/* 访客去重改由服务端按 IP+UA 判定（见 functions/api/visit.js），前端只取数展示 */
 (function () {
-  const today = new Date().toISOString().slice(0, 10);
-  const everVisited = localStorage.getItem('pv_ever') === '1';
-  const lastDate = localStorage.getItem('pv_date');
-  const isNewVisitor = !everVisited;       // 本站从未访问过 → 累计访客 +1
-  const isNewVisitorToday = lastDate !== today; // 今天首次访问 → 今日访客 +1
-
   const $ = id => document.getElementById(id);
   const setNum = (id, val) => { const el = $(id); if (el) el.textContent = val; };
 
@@ -482,15 +477,10 @@ function applyLang(lang) {
     animateNum($('stat-uptime'), d.uptime_days);
   }
 
-  fetch(`/api/visit?nv=${isNewVisitor ? 1 : 0}&nvt=${isNewVisitorToday ? 1 : 0}`, { cache: 'no-store' })
+  fetch('/api/visit', { cache: 'no-store' })
     .then(r => (r.ok ? r.json() : null))
     .then(applyData)
-    .catch(() => { /* 离线或接口未就绪：保持占位符 */ })
-    .finally(() => {
-      // 标记本浏览器已访问，避免刷新重复计入“访客”
-      localStorage.setItem('pv_ever', '1');
-      localStorage.setItem('pv_date', today);
-    });
+    .catch(() => { /* 离线或接口未就绪：保持占位符 */ });
 })();
 
 /* ============ 首屏随机一言（技术风:文艺风 = 6:4） ============ */
