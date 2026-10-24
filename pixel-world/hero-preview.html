@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首屏背景试用 · 异世界入口 PIXEL WORLD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+@font-face{
+  font-family:'Zpix';
+  src: local('Zpix'), local('Zpix Pixel'), url('fonts/Zpix.ttf') format('truetype');
+  font-display: swap;
+}
+:root{
+  --font-en:'Press Start 2P','Zpix','DotGothic16',monospace;
+  --font-cn:'Zpix','DotGothic16','Microsoft YaHei','PingFang SC',sans-serif;
+  --font-mix:'Press Start 2P','Zpix','DotGothic16','Microsoft YaHei',monospace;
+  --line:#07040f;
+  --gold:#ffd23f; --accent:#b46cff; --accent2:#57e0ff;
+  --panel:#1d1244; --panel2:#271757; --panel3:#33206e;
+  --ink:#ece7ff; --dim:#a296d6; --btn-ink:#ffffff;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  font-family:var(--font-cn);
+  background-color:#0d0821;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+  background-size:32px 32px;
+  color:var(--ink); line-height:1.7; overflow-x:hidden;
+}
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; }
+
+/* ============ HERO ============ */
+.hero{
+  position:relative; min-height:100vh; min-height:100svh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; isolation:isolate;
+}
+.hero-bg{
+  position:absolute; inset:0; z-index:-2;
+  background:url('assets/hero-bg.jpg') center center / cover no-repeat;
+  transition:transform .45s ease;
+  will-change:transform;
+}
+.hero-mask{
+  position:absolute; inset:0; z-index:-1; pointer-events:none;
+  transition:background .45s ease;
+}
+/* 遮罩强度 */
+.hero[data-mask="none"] .hero-mask{ background:none; }
+.hero[data-mask="soft"] .hero-mask{
+  background:linear-gradient(180deg,
+    rgba(8,4,20,.06) 0%, rgba(8,4,20,0) 26%,
+    rgba(8,4,20,.30) 74%, rgba(8,4,20,.66) 100%);
+}
+.hero[data-mask="strong"] .hero-mask{
+  background:linear-gradient(180deg,
+    rgba(8,4,20,.42) 0%, rgba(8,4,20,.12) 34%,
+    rgba(8,4,20,.58) 80%, rgba(8,4,20,.88) 100%);
+}
+/* 缩放裁水印 */
+.hero[data-zoom="crop"] .hero-bg{ transform:scale(1.18); }
+.hero-content{ text-align:center; padding:120px 20px 80px; max-width:920px; position:relative; }
+.hero-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-en); font-size:9px; color:var(--gold);
+  background:var(--panel); padding:8px 14px; margin-bottom:26px;
+  box-shadow:0 0 0 3px var(--line), 5px 5px 0 rgba(0,0,0,.3);
+  animation:bob 2.4s steps(2) infinite;
+}
+@keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+.hero h1{
+  font-family:var(--font-mix); font-weight:700;
+  font-size:clamp(40px,7.5vw,72px); line-height:1.15;
+  letter-spacing:.04em;
+  text-shadow:
+    3px 0 0 var(--line), -3px 0 0 var(--line), 0 3px 0 var(--line), 0 -3px 0 var(--line),
+    3px 3px 0 var(--line), -3px 3px 0 var(--line), 3px -3px 0 var(--line), -3px -3px 0 var(--line),
+    7px 8px 0 rgba(0,0,0,.45);
+}
+.hero[data-ink="gold"] h1{ color:var(--gold); }
+.hero[data-ink="white"] h1{ color:#ffffff; }
+.hero-sub{
+  margin-top:22px; font-family:var(--font-en); font-size:clamp(9px,1.4vw,12px);
+  color:var(--accent2); letter-spacing:.22em;
+  text-shadow:2px 2px 0 var(--line), 0 0 12px rgba(87,224,255,.35);
+}
+.hero-desc{
+  margin-top:16px; color:#f0ebff; font-size:15px;
+  text-shadow:1px 1px 0 rgba(8,4,20,.9), 0 0 14px rgba(8,4,20,.7);
+}
+.hero-cta{ margin-top:36px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.px-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-mix); font-size:11px; letter-spacing:.06em;
+  color:var(--ink); background:var(--panel2);
+  border:0; cursor:pointer; padding:13px 18px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 6px 0 0 rgba(0,0,0,.28);
+  transition:transform .08s steps(2), box-shadow .08s steps(2), background-color .15s, color .15s;
+  user-select:none;
+}
+.px-btn:hover{ background:var(--panel3); transform:translateY(-2px);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 8px 0 0 rgba(0,0,0,.28); }
+.px-btn.primary{ background:var(--accent); color:var(--btn-ink); }
+.px-btn.primary:hover{ background:var(--accent2); color:#0b0618; }
+.scroll-hint{
+  position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
+  font-family:var(--font-en); font-size:8px; color:#fff;
+  text-shadow:1px 1px 0 rgba(8,4,20,.9);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.scroll-hint .arrow{ animation:hint 1.2s steps(2) infinite; }
+@keyframes hint{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+/* ============ 效果开关 ============ */
+.switcher{
+  position:fixed; right:16px; bottom:16px; z-index:50;
+  background:var(--panel); padding:12px 14px;
+  box-shadow:0 0 0 3px var(--line), 6px 6px 0 rgba(0,0,0,.35);
+  display:grid; gap:8px;
+}
+.sw-row{ display:flex; align-items:center; gap:6px; }
+.sw-row>span{
+  width:32px; flex:none; color:var(--dim);
+  font-family:var(--font-cn); font-size:12px;
+}
+.sw-btn{
+  font-family:var(--font-cn); font-size:12px; line-height:1;
+  color:var(--dim); background:var(--panel2);
+  border:0; cursor:pointer; padding:6px 10px;
+  box-shadow:0 0 0 2px var(--line);
+  transition:background-color .12s, color .12s;
+}
+.sw-btn:hover{ background:var(--panel3); color:var(--ink); }
+.sw-btn.on{ background:var(--accent); color:#fff; }
+
+/* ============ 下一屏示意 ============ */
+.next{
+  min-height:46vh; display:flex; align-items:center; justify-content:center;
+  background:#0d0821; text-align:center; padding:60px 20px;
+}
+.next p{ color:var(--dim); font-size:14px; max-width:520px; margin-inline:auto; }
+.next b{ color:var(--gold); font-family:var(--font-mix); font-size:12px; display:block; margin-bottom:10px; }
+
+@media (max-width:600px){
+  .scroll-hint{ display:none; }
+  .switcher{ left:16px; right:16px; justify-items:center; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero" id="hero" data-mask="soft" data-zoom="keep" data-ink="gold">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-mask" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">★ WELCOME TO PIXEL WORLD ★</div>
+    <h1>异世界入口</h1>
+    <div class="hero-sub">ISEKAI PORTAL</div>
+    <p class="hero-desc">一座用 CSS 格子搭起来的浮空小站：打游戏、读文章、逛友链、刻留言。<br>传送门已充能，勇者请随意。</p>
+    <div class="hero-cta">
+      <a class="px-btn primary" href="#">▶ 进入游戏厅</a>
+      <a class="px-btn" href="#">▤ 浏览文章</a>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="arrow">▼</div>
+  </div>
+</header>
+
+<div class="switcher" role="group" aria-label="背景效果开关">
+  <div class="sw-row">
+    <span>遮罩</span>
+    <button class="sw-btn" data-g="mask" data-v="none">关</button>
+    <button class="sw-btn on" data-g="mask" data-v="soft">轻</button>
+    <button class="sw-btn" data-g="mask" data-v="strong">重</button>
+  </div>
+  <div class="sw-row">
+    <span>水印</span>
+    <button class="sw-btn on" data-g="zoom" data-v="keep">保留</button>
+    <button class="sw-btn" data-g="zoom" data-v="crop">裁掉</button>
+  </div>
+  <div class="sw-row">
+    <span>标题</span>
+    <button class="sw-btn on" data-g="ink" data-v="gold">金色</button>
+    <button class="sw-btn" data-g="ink" data-v="white">白色</button>
+  </div>
+</div>
+
+<section class="next">
+  <div>
+    <b>↓ 首屏以下</b>
+    <p>这里是正文区域的示意。正文沿用原页面的样式与网格背景，不会受到首屏背景图影响。试用满意后，可以把满意的组合告诉我，我再把它正式接进 index.html。</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  var hero = document.getElementById('hero');
+  var btns = document.querySelectorAll('.sw-btn');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var g = btn.dataset.g, v = btn.dataset.v;
+      document.querySelectorAll('.sw-btn[data-g="' + g + '"]').forEach(function(b){
+        b.classList.remove('on');
+      });
+      btn.classList.add('on');
+      if(g === 'mask'){ hero.dataset.mask = v; }
+      if(g === 'zoom'){ hero.dataset.zoom = v; }
+      if(g === 'ink'){ hero.dataset.ink = v; }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

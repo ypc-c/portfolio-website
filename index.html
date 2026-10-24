@@ -10,7 +10,7 @@
 
 <!-- ============ 顶部导航 ============ -->
 <header class="nav">
-  <a class="brand" href="#">
+  <a class="brand" href="https://github.com/ypc-c" target="_blank" rel="noopener">
     <span class="brand-mark">YPC-C</span>
     <span class="brand-logo">GitHub</span>
   </a>
@@ -25,25 +25,18 @@
 <!-- ============ 全屏 Hero ============ -->
 <section class="hero">
 
-  <!-- 背景层：明亮冷调（以后可整块替换为 <img class="hero-bg">） -->
-  <div class="hero-bg" aria-hidden="true">
-    <span class="glow g1"></span>
-    <span class="glow g2"></span>
-    <span class="bubble b1"></span>
-    <span class="bubble b2"></span>
-    <span class="grain"></span>
-  </div>
-  <div class="hero-shade" aria-hidden="true"></div>
+  <!-- 背景层：明亮冷调渐变（以后可整块替换为 <img class="hero-bg">） -->
+  <div class="hero-bg" aria-hidden="true"></div>
 
-  <!-- 左上角面包屑 -->
-  <p class="crumb">首页 <i>/</i> 作品 <i>·</i>开源</p>
+  <!-- 左上角标饰 -->
+  <p class="crumb">PORTFOLIO <i>·</i> 2026</p>
 
   <!-- 居中主内容 -->
   <div class="hero-inner">
     <p class="kicker" data-i18n="kicker">SOFTWARE ENGINEER <i>·</i> 软件工程师</p>
     <h1 class="title" id="heroTitle" data-i18n="title">用代码创造价值</h1>
     <p class="subtitle" data-i18n="subtitle">
-      热爱开源与极客文化，期待加入优秀的工程团队一起打磨产品。
+      2026 届软件工程专业，主攻后端高并发与自动化测试，喜欢把重复的工作交给脚本。
     </p>
     <div class="cta-row">
       <a href="#works" class="btn btn-gold" data-i18n="cta_works">查看作品</a>
@@ -62,6 +55,8 @@
     </span>
   </div>
 </section>
+
+<main>
 
 <!-- ============ 作品 ============ -->
 <section class="block" id="works">
@@ -124,9 +119,9 @@
         <p class="about-p small" data-i18n="status_p">正在寻找软件开发、测试等方向的实习或全职机会。</p>
       </div>
       <div class="inner-card space-card">
-        <h4 class="side-h" data-i18n="space_h">我的空间</h4>
-        <p class="about-p small" data-i18n="space_d">几个我做的交互小世界：雨夜便利店、气象之间。</p>
-        <a class="space-link" href="spaces/spaces.html" data-i18n="space_link">进入我的空间 →</a>
+        <h4 class="side-h" data-i18n="space_h">异世界入口</h4>
+        <p class="about-p small" data-i18n="space_d">勇者，异世界需要你的帮助</p>
+        <a class="space-link" href="pixel-world/index.html" data-i18n="space_link">进入异世界</a>
       </div>
     </div>
 
@@ -210,6 +205,8 @@
     </div>
   </div>
 </section>
+
+</main>
 
 <footer class="site-foot" data-i18n="footer">© 2026 ypc · 用代码创造价值</footer>
 
@@ -307,7 +304,7 @@ const I18N = {
   nav_contact: { zh: '联系我', en: 'Contact' },
   kicker: { zh: 'SOFTWARE ENGINEER · 软件工程师', en: 'SOFTWARE ENGINEER · Software Engineer' },
   title: { zh: '用代码创造价值', en: 'Create value with code' },
-  subtitle: { zh: '热爱开源与极客文化，期待加入优秀的工程团队一起打磨产品。', en: 'Passionate about open source and geek culture, hoping to join a great engineering team to craft products together.' },
+  subtitle: { zh: '2026 届软件工程专业，主攻后端高并发与自动化测试，喜欢把重复的工作交给脚本。', en: 'Software engineering, class of 2026. Backend high-concurrency and automation testing; repetitive work goes to scripts.' },
   cta_works: { zh: '查看作品', en: 'View Works' },
   cta_about: { zh: '了解我', en: 'About Me' },
   works_title: { zh: '作品', en: 'Works' },
@@ -329,9 +326,9 @@ const I18N = {
   contact_title: { zh: '联系我', en: 'Contact' },
   contact_p: { zh: '有合适的机会或想聊聊技术，欢迎随时找我。', en: 'If there is a good opportunity or you would like to chat about tech, feel free to reach out anytime.' },
   jump: { zh: '前往我的 GitHub →', en: 'Visit my GitHub →' },
-  space_h: { zh: '我的空间', en: 'My Spaces' },
-  space_d: { zh: '几个我做的交互小世界：雨夜便利店、气象之间、wl 的博客。', en: 'Interactive mini-worlds I built: Rainy Night Konbini, Atmosphere Studio, wl\'s Blog.' },
-  space_link: { zh: '进入我的空间 →', en: 'Enter my spaces →' },
+  space_h: { zh: '异世界入口', en: 'Isekai Portal' },
+  space_d: { zh: '勇者，异世界需要你的帮助', en: 'Brave one, the isekai needs your help.' },
+  space_link: { zh: '进入异世界', en: 'Enter Isekai' },
   stats_h: { zh: '网站数据', en: 'Site Stats' },
   stat_total_visitors: { zh: '累计访客', en: 'Total Visitors' },
   stat_total_views: { zh: '总浏览量', en: 'Total Views' },
@@ -356,15 +353,15 @@ function applyLang(lang) {
   if (titleEntry) setupTitle(titleEntry[lang], true);
 }
 
-/* ============ 右下角滑动分段控件（原生，含橡皮拖拽） ============ */
+/* ============ 右下角滑动分段控件（原生拖拽 + 松手吸附） ============ */
 (() => {
   const sw = document.getElementById('langSwitch');
   const thumb = document.getElementById('langThumb');
   const opts = [...sw.querySelectorAll('.lang-opt')];
-  const INSET = 4, RUBBER = 0.55;
+  const INSET = 4;
   let bounds = { zh: 0, en: 0, w: 0 };
   let current = 'zh';
-  let dragging = false, startX = 0, originLeft = 0, hist = [];
+  let dragging = false, startX = 0, originLeft = 0;
 
   const measure = () => {
     const rect = sw.getBoundingClientRect();
@@ -372,7 +369,6 @@ function applyLang(lang) {
     bounds.zh = INSET;
     bounds.en = INSET + bounds.w;
   };
-  const rubber = (over, dim) => (over * dim * RUBBER) / (dim + RUBBER * Math.abs(over));
   const setThumb = (left, animate) => {
     thumb.style.transition = animate
       ? 'left .3s cubic-bezier(.34,1.4,.64,1)'
@@ -400,14 +396,13 @@ function applyLang(lang) {
     }
   });
 
-  // 拖拽（橡皮回弹）
+  // 拖拽（严格限制在轨道内，不可拖出）
   const onDown = e => {
     if (e.button !== 0) return;
     measure();
     dragging = true;
     startX = e.clientX;
     originLeft = parseFloat(thumb.style.left) || bounds.zh;
-    hist = [[performance.now(), originLeft]];
     thumb.style.transition = 'none';
     try { sw.setPointerCapture(e.pointerId); } catch {}
   };
@@ -415,25 +410,19 @@ function applyLang(lang) {
     if (!dragging) return;
     const dx = e.clientX - startX;
     let left = originLeft + dx;
-    if (left < bounds.zh) left = bounds.zh + rubber(left - bounds.zh, bounds.w);
-    else if (left > bounds.en) left = bounds.en + rubber(left - bounds.en, bounds.w);
+    if (left < bounds.zh) left = bounds.zh;
+    else if (left > bounds.en) left = bounds.en;
     thumb.style.left = left + 'px';
-    hist.push([performance.now(), left]);
-    if (hist.length > 6) hist.shift();
   };
   const onUp = e => {
     if (!dragging) return;
     dragging = false;
     const left = parseFloat(thumb.style.left) || bounds.zh;
-    const mid = (bounds.zh + bounds.en) / 2;
-    let target = left < mid ? 'zh' : 'en';
-    // 速度甩动
-    const recent = hist.filter(([t]) => performance.now() - t <= 100);
-    if (recent.length >= 2) {
-      const v = (recent[recent.length - 1][1] - recent[0][1]) / ((recent[recent.length - 1][0] - recent[0][0]) / 1000);
-      if (Math.abs(v) > 120) target = target === 'zh' ? 'en' : 'zh';
-    }
-    pick(target);
+    // 松手即吸附：滑块停在中线左侧贴"中"，右侧贴"EN"，不停留在中间
+    const target = left < (bounds.zh + bounds.en) / 2 ? 'zh' : 'en';
+    const changed = target !== current;
+    place(target, true);
+    if (changed) applyLang(target);
   };
   sw.addEventListener('pointerdown', onDown);
   sw.addEventListener('pointermove', onMove);

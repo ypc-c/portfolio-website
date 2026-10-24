@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>像素小集市 · PIXEL MARKET</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%23e8d5b0'/%3E%3Crect x='1' y='3' width='6' height='2' fill='%23c0392b'/%3E%3Crect x='2' y='1' width='4' height='2' fill='%238b5a2b'/%3E%3Crect x='2' y='5' width='4' height='2' fill='%23f3e3c2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+@font-face{
+  font-family:'ArkPixel';
+  src: url('../fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
+  font-display: swap;
+}
+:root{
+  --font-px:'Press Start 2P',monospace;
+  --font-cn:'ArkPixel','DotGothic16','Microsoft YaHei','PingFang SC',sans-serif;
+  --paper:#e8d5b0; --paper2:#f3e3c2; --paper3:#dcc48f;
+  --ink:#3a2a1a; --ink2:#7a5c3a; --faint:#a98d63;
+  --frame:#5a3d22; --frame2:#8b5a2b;
+  --red:#c0392b; --green:#1e8449; --gold:#b8860b; --blue:#2c3e6b;
+  --coin:#d4a017;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{
+  font-family:var(--font-cn);
+  background:#241a2e;
+  background-image:
+    linear-gradient(rgba(0,0,0,.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.14) 1px, transparent 1px);
+  background-size:32px 32px;
+  color:var(--ink);
+  line-height:1.6;
+  min-height:100vh;
+  padding:28px 16px 60px;
+}
+.wrap{ max-width:980px; margin-inline:auto; }
+
+/* ============ 像素面板与按钮 ============ */
+.pxpanel{
+  background:var(--paper2);
+  box-shadow:
+    inset -4px -4px 0 rgba(0,0,0,.16), inset 4px 4px 0 rgba(255,255,255,.45),
+    0 -4px 0 0 var(--frame), 0 4px 0 0 var(--frame),
+    -4px 0 0 0 var(--frame), 4px 0 0 0 var(--frame),
+    10px 10px 0 0 rgba(0,0,0,.32);
+}
+.pxbtn{
+  font-family:var(--font-cn); font-size:14px; line-height:1;
+  color:var(--paper2); background:var(--frame2);
+  border:0; cursor:pointer; padding:9px 14px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.28), inset 3px 3px 0 rgba(255,255,255,.18),
+    0 -3px 0 0 #3a2513, 0 3px 0 0 #3a2513, -3px 0 0 0 #3a2513, 3px 0 0 0 #3a2513,
+    6px 6px 0 0 rgba(0,0,0,.3);
+  transition:transform .08s steps(2), background-color .12s, box-shadow .08s steps(2);
+  user-select:none;
+}
+.pxbtn:hover{ background:#a06c33; transform:translateY(-2px); }
+.pxbtn:active{
+  transform:translate(3px,3px);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.28), inset 3px 3px 0 rgba(255,255,255,.18),
+    0 -3px 0 0 #3a2513, 0 3px 0 0 #3a2513, -3px 0 0 0 #3a2513, 3px 0 0 0 #3a2513,
+    0 0 0 0 rgba(0,0,0,.3);
+}
+.pxbtn.small{ font-size:12px; padding:6px 10px; }
+.pxbtn.buy{ background:#2e7d4f; }
+.pxbtn.buy:hover{ background:#37965d; }
+.pxbtn.sell{ background:#a0522d; }
+.pxbtn.sell:hover{ background:#b8643a; }
+.pxbtn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+.pxbtn:disabled:hover{ background:var(--frame2); transform:none; }
+.pxbtn.buy:disabled:hover{ background:#2e7d4f; }
+.pxbtn.sell:disabled:hover{ background:#a0522d; }
+
+/* ============ 顶栏 ============ */
+.topbar{ padding:16px 20px; margin-bottom:18px; }
+.topbar .title-row{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.topbar h1{
+  font-size:26px; letter-spacing:.06em; color:var(--frame);
+  text-shadow:2px 2px 0 rgba(255,255,255,.6), 4px 4px 0 rgba(90,61,34,.25);
+}
+.topbar .en{ font-family:var(--font-px); font-size:10px; color:var(--ink2); letter-spacing:.14em; }
+.stats{
+  display:flex; gap:10px 22px; flex-wrap:wrap; margin-top:14px;
+  padding-top:12px; border-top:3px dashed rgba(90,61,34,.35);
+  font-size:15px;
+}
+.stat b{ font-family:var(--font-px); font-size:11px; color:var(--ink2); display:block; margin-bottom:2px; letter-spacing:.08em; }
+.stat span{ font-size:18px; font-weight:700; }
+.stat .coin{ color:var(--coin); font-family:var(--font-px); font-size:13px; }
+.goalbar{
+  margin-top:12px; height:18px; background:var(--paper3);
+  box-shadow:inset 3px 3px 0 rgba(0,0,0,.2), 0 0 0 3px var(--frame);
+  position:relative;
+}
+.goalbar i{
+  display:block; height:100%; width:0;
+  background:repeating-linear-gradient(90deg, var(--gold) 0 8px, #e8b93c 8px 16px);
+  transition:width .3s steps(6);
+}
+.goalbar em{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-style:normal; font-size:12px; color:var(--ink); text-shadow:1px 1px 0 rgba(255,255,255,.5);
+}
+
+/* ============ 事件横幅 ============ */
+.event-banner{
+  display:none; padding:12px 16px; margin-bottom:18px;
+  background:#ffe9a8; color:#7a4a00;
+  font-size:15px;
+  box-shadow:
+    inset -4px -4px 0 rgba(0,0,0,.14), inset 4px 4px 0 rgba(255,255,255,.5),
+    0 -4px 0 0 #b8860b, 0 4px 0 0 #b8860b, -4px 0 0 0 #b8860b, 4px 0 0 0 #b8860b,
+    8px 8px 0 0 rgba(0,0,0,.28);
+}
+.event-banner.show{ display:block; animation:pop .25s steps(3); }
+.event-banner b{ font-size:17px; margin-right:8px; }
+@keyframes pop{ from{ transform:scale(.94); } to{ transform:scale(1); } }
+
+/* ============ 主区 ============ */
+.main{ display:grid; grid-template-columns:1.35fr .9fr; gap:18px; align-items:start; }
+.panel-head{
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+  padding:12px 16px 10px; border-bottom:3px solid var(--frame);
+}
+.panel-head h2{ font-size:17px; color:var(--frame); }
+.panel-head small{ font-family:var(--font-px); font-size:8px; color:var(--faint); letter-spacing:.1em; }
+.rows{ padding:10px 12px; display:grid; gap:8px; }
+
+.goods-row, .pack-row{
+  display:flex; align-items:center; gap:10px;
+  background:var(--paper); padding:8px 10px;
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.10), inset 3px 3px 0 rgba(255,255,255,.5), 0 0 0 3px rgba(90,61,34,.55);
+}
+.goods-row.shake, .pack-row.shake{ animation:shake .3s steps(2); }
+@keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+.g-icon{ width:30px; height:30px; flex:none; display:grid; place-items:center;
+  background:var(--paper2); box-shadow:inset -2px -2px 0 rgba(0,0,0,.12), 0 0 0 2px rgba(90,61,34,.5); }
+.g-icon svg{ display:block; }
+.g-name{ font-size:16px; width:3.2em; flex:none; }
+.g-price{ font-family:var(--font-px); font-size:11px; width:5.5em; flex:none; color:var(--ink); }
+.g-price .up{ color:var(--red); }
+.g-price .down{ color:var(--green); }
+.g-hold{ font-size:13px; color:var(--ink2); width:3.4em; flex:none; }
+.g-acts{ margin-left:auto; display:flex; gap:6px; }
+.pack-empty{ padding:26px 10px; text-align:center; color:var(--faint); font-size:14px; }
+.pack-grid{ display:contents; }
+
+/* ============ 底部：赶路 ============ */
+.travel{ margin-top:18px; padding:14px 16px; }
+.travel h2{ font-size:17px; color:var(--frame); margin-bottom:4px; }
+.travel p{ font-size:13px; color:var(--ink2); margin-bottom:12px; }
+.travel-btns{ display:flex; gap:10px; flex-wrap:wrap; }
+.travel-btns .pxbtn small{ font-family:var(--font-px); font-size:7px; margin-left:6px; opacity:.85; }
+
+/* ============ 日志 ============ */
+.logbox{ margin-top:18px; padding:12px 16px; }
+.logbox h2{ font-size:15px; color:var(--frame); margin-bottom:8px; }
+.logbox ul{ list-style:none; display:grid; gap:4px; max-height:150px; overflow:auto; }
+.logbox li{ font-size:14px; color:var(--ink2); padding-left:14px; position:relative; }
+.logbox li::before{ content:"◆"; position:absolute; left:0; color:var(--frame2); font-size:9px; top:3px; }
+.logbox li:first-child{ color:var(--ink); }
+
+/* ============ Toast ============ */
+#toast-root{ position:fixed; top:18px; right:18px; z-index:99; display:grid; gap:8px; justify-items:end; }
+.toast{
+  background:var(--paper2); color:var(--ink); font-size:14px;
+  padding:10px 16px; max-width:300px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.14), inset 3px 3px 0 rgba(255,255,255,.5),
+    0 -3px 0 0 var(--frame), 0 3px 0 0 var(--frame), -3px 0 0 0 var(--frame), 3px 0 0 0 var(--frame),
+    6px 6px 0 0 rgba(0,0,0,.3);
+  animation:slidein .22s steps(3);
+}
+.toast.bad{ background:#ffd7d1; }
+.toast.good{ background:#d5f0dd; }
+@keyframes slidein{ from{ transform:translateX(30px); opacity:0; } to{ transform:none; opacity:1; } }
+
+/* ============ 结算弹窗 ============ */
+#modal{
+  position:fixed; inset:0; z-index:100; display:none;
+  align-items:center; justify-content:center; padding:20px;
+  background:rgba(20,12,30,.72);
+}
+#modal.show{ display:flex; }
+.modal-card{ max-width:420px; width:100%; padding:26px 24px; text-align:center; }
+.modal-card .big{ font-size:34px; margin-bottom:6px; }
+.modal-card h2{ font-size:22px; color:var(--frame); margin-bottom:10px; }
+.modal-card .rank{ font-family:var(--font-px); font-size:13px; color:var(--coin); margin-bottom:14px; }
+.modal-card p{ font-size:15px; color:var(--ink2); margin-bottom:20px; }
+.modal-card .btns{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+@media (max-width:760px){
+  .main{ grid-template-columns:1fr; }
+  .g-price{ width:4.6em; }
+  .g-name{ width:2.8em; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar pxpanel">
+    <div class="title-row">
+      <h1>像素小集市</h1>
+      <span class="en">PIXEL MARKET</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>COPPER 铜钱</b><span class="coin" id="s-cash">100</span></div>
+      <div class="stat"><b>DAY 日程</b><span id="s-day">第 1 天</span></div>
+      <div class="stat"><b>PLACE 所在</b><span id="s-place">清水村</span></div>
+      <div class="stat"><b>PACK 行囊</b><span id="s-pack">0 / 10</span></div>
+    </div>
+    <div class="goalbar"><i id="s-goal"></i><em id="s-goal-text">目标：30 天内攒够 800 文</em></div>
+  </header>
+
+  <div class="event-banner" id="event-banner"></div>
+
+  <main class="main">
+    <section class="pxpanel" style="padding:0">
+      <div class="panel-head">
+        <h2>货摊 · 今日进价</h2>
+        <small id="stall-sub">BUY HERE</small>
+      </div>
+      <div class="rows" id="stall"></div>
+    </section>
+
+    <aside class="pxpanel" style="padding:0">
+      <div class="panel-head">
+        <h2>行囊 · 可卖出价</h2>
+        <small>SELL PRICE</small>
+      </div>
+      <div class="rows" id="pack"></div>
+    </aside>
+  </main>
+
+  <section class="travel pxpanel">
+    <h2>赶路远行</h2>
+    <p>挑个去处，路上要花天数；到了新地界，物价全变，行囊里的货也按新地方的行情估价。走累了也可以原地休整一日，等市价波动。</p>
+    <div class="travel-btns" id="travel-btns"></div>
+  </section>
+
+  <section class="logbox pxpanel">
+    <h2>摊边小事</h2>
+    <ul id="log"></ul>
+  </section>
+
+</div>
+
+<div id="toast-root"></div>
+
+<div id="modal">
+  <div class="modal-card pxpanel">
+    <div class="big" id="m-big">🎊</div>
+    <h2 id="m-title">结算</h2>
+    <div class="rank" id="m-rank"></div>
+    <p id="m-desc"></p>
+    <div class="btns">
+      <button class="pxbtn" id="m-again">重开一局</button>
+      <button class="pxbtn buy" id="m-continue" style="display:none">继续逛摊</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================== 数据 ==================== */
+var ORDER = ['bowl','herb','honey','tea','silk','porcelain'];
+var GOODS = {
+  bowl:      { name:'陶碗',   base:8,  spec:{ qingshui:.65 } },
+  herb:      { name:'草药',   base:14, spec:{ qingshui:.8 } },
+  honey:     { name:'蜜饯',   base:20, spec:{ yifeng:.7 } },
+  tea:       { name:'茶叶',   base:32, spec:{ yifeng:.75 } },
+  silk:      { name:'丝绸',   base:48, spec:{ linhu:.7 } },
+  porcelain: { name:'瓷器',   base:70, spec:{ linhu:.65 } }
+};
+var PLACES = {
+  qingshui:{ name:'清水村', spec:{ silk:1.2, porcelain:1.2, tea:1.15 }, days:{ qingshui:0, yifeng:1, linhu:2 } },
+  yifeng:  { name:'驿丰镇', spec:{ bowl:1.2, silk:1.2, porcelain:1.15 }, days:{ qingshui:1, yifeng:0, linhu:1 } },
+  linhu:   { name:'临湖城', spec:{ bowl:1.2, herb:1.15, honey:1.2 },  days:{ qingshui:2, yifeng:1, linhu:0 } }
+};
+var EVENTS = [
+  { id:'fair',    icon:'🏮', name:'庙会临门', desc:'今日此地，所有货卖出价 +25%', sellBoost:1.25 },
+  { id:'caravan', icon:'🐫', name:'行商云集', desc:'今日此地，所有进货价 -15%', allBuy:.85 },
+  { id:'rain',    icon:'🌧', name:'暴雨连日', desc:'陶碗、瓷器进货价 +30%', fix:['bowl','porcelain'], buyMul:1.3 },
+  { id:'harvest', icon:'🌾', name:'丰收年景', desc:'草药、蜜饯、茶叶进货价 -25%', fix:['herb','honey','tea'], buyMul:.75 },
+  { id:'plague',  icon:'💀', name:'瘟疫蔓延', desc:'草药进货价 +40%', fix:['herb'], buyMul:1.4 }
+];
+var DAYS = 30, GOAL = 800, CAP = 10;
+
+/* ==================== 商品像素图标 ==================== */
+function icon(gid){
+  var s = '<svg width="24" height="24" viewBox="0 0 24 24" shape-rendering="crispEdges" aria-hidden="true">';
+  if(gid === 'bowl'){          /* 陶碗 */
+    s += '<rect x="5" y="10" width="14" height="2" fill="#8b5a2b"/>'
+      +  '<rect x="6" y="12" width="12" height="4" fill="#a0522d"/>'
+      +  '<rect x="7" y="16" width="10" height="2" fill="#7a4520"/>'
+      +  '<rect x="9" y="10" width="2" height="2" fill="#c98d4e"/>';
+  } else if(gid === 'herb'){   /* 草药 */
+    s += '<rect x="6" y="8" width="12" height="13" fill="#e8d5b0"/>'
+      +  '<rect x="6" y="8" width="12" height="3" fill="#8b5a2b"/>'
+      +  '<rect x="10" y="4" width="2" height="5" fill="#2e7d4f"/>'
+      +  '<rect x="12" y="5" width="4" height="2" fill="#3cb371"/>'
+      +  '<rect x="8" y="6" width="4" height="2" fill="#3cb371"/>'
+      +  '<rect x="9" y="14" width="6" height="2" fill="#b8860b"/>';
+  } else if(gid === 'honey'){  /* 蜜饯罐 */
+    s += '<rect x="8" y="9" width="8" height="12" fill="#a0522d"/>'
+      +  '<rect x="7" y="7" width="10" height="3" fill="#c0392b"/>'
+      +  '<rect x="10" y="5" width="4" height="2" fill="#d4a017"/>'
+      +  '<rect x="10" y="12" width="4" height="4" fill="#e8b93c"/>';
+  } else if(gid === 'tea'){    /* 茶叶 */
+    s += '<rect x="7" y="10" width="5" height="9" fill="#2e7d4f"/>'
+      +  '<rect x="13" y="7" width="5" height="11" fill="#1e8449"/>'
+      +  '<rect x="11" y="5" width="2" height="4" fill="#3cb371"/>'
+      +  '<rect x="10" y="15" width="8" height="2" fill="#7a4520"/>';
+  } else if(gid === 'silk'){   /* 丝绸 */
+    s += '<rect x="6" y="5" width="12" height="13" fill="#6c3fa0"/>'
+      +  '<rect x="8" y="7" width="8" height="9" fill="#9b59b6"/>'
+      +  '<rect x="6" y="5" width="12" height="2" fill="#4e2d78"/>'
+      +  '<rect x="6" y="16" width="12" height="2" fill="#4e2d78"/>';
+  } else {                     /* 瓷器 */
+    s += '<rect x="10" y="4" width="4" height="3" fill="#b8c6d9"/>'
+      +  '<rect x="8" y="7" width="8" height="9" fill="#eef2f7"/>'
+      +  '<rect x="7" y="16" width="10" height="3" fill="#c8d2de"/>'
+      +  '<rect x="10" y="9" width="4" height="5" fill="#2c6eb6"/>'
+      +  '<rect x="11" y="11" width="2" height="1" fill="#eef2f7"/>';
+  }
+  return s + '</svg>';
+}
+
+/* ==================== 状态 ==================== */
+var state;
+
+function newGame(){
+  state = {
+    cash: 100, day: 1, place: 'qingshui',
+    pack: [],            /* { gid, qty } */
+    cap: CAP,
+    prices: {}, lastPrices: null,
+    event: null,
+    over: false, won: false,
+    log: []
+  };
+  refreshPrices(true);
+  addLog('挑着担子进了清水村，兜里 100 文，先逛逛市。');
+  render();
+}
+
+/* ==================== 价格 ==================== */
+function refreshPrices(first){
+  if(!first) state.lastPrices = state.prices;
+  var place = PLACES[state.place];
+  state.prices = {};
+  for(var i = 0; i < ORDER.length; i++){
+    var gid = ORDER[i], g = GOODS[gid];
+    var spec = (g.spec && g.spec[state.place]) || (place.spec && place.spec[gid]) || 1;
+    var wave = 0.85 + Math.random() * 0.3;
+    var buy = Math.max(1, Math.round(g.base * spec * wave));
+    var sell = Math.round(buy * (1.35 + Math.random() * 0.45));
+    if(state.event){
+      var ev = state.event;
+      if(ev.allBuy) buy = Math.max(1, Math.round(buy * ev.allBuy));
+      if(ev.buyMul && (!ev.fix || ev.fix.indexOf(gid) >= 0)) buy = Math.max(1, Math.round(buy * ev.buyMul));
+      if(ev.sellBoost) sell = Math.round(sell * ev.sellBoost);
+    }
+    var prev = (state.lastPrices && state.lastPrices[gid]) ? state.lastPrices[gid].buy : null;
+    state.prices[gid] = { buy: buy, sell: sell, prevBuy: prev };
+  }
+}
+
+function rollEvent(){
+  state.event = Math.random() < 0.45 ? EVENTS[Math.floor(Math.random() * EVENTS.length)] : null;
+}
+
+/* ==================== 操作 ==================== */
+function packCount(){
+  var n = 0;
+  for(var i = 0; i < state.pack.length; i++) n += state.pack[i].qty;
+  return n;
+}
+
+function buy(gid, n){
+  if(state.over) return;
+  var p = state.prices[gid].buy;
+  var room = state.cap - packCount();
+  var can = Math.min(n, Math.floor(state.cash / p), room);
+  var row = document.querySelector('[data-gid="' + gid + '"]');
+  if(can <= 0){
+    if(room <= 0){ toast('行囊满了，先找个地方卸货吧', 'bad'); }
+    else{ toast('铜钱不够买 ' + GOODS[gid].name + ' 了', 'bad'); }
+    if(row){ row.classList.remove('shake'); void row.offsetWidth; row.classList.add('shake'); }
+    return;
+  }
+  state.cash -= p * can;
+  var item = null;
+  for(var i = 0; i < state.pack.length; i++) if(state.pack[i].gid === gid) item = state.pack[i];
+  if(item) item.qty += can;
+  else state.pack.push({ gid: gid, qty: can });
+  addLog('进了 ' + GOODS[gid].name + ' ×' + can + '，花去 ' + (p * can) + ' 文。');
+  toast('买入 ' + GOODS[gid].name + ' ×' + can + '（-' + (p * can) + ' 文）', 'good');
+  render();
+}
+
+function sell(gid, n){
+  if(state.over) return;
+  var item = null;
+  for(var i = 0; i < state.pack.length; i++) if(state.pack[i].gid === gid) item = state.pack[i];
+  if(!item) return;
+  var can = Math.min(n, item.qty);
+  var p = state.prices[gid].sell;
+  state.cash += p * can;
+  item.qty -= can;
+  if(item.qty <= 0) state.pack.splice(state.pack.indexOf(item), 1);
+  addLog('卖出 ' + GOODS[gid].name + ' ×' + can + '，进账 ' + (p * can) + ' 文。');
+  toast('卖出 ' + GOODS[gid].name + ' ×' + can + '（+' + (p * can) + ' 文）', 'good');
+  render();
+  checkEnd();
+}
+
+function travel(pid){
+  if(state.over) return;
+  if(pid === state.place) return;
+  var d = PLACES[state.place].days[pid];
+  state.day += d;
+  state.place = pid;
+  rollEvent();
+  refreshPrices();
+  addLog('赶了 ' + d + ' 日路，到了' + PLACES[pid].name + '。');
+  if(state.event) addLog('【' + state.event.name + '】' + state.event.desc);
+  else addLog('风平浪静，市面如常。');
+  checkEnd();
+  render();
+}
+
+function rest(){
+  if(state.over) return;
+  state.day += 1;
+  rollEvent();
+  refreshPrices();
+  addLog('在' + PLACES[state.place].name + '歇了一日，打听市价行情。');
+  if(state.event) addLog('【' + state.event.name + '】' + state.event.desc);
+  checkEnd();
+  render();
+}
+
+/* ==================== 结算 ==================== */
+function checkEnd(){
+  if(state.over) return;
+  if(state.cash >= GOAL){ endGame(true); }
+  else if(state.day > DAYS){ endGame(false); }
+}
+
+function endGame(won){
+  state.over = true; state.won = won;
+  var rank, big, desc;
+  if(won){ big = '🎊'; rank = 'GOAL REACHED'; desc = '提前攒够 ' + GOAL + ' 文，第 ' + state.day + ' 天就扬名立万！'; }
+  else if(state.cash >= 500){ big = '🍶'; rank = 'RANK B'; desc = '一月辛苦，攒下 ' + state.cash + ' 文，殷实小货郎。'; }
+  else if(state.cash >= 250){ big = '🌾'; rank = 'RANK C'; desc = '勉强糊口，只剩 ' + state.cash + ' 文，小本经营。'; }
+  else if(state.cash >= 120){ big = '😥'; rank = 'RANK D'; desc = '折腾一月仅剩 ' + state.cash + ' 文，白忙一场。'; }
+  else{ big = '💸'; rank = 'RANK E'; desc = '血本无归……只剩 ' + state.cash + ' 文，换个行当吧。'; }
+  document.getElementById('m-big').textContent = big;
+  document.getElementById('m-title').textContent = won ? ' goal reached ' : '一月结账';
+  document.getElementById('m-rank').textContent = rank;
+  document.getElementById('m-desc').textContent = desc;
+  document.getElementById('m-continue').style.display = won ? '' : 'none';
+  document.getElementById('modal').classList.add('show');
+}
+
+/* ==================== 渲染 ==================== */
+function fmt(n){ return String(n); }
+
+function priceTag(prevBuy, buy){
+  if(prevBuy == null) return '<span>' + fmt(buy) + ' 文</span>';
+  if(buy > prevBuy) return '<span>' + fmt(buy) + ' 文 <span class="up">↑' + (buy - prevBuy) + '</span></span>';
+  if(buy < prevBuy) return '<span>' + fmt(buy) + ' 文 <span class="down">↓' + (prevBuy - buy) + '</span></span>';
+  return '<span>' + fmt(buy) + ' 文 -</span>';
+}
+
+function render(){
+  /* 顶栏 */
+  document.getElementById('s-cash').textContent = fmt(state.cash);
+  document.getElementById('s-day').textContent = '第 ' + state.day + ' 天';
+  document.getElementById('s-place').textContent = PLACES[state.place].name;
+  document.getElementById('s-pack').textContent = packCount() + ' / ' + state.cap;
+  var pct = Math.min(100, Math.round(state.cash / GOAL * 100));
+  document.getElementById('s-goal').style.width = pct + '%';
+  document.getElementById('s-goal-text').textContent = '目标 ' + GOAL + ' 文 · 还差 ' + Math.max(0, GOAL - state.cash) + ' 文';
+
+  /* 事件横幅 */
+  var eb = document.getElementById('event-banner');
+  if(state.event){
+    eb.innerHTML = '<b>' + state.event.icon + ' ' + state.event.name + '</b>' + state.event.desc;
+    eb.classList.add('show');
+  } else{ eb.classList.remove('show'); }
+
+  /* 货摊 */
+  var html = '';
+  for(var i = 0; i < ORDER.length; i++){
+    var gid = ORDER[i], g = GOODS[gid], pr = state.prices[gid];
+    var hold = 0;
+    for(var j = 0; j < state.pack.length; j++) if(state.pack[j].gid === gid) hold = state.pack[j].qty;
+    var dis = state.over ? 'disabled' : '';
+    html += '<div class="goods-row" data-gid="' + gid + '">'
+      + '<span class="g-icon">' + icon(gid) + '</span>'
+      + '<span class="g-name">' + g.name + '</span>'
+      + '<span class="g-price">' + priceTag(pr.prevBuy, pr.buy) + '</span>'
+      + '<span class="g-hold">存 ' + hold + '</span>'
+      + '<span class="g-acts">'
+      + '<button class="pxbtn buy small" ' + dis + ' onclick="buy(\'' + gid + '\',1)">进1</button>'
+      + '<button class="pxbtn buy small" ' + dis + ' onclick="buy(\'' + gid + '\',5)">进5</button>'
+      + '</span></div>';
+  }
+  document.getElementById('stall').innerHTML = html;
+  document.getElementById('stall-sub').textContent = 'BUY @ ' + PLACES[state.place].name;
+
+  /* 行囊 */
+  var ph = '';
+  if(state.pack.length === 0){
+    ph = '<div class="pack-empty">行囊空空如也<br>去货摊进点货吧</div>';
+  } else {
+    for(var k = 0; k < state.pack.length; k++){
+      var it = state.pack[k], gp = state.prices[it.gid];
+      var dis2 = state.over ? 'disabled' : '';
+      ph += '<div class="pack-row">'
+        + '<span class="g-icon">' + icon(it.gid) + '</span>'
+        + '<span class="g-name">' + GOODS[it.gid].name + '</span>'
+        + '<span class="g-hold">×' + it.qty + '</span>'
+        + '<span class="g-price">' + fmt(gp.sell) + ' 文</span>'
+        + '<span class="g-acts">'
+        + '<button class="pxbtn sell small" ' + dis2 + ' onclick="sell(\'' + it.gid + '\',1)">卖1</button>'
+        + '<button class="pxbtn sell small" ' + dis2 + ' onclick="sell(\'' + it.gid + '\',' + it.qty + ')">全出</button>'
+        + '</span></div>';
+    }
+  }
+  document.getElementById('pack').innerHTML = ph;
+
+  /* 赶路 */
+  var tb = '';
+  var placeIds = ['qingshui','yifeng','linhu'];
+  for(var m = 0; m < placeIds.length; m++){
+    var pid = placeIds[m];
+    if(pid === state.place) continue;
+    var dd = PLACES[state.place].days[pid];
+    tb += '<button class="pxbtn" ' + (state.over ? 'disabled' : '') + ' onclick="travel(\'' + pid + '\')">'
+      + '去' + PLACES[pid].name + '<small>' + dd + ' 日</small></button>';
+  }
+  tb += '<button class="pxbtn" ' + (state.over ? 'disabled' : '') + ' onclick="rest()">休整一日<small>1 日</small></button>';
+  document.getElementById('travel-btns').innerHTML = tb;
+
+  /* 日志 */
+  var lh = '';
+  for(var n = 0; n < Math.min(state.log.length, 8); n++) lh += '<li>' + state.log[n] + '</li>';
+  document.getElementById('log').innerHTML = lh;
+}
+
+/* ==================== 日志 / Toast ==================== */
+function addLog(msg){
+  state.log.unshift(msg);
+  if(state.log.length > 30) state.log.pop();
+}
+
+function toast(msg, kind){
+  var root = document.getElementById('toast-root');
+  var t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  root.appendChild(t);
+  setTimeout(function(){
+    t.style.transition = 'opacity .2s steps(2), transform .2s steps(2)';
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(24px)';
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 220);
+  }, 1800);
+}
+
+/* ==================== 弹窗按钮 ==================== */
+document.getElementById('m-again').addEventListener('click', function(){
+  document.getElementById('modal').classList.remove('show');
+  newGame();
+});
+document.getElementById('m-continue').addEventListener('click', function(){
+  document.getElementById('modal').classList.remove('show');
+  state.over = false;
+  render();
+});
+
+/* ==================== 开局 ==================== */
+newGame();
+</script>
+</body>
+</html>

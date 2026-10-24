@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Attack · 像素射击</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%230b0618'/%3E%3Crect x='1' y='1' width='2' height='2' fill='%23ff5d7a'/%3E%3Crect x='5' y='1' width='2' height='2' fill='%2357e0ff'/%3E%3Crect x='1' y='5' width='2' height='2' fill='%23ffd23f'/%3E%3Crect x='5' y='5' width='2' height="2" fill='%23b46cff'/%3E%3Crect x='3' y='3' width='2' height='2' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+@font-face{
+  font-family:'ArkPixel';
+  src: url('../fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
+  font-display: swap;
+}
+:root{
+  --font-px:'Press Start 2P',monospace;
+  --font-cn:'ArkPixel','DotGothic16','Microsoft YaHei','PingFang SC',sans-serif;
+  --line:#07040f;
+  --neon:#57e0ff; --pink:#ff5d7a; --gold:#ffd23f; --purple:#b46cff;
+  --panel:#1d1244; --panel2:#271757; --ink:#ece7ff; --dim:#a296d6;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{
+  font-family:var(--font-cn);
+  background:#07040f;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(90,40,160,.28), transparent 60%),
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size:auto, 32px 32px, 32px 32px;
+  color:var(--ink);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  padding:22px 12px 40px;
+}
+.page-head{ text-align:center; margin-bottom:14px; }
+.page-head h1{
+  font-size:24px; letter-spacing:.05em; color:var(--gold);
+  text-shadow:
+    2px 0 0 var(--line), -2px 0 0 var(--line), 0 2px 0 var(--line), 0 -2px 0 var(--line),
+    2px 2px 0 var(--line), -2px 2px 0 var(--line), 2px -2px 0 var(--line), -2px -2px 0 var(--line),
+    5px 6px 0 rgba(0,0,0,.5);
+}
+.page-head .en{ font-family:var(--font-px); font-size:9px; color:var(--neon); letter-spacing:.2em; display:block; margin-top:6px; }
+.page-head .best{ font-size:13px; color:var(--dim); margin-top:6px; }
+.page-head .best b{ color:var(--gold); font-family:var(--font-px); font-size:11px; }
+
+/* ============ 街机框 ============ */
+.cabinet{
+  position:relative;
+  padding:14px;
+  background:var(--panel);
+  box-shadow:
+    inset -4px -4px 0 rgba(0,0,0,.4), inset 4px 4px 0 rgba(255,255,255,.06),
+    0 -4px 0 0 var(--line), 0 4px 0 0 var(--line),
+    -4px 0 0 0 var(--line), 4px 0 0 0 var(--line),
+    0 0 34px rgba(87,224,255,.14),
+    12px 12px 0 0 rgba(0,0,0,.35);
+}
+.screen-wrap{ position:relative; line-height:0; }
+canvas{
+  width:min(480px, calc(100vw - 60px));
+  max-height:calc(100vh - 190px);
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  background:#0b0618;
+  cursor:none;
+  touch-action:none;
+  box-shadow:0 0 0 3px var(--line), 0 0 26px rgba(180,108,255,.35);
+}
+/* CRT 扫描线覆盖层 */
+.crt{
+  position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 4px);
+  mix-blend-mode:multiply;
+}
+
+/* ============ 覆盖层 ============ */
+.overlay{
+  position:absolute; inset:0; z-index:5;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(7,4,15,.86);
+  text-align:center; padding:20px;
+}
+.overlay.hide{ display:none; }
+.ov-card{ max-width:340px; }
+.ov-card .big{ font-size:40px; margin-bottom:8px; }
+.ov-card h2{
+  font-family:var(--font-px); font-size:17px; color:var(--gold); line-height:1.5;
+  text-shadow:3px 3px 0 rgba(0,0,0,.6); margin-bottom:14px;
+}
+.ov-card p{ font-size:14px; color:var(--dim); line-height:1.9; margin-bottom:18px; }
+.ov-card p b{ color:var(--ink); }
+.ov-card .stat-line{ font-family:var(--font-px); font-size:10px; color:var(--neon); margin-bottom:6px; line-height:1.8; }
+.ov-card .stat-line b{ color:var(--gold); }
+.pxbtn{
+  font-family:var(--font-cn); font-size:15px; line-height:1;
+  color:#0b0618; background:var(--neon);
+  border:0; cursor:pointer; padding:13px 26px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.35),
+    0 -3px 0 0 #0e7a94, 0 3px 0 0 #0e7a94, -3px 0 0 0 #0e7a94, 3px 0 0 0 #0e7a94,
+    6px 6px 0 0 rgba(0,0,0,.4);
+  transition:transform .08s steps(2), background-color .12s, box-shadow .08s steps(2);
+  user-select:none;
+}
+.pxbtn:hover{ background:#7aeaff; transform:translateY(-2px);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.35),
+    0 -3px 0 0 #0e7a94, 0 3px 0 0 #0e7a94, -3px 0 0 0 #0e7a94, 3px 0 0 0 #0e7a94,
+    6px 8px 0 0 rgba(0,0,0,.4); }
+.pxbtn:active{ transform:translate(3px,3px);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.35),
+    0 -3px 0 0 #0e7a94, 0 3px 0 0 #0e7a94, -3px 0 0 0 #0e7a94, 3px 0 0 0 #0e7a94,
+    0 0 0 0 rgba(0,0,0,.4); }
+.pxbtn.pink{ background:var(--pink); }
+.pxbtn.pink:hover{ background:#ff7d94; }
+.pxbtn.pink:active{ box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.25), inset 3px 3px 0 rgba(255,255,255,.3),
+    0 -3px 0 0 #a3334c, 0 3px 0 0 #a3334c, -3px 0 0 0 #a3334c, 3px 0 0 0 #a3334c,
+    0 0 0 0 rgba(0,0,0,.4); }
+
+.legend{
+  display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
+  margin-top:16px; font-size:13px; color:var(--dim);
+}
+.legend span{ display:inline-flex; align-items:center; gap:6px; }
+.legend i{ width:12px; height:12px; display:inline-block; box-shadow:0 0 0 2px var(--line); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>PIXEL ATTACK</h1>
+  <span class="en">PIXEL ATTACK · 像素射击</span>
+  <div class="best">最高分 <b id="best-view">0</b></div>
+</div>
+
+<div class="cabinet">
+  <div class="screen-wrap">
+    <canvas id="game" width="480" height="720"></canvas>
+    <div class="crt"></div>
+
+    <!-- 开始界面 -->
+    <div class="overlay" id="ov-start">
+      <div class="ov-card">
+        <div class="big">🎯</div>
+        <h2>PIXEL<br>ATTACK</h2>
+        <p>60 秒极速射击。<br>
+        <b>点击</b>彩色像素目标得分，<br>
+        <b>连击</b>不断分数倍涨，<br>
+        <b>黑色炸弹</b>千万别碰！</p>
+        <button class="pxbtn" id="btn-start">▶ 开始射击</button>
+      </div>
+    </div>
+
+    <!-- 结算界面 -->
+    <div class="overlay hide" id="ov-end">
+      <div class="ov-card">
+        <div class="big" id="end-big">🏆</div>
+        <h2 id="end-title">TIME UP</h2>
+        <div class="stat-line">SCORE <b id="end-score">0</b></div>
+        <div class="stat-line">MAX COMBO <b id="end-combo">×0</b></div>
+        <div class="stat-line">命中率 <b id="end-acc">0%</b></div>
+        <div class="stat-line" id="end-best-line" style="display:none">★ 新纪录！ ★</div>
+        <p id="end-rank" style="margin-top:14px"></p>
+        <button class="pxbtn pink" id="btn-again">↻ 再来一局</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#ff5d7a"></i>彩块 +10</span>
+  <span><i style="background:#b46cff"></i>小鬼 +15</span>
+  <span><i style="background:#ffd23f"></i>金标 +50</span>
+  <span><i style="background:#1a1a22;border:2px solid #555"></i>炸弹 -50</span>
+</div>
+
+<script>
+/* ==================== 基础 ==================== */
+var cv = document.getElementById('game');
+var ctx = cv.getContext('2d');
+var W = cv.width, H = cv.height;
+var BEST_KEY = 'pixel_attack_best';
+var best = 0;
+try{ best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; }catch(e){}
+document.getElementById('best-view').textContent = best;
+
+/* ==================== 音效 ==================== */
+var actx = null;
+function ac(){
+  if(!actx){
+    try{ actx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(actx && actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(freq, dur, type, vol, when){
+  var a = ac(); if(!a) return;
+  var t = a.currentTime + (when || 0);
+  var o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'square';
+  o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(vol || .06, t);
+  g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(t); o.stop(t + dur);
+}
+function noise(dur, vol){
+  var a = ac(); if(!a) return;
+  var len = Math.floor(a.sampleRate * dur);
+  var buf = a.createBuffer(1, len, a.sampleRate);
+  var ch = buf.getChannelData(0);
+  for(var i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  var src = a.createBufferSource(); src.buffer = buf;
+  var g = a.createGain(); g.gain.value = vol || .12;
+  var f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 900;
+  src.connect(f); f.connect(g); g.connect(a.destination);
+  src.start();
+}
+var sfx = {
+  shoot: function(){ tone(1400, .03, 'square', .025); },
+  hit: function(combo){ tone(420 + Math.min(combo, 24) * 26, .06, 'square', .06); },
+  imp: function(combo){ tone(300 + Math.min(combo, 24) * 26, .07, 'sawtooth', .05); },
+  gold: function(){ tone(660, .06, 'square', .07); tone(880, .06, 'square', .07, .06); tone(1320, .12, 'square', .07, .12); },
+  bomb: function(){ noise(.3, .2); tone(90, .25, 'sawtooth', .1); },
+  miss: function(){ tone(200, .05, 'square', .03); },
+  end: function(){ tone(523, .1, 'square', .06); tone(659, .1, 'square', .06, .1); tone(784, .1, 'square', .06, .2); tone(1046, .24, 'square', .07, .3); }
+};
+
+/* ==================== 游戏状态 ==================== */
+var G = {
+  running: false,
+  time: 60,
+  score: 0,
+  combo: 0, maxCombo: 0,
+  comboTimer: 0,
+  hits: 0, misses: 0,
+  targets: [],
+  particles: [],
+  pops: [],
+  spawnTimer: 0,
+  shake: 0,
+  mouseX: W / 2, mouseY: H / 2,
+  stars: []
+};
+for(var i = 0; i < 46; i++){
+  G.stars.push({ x: Math.random() * W, y: Math.random() * H * .6, s: Math.random() < .2 ? 2 : 1, tw: Math.random() * 6.28 });
+}
+
+var TYPES = {
+  normal: { size: 26, ttl: 2.0, vy: 62, score: 10 },
+  imp:    { size: 30, ttl: 1.8, vy: 78, score: 15 },
+  gold:   { size: 16, ttl: 1.2, vy: 120, score: 50 },
+  bomb:   { size: 28, ttl: 2.6, vy: 46, score: -50 }
+};
+
+/* 有效射击区：计分板下沿 ~ 地平线上方留白 */
+var SPAWN_TOP = 88, SPAWN_BOTTOM = H - 152;
+
+function spawn(){
+  var r = Math.random();
+  var type = 'normal';
+  if(r < .06) type = 'gold';
+  else if(r < .16) type = 'bomb';
+  else if(r < .41) type = 'imp';
+  var t = TYPES[type];
+  var x = 34 + Math.random() * (W - 68);
+  var y = SPAWN_TOP + Math.random() * (SPAWN_BOTTOM - SPAWN_TOP);
+  /* 尽量不和已有目标重叠：最多重抽 6 次 */
+  for(var attempt = 0; attempt < 6; attempt++){
+    var ok = true;
+    for(var i = 0; i < G.targets.length; i++){
+      var o = G.targets[i];
+      if(o.dead || o.fade > 0) continue;
+      var dx = o.x - x, dy = o.y - y;
+      var minD = (o.size + t.size) / 2 + 8;
+      if(dx * dx + dy * dy < minD * minD){ ok = false; break; }
+    }
+    if(ok) break;
+    x = 34 + Math.random() * (W - 68);
+    y = SPAWN_TOP + Math.random() * (SPAWN_BOTTOM - SPAWN_TOP);
+  }
+  G.targets.push({
+    type: type, x: x, y: y, vy: 0,
+    top: y, ttl: t.ttl, age: 0, size: t.size,
+    hue: Math.floor(Math.random() * 360),
+    wob: Math.random() < .5 ? -1 : 1,
+    wobPhase: Math.random() * 6.28,
+    fade: 0, dead: false
+  });
+}
+
+function burst(x, y, color, n){
+  for(var i = 0; i < (n || 10); i++){
+    var a = Math.random() * Math.PI * 2;
+    var sp = 60 + Math.random() * 150;
+    G.particles.push({
+      x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+      life: .35 + Math.random() * .3, age: 0,
+      color: color, size: 2 + Math.floor(Math.random() * 3)
+    });
+  }
+}
+function popText(x, y, text, color){
+  G.pops.push({ x: x, y: y, text: text, color: color, age: 0, life: .8 });
+}
+
+/* ==================== 输入 ==================== */
+cv.addEventListener('pointerdown', function(e){
+  if(!G.running) return;
+  var rect = cv.getBoundingClientRect();
+  var sx = W / rect.width, sy = H / rect.height;
+  var x = (e.clientX - rect.left) * sx;
+  var y = (e.clientY - rect.top) * sy;
+  G.mouseX = x; G.mouseY = y;
+  shoot(x, y);
+});
+cv.addEventListener('pointermove', function(e){
+  var rect = cv.getBoundingClientRect();
+  G.mouseX = (e.clientX - rect.left) * (W / rect.width);
+  G.mouseY = (e.clientY - rect.top) * (H / rect.height);
+});
+
+function shoot(x, y){
+  sfx.shoot();
+  /* 从最新往前判定 */
+  for(var i = G.targets.length - 1; i >= 0; i--){
+    var t = G.targets[i];
+    if(t.dead || t.fade > 0) continue;
+    var r = t.size / 2 + 8;
+    var dx = x - t.x, dy = y - t.y;
+    if(dx * dx + dy * dy <= r * r){
+      t.dead = true;
+      if(t.type === 'bomb'){
+        G.score = Math.max(0, G.score - 50);
+        G.combo = 0;
+        G.shake = 12;
+        sfx.bomb();
+        burst(t.x, t.y, '#ff5d7a', 16);
+        popText(t.x, t.y, '-50', '#ff5d7a');
+      } else {
+        G.combo++;
+        G.comboTimer = 1.5;
+        if(G.combo > G.maxCombo) G.maxCombo = G.combo;
+        var mult = 1 + Math.floor(G.combo / 3) * 0.5;
+        var gain = Math.round(TYPES[t.type].score * mult);
+        G.score += gain;
+        G.hits++;
+        if(t.type === 'gold'){ sfx.gold(); burst(t.x, t.y, '#ffd23f', 14); }
+        else if(t.type === 'imp'){ sfx.imp(G.combo); burst(t.x, t.y, '#b46cff', 12); }
+        else { sfx.hit(G.combo); burst(t.x, t.y, 'hsl(' + t.hue + ',90%,62%)', 10); }
+        popText(t.x, t.y, '+' + gain, t.type === 'gold' ? '#ffd23f' : '#8ff5ff');
+      }
+      return;
+    }
+  }
+  /* 打空 */
+  G.misses++;
+  G.combo = 0;
+  sfx.miss();
+}
+
+/* ==================== 更新 ==================== */
+function update(dt){
+  /* 倒计时 */
+  G.time -= dt;
+  if(G.time <= 0){ G.time = 0; endGame(); return; }
+
+  /* 连击窗口 */
+  if(G.combo > 0){
+    G.comboTimer -= dt;
+    if(G.comboTimer <= 0) G.combo = 0;
+  }
+
+  /* 生成节奏：越往后越快 */
+  var progress = 1 - G.time / 60;
+  var interval = 0.58 - progress * 0.30;
+  G.spawnTimer -= dt;
+  if(G.spawnTimer <= 0){
+    spawn();
+    G.spawnTimer = interval * (0.7 + Math.random() * 0.6);
+  }
+
+  /* 目标 */
+  for(var i = G.targets.length - 1; i >= 0; i--){
+    var t = G.targets[i];
+    t.age += dt;
+    if(t.dead){ t.fade += dt * 6; if(t.fade >= 1) G.targets.splice(i, 1); continue; }
+    if(t.age > t.ttl){ t.fade += dt * 3; if(t.fade >= 1){ G.targets.splice(i, 1); continue; } }
+    if(t.type === 'imp'){
+      t.wobPhase += dt * 3;
+      t.x += Math.cos(t.wobPhase) * 46 * dt * t.wob;
+      if(t.x < 24) t.x = 24;
+      if(t.x > W - 24) t.x = W - 24;
+    }
+    if(t.type === 'gold'){
+      t.wobPhase += dt * 8;
+      t.x += Math.cos(t.wobPhase) * 90 * dt;
+    }
+  }
+
+  /* 粒子 */
+  for(var p = G.particles.length - 1; p >= 0; p--){
+    var pa = G.particles[p];
+    pa.age += dt;
+    if(pa.age >= pa.life){ G.particles.splice(p, 1); continue; }
+    pa.x += pa.vx * dt; pa.y += pa.vy * dt;
+    pa.vy += 320 * dt;
+  }
+
+  /* 飘字 */
+  for(var q = G.pops.length - 1; q >= 0; q--){
+    var po = G.pops[q];
+    po.age += dt;
+    if(po.age >= po.life) G.pops.splice(q, 1);
+  }
+
+  if(G.shake > 0) G.shake = Math.max(0, G.shake - dt * 40);
+}
+
+/* ==================== 渲染 ==================== */
+function px(x, y, w, h, c){
+  ctx.fillStyle = c;
+  ctx.fillRect(Math.round(x), Math.round(y), w, h);
+}
+
+function drawTarget(t){
+  var s = t.size;
+  var scale = 1, alpha = 1;
+  if(t.age < .12) scale = t.age / .12;
+  if(t.fade > 0) alpha = Math.max(0, 1 - t.fade);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(t.x, t.y);
+  ctx.scale(scale, scale);
+  if(t.type === 'bomb'){
+    px(-s/2, -s/2 + 3, s, s - 3, '#15151f');
+    px(-s/2 + 3, -s/2 + 6, s - 6, s - 9, '#22222e');
+    px(-3, -s/2 - 4, 6, 6, '#5a4a2a');
+    px(-2, -s/2 - 8, 4, 4, '#ff9d2e');
+    px(-4, -s/2 + 10, 8, 3, 'rgba(255,255,255,.16)');
+  } else if(t.type === 'gold'){
+    var g1 = '#ffd23f';
+    px(-s/2, -s/2, s, s, g1);
+    px(-s/2 + 3, -s/2 + 3, s - 6, s - 6, '#fff3b0');
+    px(-2, -2, 4, 4, '#b8860b');
+  } else if(t.type === 'imp'){
+    px(-s/2, -s/2, s, s, '#b46cff');
+    px(-s/2 + 3, -s/2 + 3, s - 6, s - 6, '#d9b3ff');
+    px(-6, -4, 4, 4, '#0b0618');
+    px(2, -4, 4, 4, '#0b0618');
+    px(-4, 4, 8, 3, '#7a2fd4');
+    px(-s/2 - 3, -s/2 + 4, 3, 6, '#b46cff');
+    px(s/2, -s/2 + 4, 3, 6, '#b46cff');
+  } else {
+    var c1 = 'hsl(' + t.hue + ',85%,58%)';
+    var c2 = 'hsl(' + t.hue + ',85%,74%)';
+    px(-s/2, -s/2, s, s, c1);
+    px(-s/2 + 3, -s/2 + 3, s - 6, s - 6, c2);
+    px(-s/2 + 6, -s/2 + 6, s - 12, s - 12, 'rgba(255,255,255,.55)');
+  }
+  ctx.restore();
+}
+
+function render(){
+  ctx.save();
+  if(G.shake > 0){
+    ctx.translate((Math.random() - .5) * G.shake, (Math.random() - .5) * G.shake);
+  }
+
+  /* 背景 */
+  var grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#150a2e');
+  grad.addColorStop(.6, '#0b0618');
+  grad.addColorStop(1, '#12081f');
+  ctx.fillStyle = grad;
+  ctx.fillRect(-20, -20, W + 40, H + 40);
+
+  /* 星星 */
+  for(var i = 0; i < G.stars.length; i++){
+    var st = G.stars[i];
+    var tw = .5 + .5 * Math.sin(performance.now() / 380 + st.tw);
+    ctx.globalAlpha = .35 + tw * .5;
+    px(st.x, st.y, st.s, st.s, '#ffffff');
+  }
+  ctx.globalAlpha = 1;
+
+  /* 底部透视网格 */
+  ctx.strokeStyle = 'rgba(180,108,255,.22)';
+  ctx.lineWidth = 1;
+  var horizon = H - 120;
+  for(var gx = 0; gx <= W; gx += 40){
+    ctx.beginPath();
+    ctx.moveTo(gx, H);
+    ctx.lineTo(W / 2 + (gx - W / 2) * .32, horizon);
+    ctx.stroke();
+  }
+  for(var gy = 0; gy < 5; gy++){
+    var yy = horizon + Math.pow(gy / 4, 2) * (H - horizon);
+    ctx.beginPath();
+    ctx.moveTo(0, yy);
+    ctx.lineTo(W, yy);
+    ctx.stroke();
+  }
+  px(0, horizon, W, 2, 'rgba(87,224,255,.4)');
+
+  /* 目标 */
+  for(var t = 0; t < G.targets.length; t++) drawTarget(G.targets[t]);
+
+  /* 粒子 */
+  for(var p = 0; p < G.particles.length; p++){
+    var pa = G.particles[p];
+    ctx.globalAlpha = Math.max(0, 1 - pa.age / pa.life);
+    px(pa.x, pa.y, pa.size, pa.size, pa.color);
+  }
+  ctx.globalAlpha = 1;
+
+  /* 飘字 */
+  ctx.font = 'bold 15px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  for(var q = 0; q < G.pops.length; q++){
+    var po = G.pops[q];
+    ctx.globalAlpha = Math.max(0, 1 - po.age / po.life);
+    ctx.fillStyle = '#07040f';
+    ctx.fillText(po.text, po.x + 2, po.y - po.age * 44 + 2);
+    ctx.fillStyle = po.color;
+    ctx.fillText(po.text, po.x, po.y - po.age * 44);
+  }
+  ctx.globalAlpha = 1;
+
+  /* 准星 */
+  if(G.running){
+    var mx = G.mouseX, my = G.mouseY;
+    ctx.strokeStyle = 'rgba(87,224,255,.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(mx - 12, my); ctx.lineTo(mx - 4, my);
+    ctx.moveTo(mx + 4, my); ctx.lineTo(mx + 12, my);
+    ctx.moveTo(mx, my - 12); ctx.lineTo(mx, my - 4);
+    ctx.moveTo(mx, my + 4); ctx.lineTo(mx, my + 12);
+    ctx.stroke();
+    px(mx - 1, my - 1, 2, 2, '#ff5d7a');
+  }
+
+  /* HUD */
+  ctx.font = '16px "Press Start 2P", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#07040f';
+  ctx.fillText('SCORE ' + G.score, 16, 30);
+  ctx.fillStyle = '#ffd23f';
+  ctx.fillText('SCORE ' + G.score, 14, 28);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#07040f';
+  ctx.fillText(G.time.toFixed(1), W - 13, 30);
+  ctx.fillStyle = G.time < 10 ? '#ff5d7a' : '#57e0ff';
+  ctx.fillText(G.time.toFixed(1), W - 15, 28);
+
+  if(G.combo >= 3){
+    ctx.textAlign = 'center';
+    var cScale = 1 + Math.min(G.combo, 30) * .02;
+    ctx.save();
+    ctx.translate(W / 2, 56);
+    ctx.scale(cScale, cScale);
+    ctx.font = '17px "Press Start 2P", monospace';
+    ctx.fillStyle = '#07040f';
+    ctx.fillText('COMBO x' + G.combo, 2, 2);
+    ctx.fillStyle = G.combo >= 12 ? '#ff5d7a' : G.combo >= 6 ? '#ffd23f' : '#8ff5ff';
+    ctx.fillText('COMBO x' + G.combo, 0, 0);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+/* ==================== 流程 ==================== */
+var lastT = 0;
+function loop(ts){
+  if(!G.running) return;
+  var dt = Math.min(.05, (ts - lastT) / 1000 || .016);
+  lastT = ts;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+function startGame(){
+  G.running = true;
+  G.time = 60; G.score = 0; G.combo = 0; G.maxCombo = 0;
+  G.hits = 0; G.misses = 0;
+  G.targets = []; G.particles = []; G.pops = [];
+  G.spawnTimer = .3; G.shake = 0;
+  document.getElementById('ov-start').classList.add('hide');
+  document.getElementById('ov-end').classList.add('hide');
+  ac();
+  lastT = performance.now();
+  requestAnimationFrame(loop);
+}
+
+function endGame(){
+  G.running = false;
+  sfx.end();
+  var isBest = G.score > best;
+  if(isBest){
+    best = G.score;
+    try{ localStorage.setItem(BEST_KEY, String(best)); }catch(e){}
+    document.getElementById('best-view').textContent = best;
+  }
+  var total = G.hits + G.misses;
+  var acc = total ? Math.round(G.hits / total * 100) : 0;
+  document.getElementById('end-score').textContent = G.score;
+  document.getElementById('end-combo').textContent = '×' + G.maxCombo;
+  document.getElementById('end-acc').textContent = acc + '%';
+  document.getElementById('end-best-line').style.display = isBest ? '' : 'none';
+  var rank, big;
+  if(G.score >= 2500){ rank = '神枪手！像素之狼也不过如此。'; big = '👑'; }
+  else if(G.score >= 1800){ rank = '老练猎手，手速和眼力都在线。'; big = '🏆'; }
+  else if(G.score >= 1200){ rank = '不错的手法，再练练连击节奏。'; big = '🎖'; }
+  else if(G.score >= 600){ rank = '初露锋芒，记住别碰黑炸弹。'; big = '🎯'; }
+  else{ rank = '多打几局热身，连击是关键。'; big = '🌱'; }
+  document.getElementById('end-big').textContent = big;
+  document.getElementById('end-rank').textContent = rank;
+  document.getElementById('ov-end').classList.remove('hide');
+  render();
+}
+
+document.getElementById('btn-start').addEventListener('click', startGame);
+document.getElementById('btn-again').addEventListener('click', startGame);
+
+/* 初始画面 */
+render();
+</script>
+</body>
+</html>
