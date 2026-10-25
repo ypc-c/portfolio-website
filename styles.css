@@ -624,13 +624,14 @@ a:focus-visible, button:focus-visible {
 
 /* ============ 异世界穿梭转场（点击「进入异世界」触发） ============ */
 /* 覆盖层 #warp：assets/js/warp-tunnel.js 在 .warp-tunnel 内渲染 WebGL2 光缆隧道
-   （消失点=点击处），展开后 .flash 白闪并跳转 pixel-world。
+   （消失点=屏幕中心），展开后 .flash 白闪并跳转 pixel-world。
+   配色沿用异世界（pixel-world）主题色板：深紫底 + 紫光缆 + 金脉冲。
    无 WebGL2 / 偏好减少动效时脚本直接跳转，不显示本层。 */
 .warp {
-  --warp-bg: #070b16;      /* 隧道底色（深海军蓝） */
-  --warp-cable: #3d7de0;   /* 光缆色（同 --accent） */
-  --warp-pulse: #ffffff;   /* 脉冲色 */
-  --warp-tunnel: #101a38;  /* 隧道体色 */
+  --warp-bg: #0d0821;      /* 隧道底色（同异世界 --bg） */
+  --warp-cable: #b46cff;   /* 光缆色（同异世界 --accent 紫） */
+  --warp-pulse: #ffd23f;   /* 脉冲色（同异世界 --gold 金） */
+  --warp-tunnel: #1d1244;  /* 隧道体色（同异世界 --panel） */
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -654,8 +655,8 @@ a:focus-visible, button:focus-visible {
   font-size: 12px;
   letter-spacing: .4em;
   text-indent: .4em;
-  color: rgba(255, 255, 255, .78);
-  text-shadow: 0 2px 12px rgba(61, 125, 224, .9);
+  color: rgba(255, 255, 255, .82);
+  text-shadow: 0 2px 12px rgba(255, 210, 63, .9);
   white-space: nowrap;
   animation: warpBlink 1s steps(2) infinite;
 }

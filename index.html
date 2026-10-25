@@ -531,8 +531,8 @@ function applyLang(lang) {
 })();
 
 /* ============ 异世界穿梭转场（WebGL2 光隧道） ============ */
-/* 点击「进入异世界」→ 以点击处为消失点展开光缆隧道（assets/js/warp-tunnel.js）
-   → 停顿 → 白闪 → 跳转 pixel-world。
+/* 点击「进入异世界」→ 以屏幕中心为消失点展开光缆隧道（assets/js/warp-tunnel.js）
+   → 停顿 → 白闪 → 跳转 pixel-world。配色取异世界色板（深紫底 + 紫光缆 + 金脉冲）。
    降级：偏好减少动效 / 无 WebGL2 / 带修饰键（新标签页打开等）时保持链接原生行为。 */
 (function () {
   const link = document.querySelector('a.space-link');
@@ -550,18 +550,13 @@ function applyLang(lang) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // 修饰键：保留原生行为
     e.preventDefault();
 
-    // 键盘回车触发没有坐标，退回按钮中心为消失点
-    const r = link.getBoundingClientRect();
-    const cx = e.clientX || (r.left + r.width / 2);
-    const cy = e.clientY || (r.top + r.height / 2);
-
+    // 消失点固定屏幕中央（不随点击位置）
     // 无 WebGL2 或引擎启动失败：直接跳转（降级）
     let engine = null;
     if (window.WarpTunnel && window.WarpTunnel.supported()) {
       try {
         engine = window.WarpTunnel.start(mount, {
-          revealSeconds: REVEAL / 1000,
-          center: { x: cx, y: cy }
+          revealSeconds: REVEAL / 1000
         });
       } catch (err) { engine = null; }
     }
