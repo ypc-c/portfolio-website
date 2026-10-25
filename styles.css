@@ -380,6 +380,9 @@ a:focus-visible, button:focus-visible {
 .space-link {
   margin-top: 12px;
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   letter-spacing: 0.5px;
   color: var(--accent-deep);
@@ -388,7 +391,14 @@ a:focus-visible, button:focus-visible {
   padding-bottom: 3px;
   transition: color 0.2s ease, border-color 0.2s ease;
 }
+.space-link::after {
+  content: "\2192";
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
 .space-link:hover { color: var(--accent-press); border-color: var(--accent-press); }
+.space-link:hover::after { transform: translateX(4px); }
 
 /* --- 关于我：网站数据卡片 --- */
 /* 数字用主文本色而非强调蓝：数据是内容，不是装饰，避免抢作品标题的注意力 */
