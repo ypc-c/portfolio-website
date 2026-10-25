@@ -620,3 +620,136 @@ a:focus-visible, button:focus-visible {
   .hero-inner, .hero-quote, .quote-arrow { animation: none; }
   .split-char { transition: none !important; }
 }
+
+/* ============ 异世界穿梭转场（点击「进入异世界」触发） ============ */
+/* 一次性过场：以点击点为源生成传送门光环 + 速度线 + 像素碎屑，页面被"吸入"暗色隧道，
+   末帧白闪跳出，随即跳转 pixel-world。JS 见 index.html 同名一节；
+   偏好减少动效时脚本直接放行跳转，不播放本动效。 */
+.warp {
+  --cx: 50vw;
+  --cy: 50vh;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  visibility: hidden;
+}
+.warp.on { visibility: visible; }
+
+/* 漩涡遮罩：从点击点扩张的暗色隧道 */
+.warp-veil {
+  position: absolute;
+  inset: -25%;
+  background: radial-gradient(circle at var(--cx) var(--cy),
+    rgba(7, 11, 22, 0) 0%,
+    rgba(7, 11, 22, .45) 26%,
+    rgba(7, 11, 22, .92) 55%,
+    #070b16 100%);
+  opacity: 0;
+  transform: scale(.25);
+  will-change: transform, opacity;
+}
+.warp.on .warp-veil { animation: warpVeil .95s cubic-bezier(.3, 0, .5, 1) forwards; }
+@keyframes warpVeil {
+  0%   { opacity: 0; transform: scale(.25); }
+  25%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1.35); }
+}
+
+/* 传送门光环：点击处一圈白光迅速外扩 */
+.warp-ring {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 0 26px rgba(61, 125, 224, .95), 0 0 90px rgba(61, 125, 224, .55);
+  opacity: 0;
+}
+.warp.on .warp-ring { animation: warpRing .8s cubic-bezier(.22, 1, .36, 1) forwards; }
+@keyframes warpRing {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(55); }
+}
+
+/* 速度线：沿各角度向外拉伸，steps 制造像素顿感 */
+.warp-streak {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: var(--w);
+  height: var(--l);
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%) rotate(var(--a));
+  background: linear-gradient(to top, rgba(255, 255, 255, 0), var(--c));
+  opacity: 0;
+}
+.warp.on .warp-streak { animation: warpStreak var(--t) steps(var(--n)) forwards; }
+@keyframes warpStreak {
+  0%   { opacity: 0; transform: translate(-50%, -100%) rotate(var(--a)) scaleY(.1); }
+  18%  { opacity: .95; }
+  100% { opacity: 0; transform: translate(-50%, -100%) rotate(var(--a)) scaleY(var(--k)); }
+}
+
+/* 像素碎屑：方块化碎屑四散，呼应异世界像素风 */
+.warp-px {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: var(--s);
+  height: var(--s);
+  background: var(--c);
+  opacity: 0;
+}
+.warp.on .warp-px { animation: warpPx var(--t) steps(var(--n)) forwards; }
+@keyframes warpPx {
+  0%   { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--r)) scale(.2); }
+}
+
+/* 中央提示语：跳字后放大淡出 */
+.warp-label {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .35em;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(61, 125, 224, .9);
+  white-space: nowrap;
+  opacity: 0;
+}
+.warp.on .warp-label { animation: warpLabel .7s steps(4) forwards; }
+@keyframes warpLabel {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+  30%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.9); }
+}
+
+/* 终帧白闪：跳转前一刻整屏闪白，营造"穿越"瞬间 */
+.warp-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  will-change: opacity;
+}
+.warp.on .warp-flash { animation: warpFlash .95s steps(6) forwards; }
+@keyframes warpFlash {
+  0%, 62% { opacity: 0; }
+  74%     { opacity: 1; }
+  100%    { opacity: 1; }
+}
+
+/* 页面内容被"吸入"：轻微缩小淡出（覆盖层自身除外） */
+body.warping > *:not(.warp) {
+  animation: warpSuck .55s cubic-bezier(.4, 0, .7, 1) forwards;
+  transform-origin: 50% 50%;
+}
+@keyframes warpSuck {
+  to { transform: scale(.88); opacity: 0; }
+}

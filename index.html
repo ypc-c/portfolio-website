@@ -8,6 +8,17 @@
 </head>
 <body>
 
+<!-- ============ 异世界穿梭转场覆盖层 ============ -->
+<!-- 点击「进入异世界」时由脚本点亮 .on：以点击点为源放出传送门光环、速度线与像素碎屑，
+     页面被吸入暗色隧道后白闪跳出，随即跳转 pixel-world。样式见 styles.css 同名一节。 -->
+<div class="warp" id="warp" aria-hidden="true">
+  <div class="warp-veil"></div>
+  <div class="warp-ring"></div>
+  <div class="warp-fx"></div>
+  <div class="warp-label">穿 越 中</div>
+  <div class="warp-flash"></div>
+</div>
+
 <!-- ============ 顶部导航 ============ -->
 <header class="nav">
   <a class="brand" href="https://github.com/ypc-c" target="_blank" rel="noopener">
@@ -517,6 +528,79 @@ function applyLang(lang) {
     if (q.a) authorEl.textContent = q.a;
     else authorEl.remove();
   }
+})();
+
+/* ============ 异世界穿梭转场 ============ */
+/* 点击「进入异世界」→ 播放传送门过场（#warp 覆盖层，样式见 styles.css 同名一节）→ 跳转。
+   降级：偏好减少动效 / 带修饰键（新标签页打开等）/ 脚本未执行时，保持链接原生行为。 */
+(function () {
+  const link = document.querySelector('a.space-link');
+  const warp = document.getElementById('warp');
+  if (!link || !warp) return;
+  const DURATION = 980; // 与 CSS 各段时长匹配，到时跳转
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const PX_COLORS = ['#ffffff', '#3d7de0', '#9cc0ff', '#1f5fd0'];
+  const STREAK_COLORS = ['rgba(255,255,255,.95)', 'rgba(156,192,255,.9)', 'rgba(61,125,224,.85)'];
+  const rand = (min, max) => min + Math.random() * (max - min);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const fx = warp.querySelector('.warp-fx');
+
+  // 速度线：均匀环形分布 + 抖动，沿各自角度向外拉伸
+  function spawnStreaks() {
+    const maxDist = Math.hypot(window.innerWidth, window.innerHeight) * .62;
+    const n = 20;
+    for (let i = 0; i < n; i++) {
+      const len = rand(46, 130);
+      const el = document.createElement('i');
+      el.className = 'warp-streak';
+      el.style.setProperty('--a', ((360 / n) * i + rand(-9, 9)).toFixed(1) + 'deg');
+      el.style.setProperty('--w', rand(1.5, 3).toFixed(1) + 'px');
+      el.style.setProperty('--l', len.toFixed(0) + 'px');
+      el.style.setProperty('--k', (rand(maxDist * .5, maxDist) / len).toFixed(2));
+      el.style.setProperty('--c', pick(STREAK_COLORS));
+      el.style.setProperty('--t', rand(.55, .85).toFixed(2) + 's');
+      el.style.setProperty('--n', String(Math.round(rand(5, 9))));
+      fx.appendChild(el);
+    }
+  }
+
+  // 像素碎屑：随机角度四散，steps 运动
+  function spawnPixels() {
+    const maxDist = Math.hypot(window.innerWidth, window.innerHeight) * .55;
+    for (let i = 0; i < 26; i++) {
+      const a = rand(0, Math.PI * 2);
+      const dist = rand(maxDist * .25, maxDist);
+      const el = document.createElement('i');
+      el.className = 'warp-px';
+      el.style.setProperty('--tx', (Math.cos(a) * dist).toFixed(1) + 'px');
+      el.style.setProperty('--ty', (Math.sin(a) * dist).toFixed(1) + 'px');
+      el.style.setProperty('--s', Math.round(rand(4, 11)) + 'px');
+      el.style.setProperty('--c', pick(PX_COLORS));
+      el.style.setProperty('--r', Math.round(rand(-200, 200)) + 'deg');
+      el.style.setProperty('--t', rand(.65, .95).toFixed(2) + 's');
+      el.style.setProperty('--n', String(Math.round(rand(5, 9))));
+      fx.appendChild(el);
+    }
+  }
+
+  link.addEventListener('click', function (e) {
+    if (warp.dataset.on === '1' || reduceMotion) return;                        // 已启动 / 减少动效：放行
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // 修饰键：保留原生行为
+    e.preventDefault();
+    // 键盘回车触发没有坐标，退回按钮中心为传送源
+    const r = link.getBoundingClientRect();
+    const cx = e.clientX || (r.left + r.width / 2);
+    const cy = e.clientY || (r.top + r.height / 2);
+    warp.style.setProperty('--cx', cx + 'px');
+    warp.style.setProperty('--cy', cy + 'px');
+    spawnStreaks();
+    spawnPixels();
+    warp.dataset.on = '1';
+    warp.classList.add('on');
+    document.body.classList.add('warping');
+    window.setTimeout(function () { window.location.href = link.href; }, DURATION);
+  });
 })();
 
 /* ============ 初始化 ============ */
