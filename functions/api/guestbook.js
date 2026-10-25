@@ -5,8 +5,8 @@
 //
 // 规则：
 //   - 全站共享：所有访客看到同一份留言
-//   - 每天凌晨 12 点清空：以固定 UTC+8 为“天”的边界，键名 gb:<UTC+8 日期>，
-//     跨天自然换键即等效清空；put 时带 expirationTtl，昨天的数据约 1 小时后自动过期删除
+//   - 每天凌晨 5 点清空：以固定 UTC+8、每天 05:00 为“天”的边界，键名 gb:<日期>，
+//     跨天自然换键即等效清空；put 时带 expirationTtl，上一个时段的数据约 1 小时后自动过期删除
 //   - 每天最多 10 条：写满后拒绝（返回 full:true），前端据此弹出提示
 //   - 邮箱必填并校验格式，仅存入 KV 作为留言凭证；GET/POST 响应均不下发邮箱，页面不展示
 //
@@ -17,14 +17,18 @@ const MAX = 10;
 const KEY_PREFIX = 'gb:';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// 取 UTC+8（Asia/Shanghai）日期串，作为全站统一的“天”
+// “天”的边界：每天 05:00（UTC+8）。把时钟拨快 3 小时，让 05:00 对齐 UTC 午夜，
+// 再取日期串，即得“以 5 点为界”的日期键
+const DAY_SHIFT_MS = 3 * 3600e3;
+
+// 取“以每天 05:00（UTC+8）为界”的日期串，作为全站统一的“天”
 function dayStr(now) {
-  return new Date(now.getTime() + 8 * 3600e3).toISOString().slice(0, 10);
+  return new Date(now.getTime() + DAY_SHIFT_MS).toISOString().slice(0, 10);
 }
 
-// 距下一个 UTC+8 午夜的秒数（+1h 缓冲），用于 KV 自动过期清理旧键
-function ttlToNextMidnight(now) {
-  const shifted = Math.floor((now.getTime() + 8 * 3600e3) / 1000);
+// 距下一个 05:00（UTC+8）的秒数（+1h 缓冲），用于 KV 自动过期清理旧键
+function ttlToNextBoundary(now) {
+  const shifted = Math.floor((now.getTime() + DAY_SHIFT_MS) / 1000);
   return (Math.floor(shifted / 86400) + 1) * 86400 - shifted + 3600;
 }
 
@@ -93,7 +97,7 @@ export async function onRequestPost(context) {
   msgs.unshift({ n: name, t: text, e: email, time: now.getTime() });
   msgs = msgs.slice(0, MAX);
   try {
-    await kv.put(key, JSON.stringify(msgs), { expirationTtl: ttlToNextMidnight(now) });
+    await kv.put(key, JSON.stringify(msgs), { expirationTtl: ttlToNextBoundary(now) });
   } catch (e) {
     return json({ ok: false, message: '保存失败，请稍后再试' });
   }

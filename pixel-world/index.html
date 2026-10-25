@@ -1058,7 +1058,7 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
       <div class="sec-head reveal">
         <span class="sec-tag">STAGE 04</span>
         <h2>留言栏 <em>GUESTBOOK</em></h2>
-        <p>在此刻字。全站勇者共享这面留言墙，每天凌晨 12 点清空，最多刻 10 条。</p>
+        <p>在此刻字。全站勇者共享这面留言墙，每天凌晨 5 点清空，最多刻 10 条。</p>
         <div class="sec-divider"></div>
       </div>
       <div class="gb-grid">
@@ -1081,7 +1081,7 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
             <button class="px-btn primary" type="submit">刻下留言</button>
           </div>
           <p class="gb-note local" id="gb-local-note" hidden>本地模式：留言板暂未连接云端，留言只保存在这台浏览器里。</p>
-          <p class="gb-note" id="gb-note">邮箱仅作留言凭证，不会公开展示；留言每日凌晨 12 点清空，最多 10 条。</p>
+          <p class="gb-note" id="gb-note">邮箱仅作留言凭证，不会公开展示；留言每日凌晨 5 点清空，最多 10 条。</p>
         </form>
         <div class="gb-list" id="gb-list"></div>
       </div>
@@ -1105,7 +1105,7 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
     <div class="footer-links">
       <a href="#arcade">游戏厅</a><a href="#articles">文章</a><a href="#web">网页</a><a href="#guestbook">留言栏</a><a href="#top">回到顶部</a>
     </div>
-    <small>© 2026 PIXEL WORLD · 用 HTML / CSS / JS 格子手工搭建 · 留言每日凌晨清空，最多 10 条 · 邮箱不公开展示</small>
+    <small>© 2026 PIXEL WORLD · 用 HTML / CSS / JS 格子手工搭建 · 留言每日凌晨 5 点清空，最多 10 条 · 邮箱不公开展示</small>
   </div>
 </footer>
 
@@ -2086,7 +2086,7 @@ const ARTICLES = [
 /* 数据流：优先读写 /api/guestbook（Cloudflare Pages Function + KV，全站共享）；
    接口不可用时降级为 localStorage 本地模式（按天分键，同样遵循每日清空 + 10 条上限）。
    服务端规则见 functions/api/guestbook.js：
-   - 以固定 UTC+8 为“天”，跨天自动换键 = 每天凌晨 12 点清空
+   - 以固定 UTC+8、每天 05:00 为“天”，跨天自动换键 = 每天凌晨 5 点清空
    - 每天最多 10 条，写满后拒绝并返回 full:true
    - 邮箱必填并校验格式，仅存 KV 作凭证，不下发、不展示 */
 (function guestbook(){
@@ -2097,9 +2097,9 @@ const ARTICLES = [
   const quota = $('#gb-quota');
   let online = false;
 
-  // 固定 UTC+8 作为“天”的边界，与服务端口径一致
+  // “天”以每天 05:00（UTC+8）为界，与服务端口径一致：拨快 3 小时让 5 点对齐午夜再取日期
   function today(){
-    return new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+    return new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
   }
   function hue(s){ let h = 0; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
   function fmt(t){
@@ -2130,7 +2130,7 @@ const ARTICLES = [
     setQuota(msgs.length);
   }
   function fullToast(){
-    toast('今天的留言墙已刻满（' + MAX + '/' + MAX + '），凌晨 12 点清空后再来');
+    toast('今天的留言墙已刻满（' + MAX + '/' + MAX + '），凌晨 5 点清空后再来');
   }
   function clearText(){
     $('#gb-text').value = '';
