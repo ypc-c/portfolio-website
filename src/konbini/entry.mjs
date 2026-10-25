@@ -730,8 +730,32 @@ let doorOpen = 0;
 let doorTarget = 0;
 let doorHold = 0;
 
+/* ============================================================
+   可见性暂停：本场景以 iframe 嵌入 spaces 展厅，被切到后台 tab
+   （iframe 被父页设为 visibility:hidden）或用户切走浏览器标签时，
+   停止渲染但保留 rAF 循环，恢复时无跳变（dt 被钳制 + 不推进 elapsedTime）。
+============================================================ */
+let sceneVisible = true;    // 合成结果：IO 相交 且 顶层页面可见
+let probeIntersecting = true; // IntersectionObserver 单独状态
+{
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none;';
+  document.body.appendChild(probe);
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      probeIntersecting = entries[entries.length - 1].isIntersecting;
+      sceneVisible = probeIntersecting && !document.hidden;
+    }, { threshold: 0 });
+    io.observe(probe);
+  }
+  document.addEventListener('visibilitychange', () => {
+    sceneVisible = probeIntersecting && !document.hidden;
+  });
+}
+
 function animate() {
   requestAnimationFrame(animate);
+  if (!sceneVisible) return; // 不可见：不推进时钟、不渲染（恢复后 dt 被钳制，无跳变）
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
 

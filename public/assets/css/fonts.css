@@ -6,3 +6,10 @@
   src: url('../fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
   font-display: swap;
 }
+/* 英文像素字体：原 Google Fonts 外链本地化（Press Start 2P，仅 latin 分片，
+   避免国内访问 fonts.googleapis.com 的连接延迟/失败） */
+@font-face{
+  font-family:'Press Start 2P';
+  src: url('../fonts/press-start-2p-latin.woff2') format('woff2');
+  font-display: swap;
+}
