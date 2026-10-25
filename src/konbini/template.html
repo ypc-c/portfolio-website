@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨夜便利店 · Rainy Night Konbini（离线版）</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0a101c; }
+  #app { position: fixed; inset: 0; }
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 5;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(4,8,16,0.55) 100%);
+  }
+  .caption {
+    position: fixed; left: 24px; bottom: 20px; z-index: 6; pointer-events: none;
+    color: rgba(220,230,245,0.85); font-family: "Yu Gothic", "Hiragino Sans", "Microsoft YaHei", sans-serif;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  }
+  .caption h1 { font-size: 18px; font-weight: 600; letter-spacing: 2px; margin: 0 0 4px 0; }
+  .caption p { font-size: 12px; margin: 0; opacity: 0.65; letter-spacing: 1px; }
+  .toolbar {
+    position: fixed; right: 20px; bottom: 20px; z-index: 7;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+    font-family: "Yu Gothic", "Hiragino Sans", "Microsoft YaHei", sans-serif;
+  }
+  .toolbar button {
+    border: 1px solid rgba(160,190,230,0.35);
+    background: rgba(14,22,38,0.72);
+    color: rgba(215,228,245,0.92);
+    backdrop-filter: blur(6px);
+    padding: 7px 14px; border-radius: 999px;
+    font-size: 12.5px; letter-spacing: 1px; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .toolbar button:hover { background: rgba(45,70,110,0.8); transform: translateY(-1px); }
+  .toolbar button:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="vignette"></div>
+<div class="caption">
+  <h1>雨夜のコンビニ</h1>
+  <p>拖动旋转 · 滚轮缩放 · 点击玻璃门开门</p>
+</div>
+<div class="toolbar">
+  <button id="btn-view">🏪 店内视角</button>
+  <button id="btn-rain">🌧 雨：开</button>
+  <button id="btn-sound">🔇 雨声：关</button>
+  <button id="btn-door">🚪 开门</button>
+</div>
+<script>
+//__BUNDLE__
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+/* 像素字体 · 全站唯一声明处
+   路径相对本文件所在目录（assets/css/），与引用页面的嵌套深度无关，
+   所以 pixel-world/index.html 和 games/ 下的页面引用的是同一份声明。 */
+@font-face{
+  font-family:'ArkPixel';
+  src: url('../fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
+  font-display: swap;
+}

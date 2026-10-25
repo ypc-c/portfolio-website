@@ -1,0 +1,6 @@
+# Cloudflare Pages 重定向规则
+# 文档：https://developers.cloudflare.com/pages/configuration/redirects/
+
+# 旧目录名 spaces/wl blog 含空格，URL 里是 %20。改名后兜一下老链接。
+/spaces/wl%20blog/*  /spaces/wl-blog/:splat  301
+/spaces/wl%20blog     /spaces/wl-blog/       301

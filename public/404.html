@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>404 · 这里什么都没有 | 默语</title>
+<style>
+  :root {
+    --bg1: #f7f9fc;
+    --bg2: #e9eef6;
+    --card: #ffffff;
+    --line: #d8dde4;
+    --ink: #1f2328;
+    --ink2: #565d66;
+    --ink3: #676d75;
+    --accent-deep: #1f5fd0;
+    --accent-press: #1a52b8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px;
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Inter", sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2) 55%);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    width: 100%;
+    max-width: 440px;
+    padding: 40px 36px 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    text-align: center;
+  }
+  .code {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--ink3);
+  }
+  h1 {
+    margin: 14px 0 12px;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink2);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  .actions a {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .actions a.primary {
+    border-color: var(--accent-deep);
+    background: var(--accent-deep);
+    color: #ffffff;
+  }
+  .actions a:hover {
+    border-color: var(--accent-deep);
+    color: var(--accent-deep);
+  }
+  .actions a.primary:hover {
+    border-color: var(--accent-press);
+    background: var(--accent-press);
+    color: #ffffff;
+  }
+  .actions a:focus-visible {
+    outline: 2px solid var(--accent-deep);
+    outline-offset: 3px;
+  }
+  .foot {
+    margin-top: 24px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink3);
+  }
+  @media (max-width: 420px) {
+    .card { padding: 32px 22px 28px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="code">404</div>
+    <h1>这条路走不通</h1>
+    <p>你要找的页面不在这里。可能是地址打错了，也可能是我改结构时漏了一个链接。</p>
+    <div class="actions">
+      <a class="primary" href="/">回到首页</a>
+      <a href="/pixel-world/">进入异世界</a>
+    </div>
+    <p class="foot">如果是从站内点过来的，那确实是我的锅。</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# 统一换行符，避免 Windows / macOS 协作时整文件 diff
+* text=auto eol=lf
+
+# 二进制资源不做文本转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.woff2 binary
+*.ttf binary
+
+# GitHub 语言统计里把 HTML 站当主要语言
+*.html linguist-detectable=true

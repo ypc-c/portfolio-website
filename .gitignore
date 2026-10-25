@@ -1,4 +1,10 @@
-﻿.workbuddy/
-.build-konbini/
+.workbuddy/
 _rui_*.png
 
+# 本地重建 konbini 时产生的依赖目录，不需要入库
+node_modules/
+*.log
+
+# 系统杂物
+.DS_Store
+Thumbs.db

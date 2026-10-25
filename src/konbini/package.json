@@ -1,0 +1,16 @@
+{
+  "name": "konbini-scene",
+  "private": true,
+  "version": "1.0.0",
+  "description": "雨夜便利店三维场景的构建源，产出 spaces/rainy-night-konbini.html",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "dependencies": {
+    "three": "latest"
+  }
+}

@@ -8,13 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/fonts.css">
 <style>
-/* ============ 字体 ============ */
-@font-face{
-  font-family:'ArkPixel';
-  src: url('fonts/ark-pixel-12px-proportional-zh_hans.ttf.woff2') format('woff2');
-  font-display: swap;
-}
 :root{
   --font-en:'Press Start 2P','ArkPixel','Zpix','DotGothic16',monospace;
   --font-cn:'ArkPixel','Zpix','DotGothic16','Microsoft YaHei','PingFang SC',sans-serif;
@@ -129,6 +124,15 @@ section{ scroll-margin-top:84px; }
 .px-btn.primary{ background:var(--accent); color:var(--btn-ink); }
 .px-btn.primary:hover{ background:var(--accent2); color:#0b0618; }
 .px-btn.ghost{ background:transparent; color:var(--dim); }
+.px-btn:disabled{ opacity:.45; cursor:not-allowed; }
+.px-btn:disabled:hover{ transform:none; background:var(--panel2);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 6px 0 0 rgba(0,0,0,.28); }
+.px-btn.primary:disabled:hover{ background:var(--accent); color:var(--btn-ink); }
+.game-controls{ display:flex; gap:10px; flex-wrap:wrap; }
 
 .tag{
   font-family:var(--font-mix); font-size:9px; letter-spacing:.08em;
@@ -230,7 +234,7 @@ section{ scroll-margin-top:84px; }
 .hero-scene svg{ display:none; }
 .hero-photo{
   position:absolute; inset:0;
-  background:var(--hero-wall, url('assets/hero-bg.jpg')) center center / cover no-repeat;
+  background:var(--hero-wall, url('img/hero-bg.jpg')) center center / cover no-repeat;
   transform:scale(1.18);
 }
 .hero::after{
@@ -674,15 +678,15 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
   <h4>首屏壁纸</h4>
   <div class="wall-grid">
     <button class="wall-opt" type="button" data-wall="auto">
-      <span class="thumb" style="background-image:url('assets/hero-bg.jpg'),url('assets/hero-bg2.jpeg');background-size:50% 100%,50% 100%;background-position:left top,right top"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg.jpg'),url('img/hero-bg2.jpeg');background-size:50% 100%,50% 100%;background-position:left top,right top"></span>
       <span class="nm">自动跟随</span>
     </button>
     <button class="wall-opt" type="button" data-wall="bg1">
-      <span class="thumb" style="background-image:url('assets/hero-bg.jpg')"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg.jpg')"></span>
       <span class="nm">壁纸一</span>
     </button>
     <button class="wall-opt" type="button" data-wall="bg2">
-      <span class="thumb" style="background-image:url('assets/hero-bg2.jpeg')"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg2.jpeg')"></span>
       <span class="nm">壁纸二</span>
     </button>
   </div>
@@ -971,7 +975,11 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
           </div>
           <div class="game-tips">
             <p>移动：鼠标 / 触摸 / ←→ 键 · 接 ★ 得分 · 躲开炸弹 · 3 条命</p>
-            <button class="px-btn primary" id="btn-start">▶ 开始游戏</button>
+            <div class="game-controls">
+              <button class="px-btn primary" id="btn-start">▶ 开始游戏</button>
+              <button class="px-btn" id="btn-stop">■ 停止</button>
+              <button class="px-btn" id="btn-end">✕ 结束</button>
+            </div>
           </div>
         </div>
         <div class="arcade-side">
@@ -1776,8 +1784,8 @@ const THEMES = [
   /* ---- 首屏壁纸：默认跟随亮暗（白昼→壁纸一，夜幕→壁纸二） ---- */
   const WALLS = [
     { id:'auto', name:'自动跟随', file:null },
-    { id:'bg1', name:'壁纸一', file:'assets/hero-bg.jpg' },
-    { id:'bg2', name:'壁纸二', file:'assets/hero-bg2.jpeg' }
+    { id:'bg1', name:'壁纸一', file:'img/hero-bg.jpg' },
+    { id:'bg2', name:'壁纸二', file:'img/hero-bg2.jpeg' }
   ];
   const photo = $('.hero-photo');
   let wallInited = false;
@@ -2210,6 +2218,7 @@ const ARTICLES = [
 (function miniGame(){
   const cv = $('#game'), cx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
+  const btnStart = $('#btn-start'), btnStop = $('#btn-stop'), btnEnd = $('#btn-end');
   const SPR = {
     ship: [ '..2..', '.222.', '12221', '.1.1.' ],
     star: [ '...1...', '...1...', '.11111.', '1111111', '.11111.', '...1...', '...1...' ],
@@ -2263,13 +2272,34 @@ const ARTICLES = [
   function start(){
     reset();
     G.state = 'play';
+    syncButtons();
+    Chiptune.sfx('start');
+  }
+  function pause(){
+    if(G.state !== 'play') return;
+    G.state = 'paused';
+    syncButtons();
+  }
+  function resume(){
+    if(G.state !== 'paused') return;
+    G.state = 'play';
+    syncButtons();
     Chiptune.sfx('start');
   }
   function over(){
     G.state = 'over';
     if(G.score > G.hi){ G.hi = G.score; store.set('pw_hi', G.hi); }
     $('#hi-score').textContent = String(G.hi).padStart(6, '0');
+    syncButtons();
     Chiptune.sfx('over');
+  }
+  function syncButtons(){
+    const playing = G.state === 'play';
+    const paused = G.state === 'paused';
+    btnStart.disabled = playing;
+    btnStart.textContent = paused ? '▶ 继续' : '▶ 开始游戏';
+    btnStop.disabled = !playing;
+    btnEnd.disabled = !playing && !paused;
   }
   function update(dt){
     G.t += dt;
@@ -2340,7 +2370,7 @@ const ARTICLES = [
     for(let gx = 0; gx <= W; gx += 20){ cx.beginPath(); cx.moveTo(gx + .5, 0); cx.lineTo(gx + .5, H); cx.stroke(); }
     for(let gy = 0; gy <= H; gy += 20){ cx.beginPath(); cx.moveTo(0, gy + .5); cx.lineTo(W, gy + .5); cx.stroke(); }
 
-    if(G.state === 'play' || G.state === 'over'){
+    if(G.state === 'play' || G.state === 'paused' || G.state === 'over'){
       G.stars.forEach(s => spr(SPR.star, s.x - 7, s.y - 7, 2, { '1': P.star }));
       G.bombs.forEach(b => spr(SPR.bomb, b.x - 7, b.y - 7, 2, { '1': '#4a3563' }));
       G.parts.forEach(p => {
@@ -2349,7 +2379,7 @@ const ARTICLES = [
         cx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
         cx.globalAlpha = 1;
       });
-      if(G.state === 'play' && Math.floor(G.t * 10) % 2 === 0 || G.cool <= 0){
+      if(G.state === 'paused' || G.cool <= 0 || G.state === 'play' && Math.floor(G.t * 10) % 2 === 0){
         spr(SPR.ship, G.x - 5, G.y - 4, 2, { '1': '#4a7df0', '2': '#ffd23f' });
       } else if(G.state === 'play'){
         cx.globalAlpha = .35;
@@ -2371,7 +2401,7 @@ const ARTICLES = [
       text('星屑大作战', W / 2, 132, 10, P.ink, 'center');
       text('接星星 躲炸弹', W / 2, 160, 7, P.dim, 'center');
       spr(SPR.ship, W / 2 - 10, 196, 4, { '1': '#4a7df0', '2': '#ffd23f' });
-      text('点击 或 按空格', W / 2, 232, 7, P.dim, 'center');
+      text('按「开始游戏」出发', W / 2, 232, 7, P.dim, 'center');
     }
     if(G.state === 'over'){
       cx.fillStyle = 'rgba(10,5,25,.62)';
@@ -2379,7 +2409,14 @@ const ARTICLES = [
       text('GAME OVER', W / 2, 108, 13, P.red, 'center');
       text('SCORE ' + G.score, W / 2, 140, 8, P.ink, 'center');
       text(G.score >= G.hi && G.score > 0 ? 'NEW RECORD!' : 'HI ' + G.hi, W / 2, 160, 7, P.dim, 'center');
-      text('点击 或 按空格 重来', W / 2, 196, 7, P.dim, 'center');
+      text('按「开始游戏」重来', W / 2, 196, 7, P.dim, 'center');
+    }
+    if(G.state === 'paused'){
+      cx.fillStyle = 'rgba(10,5,25,.6)';
+      cx.fillRect(0, 0, W, H);
+      text('PAUSED', W / 2, 100, 13, P.star, 'center');
+      text('已暂停', W / 2, 126, 9, P.ink, 'center');
+      text('按「开始游戏」继续', W / 2, 154, 7, P.dim, 'center');
     }
     cx.restore();
   }
@@ -2397,27 +2434,21 @@ const ARTICLES = [
     const r = cv.getBoundingClientRect();
     G.tx = ((e.clientX - r.left) / r.width) * W;
   });
-  function tap(){
-    if(G.state !== 'play') start();
-  }
-  cv.addEventListener('pointerdown', tap);
-  $('#btn-start').addEventListener('click', tap);
+  btnStart.addEventListener('click', () => {
+    if(G.state === 'paused') resume();
+    else if(G.state !== 'play') start();
+  });
+  btnStop.addEventListener('click', pause);
+  btnEnd.addEventListener('click', over);
   window.addEventListener('keydown', e => {
     if(e.key === 'ArrowLeft') G.keys.left = true;
     if(e.key === 'ArrowRight') G.keys.right = true;
-    if(e.key === ' ' || e.key === 'Enter'){
-      const r = cv.getBoundingClientRect();
-      const visible = r.top < window.innerHeight && r.bottom > 0;
-      if(visible && G.state !== 'play'){
-        e.preventDefault();
-        start();
-      }
-    }
   });
   window.addEventListener('keyup', e => {
     if(e.key === 'ArrowLeft') G.keys.left = false;
     if(e.key === 'ArrowRight') G.keys.right = false;
   });
+  syncButtons();
 })();
 
 /* ================= 入场动画 ================= */

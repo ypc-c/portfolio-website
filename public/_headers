@@ -1,0 +1,18 @@
+# Cloudflare Pages 响应头配置
+# 文档：https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# HTML 每次都回源校验，避免改完页面看不到更新
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 静态资源文件名不带指纹，所以不设 immutable，只给一周
+/assets/*
+  Cache-Control: public, max-age=604800
+
+# 字体体积大且几乎不变，可以放长一点
+/assets/fonts/*
+  Cache-Control: public, max-age=2592000
