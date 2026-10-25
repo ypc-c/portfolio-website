@@ -9,14 +9,14 @@
 <meta property="og:site_name" content="默语 · PIXEL WORLD">
 <meta property="og:title" content="异世界入口 · PIXEL WORLD">
 <meta property="og:description" content="一座用 CSS 格子搭起来的浮空小站：打游戏、读文章、逛友链、刻留言。传送门已充能，勇者请随意。">
-<meta property="og:image" content="/assets/img/og-pixel-world.png">
+<meta property="og:image" content="/assets/img/og-pixel-world.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="/pixel-world/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="异世界入口 · PIXEL WORLD">
 <meta name="twitter:description" content="一座用 CSS 格子搭起来的浮空小站：打游戏、读文章、逛友链、刻留言。传送门已充能，勇者请随意。">
-<meta name="twitter:image" content="/assets/img/og-pixel-world.png">
+<meta name="twitter:image" content="/assets/img/og-pixel-world.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%230d0821'/%3E%3Crect x='1' y='2' width='6' height='4' fill='%23b46cff'/%3E%3Crect x='2' y='1' width='4' height='1' fill='%23b46cff'/%3E%3Crect x='2' y='6' width='4' height='1' fill='%23b46cff'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%230d0821'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%230d0821'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/css/fonts.css">
 <style>
@@ -244,7 +244,7 @@ section{ scroll-margin-top:84px; }
 .hero-scene svg{ display:none; }
 .hero-photo{
   position:absolute; inset:0;
-  background:var(--hero-wall, url('img/hero-bg.jpg')) center center / cover no-repeat;
+  background:var(--hero-wall, url('img/hero-bg.webp')) center center / cover no-repeat;
   transform:scale(1.18);
 }
 .hero::after{
@@ -688,15 +688,15 @@ body[data-mode="light"] .canvas-wrap{ background:#241a3d; }
   <h4>首屏壁纸</h4>
   <div class="wall-grid">
     <button class="wall-opt" type="button" data-wall="auto">
-      <span class="thumb" style="background-image:url('img/hero-bg.jpg'),url('img/hero-bg2.jpeg');background-size:50% 100%,50% 100%;background-position:left top,right top"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg.webp'),url('img/hero-bg2.webp');background-size:50% 100%,50% 100%;background-position:left top,right top"></span>
       <span class="nm">自动跟随</span>
     </button>
     <button class="wall-opt" type="button" data-wall="bg1">
-      <span class="thumb" style="background-image:url('img/hero-bg.jpg')"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg.webp')"></span>
       <span class="nm">壁纸一</span>
     </button>
     <button class="wall-opt" type="button" data-wall="bg2">
-      <span class="thumb" style="background-image:url('img/hero-bg2.jpeg')"></span>
+      <span class="thumb" style="background-image:url('img/hero-bg2.webp')"></span>
       <span class="nm">壁纸二</span>
     </button>
   </div>
@@ -1794,8 +1794,8 @@ const THEMES = [
   /* ---- 首屏壁纸：默认跟随亮暗（白昼→壁纸一，夜幕→壁纸二） ---- */
   const WALLS = [
     { id:'auto', name:'自动跟随', file:null },
-    { id:'bg1', name:'壁纸一', file:'img/hero-bg.jpg' },
-    { id:'bg2', name:'壁纸二', file:'img/hero-bg2.jpeg' }
+    { id:'bg1', name:'壁纸一', file:'img/hero-bg.webp' },
+    { id:'bg2', name:'壁纸二', file:'img/hero-bg2.webp' }
   ];
   const photo = $('.hero-photo');
   let wallInited = false;
