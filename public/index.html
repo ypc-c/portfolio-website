@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>默语</title>
+<meta name="description" content="用代码创造价值。YPC-C 的个人作品集：四个项目、关于我、联系方式，以及一个像素风的异世界。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="默语">
+<meta property="og:title" content="默语 · YPC-C 个人作品集">
+<meta property="og:description" content="用代码创造价值。一个零构建的静态作品集站点，写完就推送。">
+<meta property="og:image" content="https://ypc-website.pages.dev/assets/img/og-home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://ypc-website.pages.dev/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="默语 · YPC-C 个人作品集">
+<meta name="twitter:description" content="用代码创造价值。一个零构建的静态作品集站点，写完就推送。">
+<meta name="twitter:image" content="https://ypc-website.pages.dev/assets/img/og-home.png">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Crect width='8' height='8' fill='%231f5fd0'/%3E%3Crect x='1' y='2' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='6' y='2' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='2' y='3' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='3' y='4' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='4' y='4' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='3' y='5' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='4' y='5' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='3' y='6' width='1' height='1' fill='%23ffffff'/%3E%3Crect x='4' y='6' width='1' height='1' fill='%23ffffff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -550,6 +565,15 @@ function applyLang(lang) {
     if (running || reduceMotion) return;                                         // 已启动 / 减少动效：放行
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return; // 修饰键：保留原生行为
     e.preventDefault();
+
+    /* 预加载落地页首屏壁纸：穿梭有约 1.7s（展开+停顿+白闪），
+       正好用来暖 HTTP 缓存，避免落地那一刻 hero 图冷启动 → 露出深色底发黑。
+       两张都预热，这样不论亮暗/手动选过哪张都不会有空窗（约 400KB，仅此一次）。 */
+    ['pixel-world/img/hero-bg.webp', 'pixel-world/img/hero-bg2.webp'].forEach(function (f) {
+      var im = new Image();
+      im.src = f;
+      if (im.decode) { im.decode().catch(function () {}); }
+    });
 
     // 消失点固定屏幕中央（不随点击位置）
     // 无 WebGL2 或引擎启动失败：直接跳转（降级）
