@@ -1,0 +1,143 @@
+/* =============================================================================
+   css/base.css
+   字体与主题变量 / 重置 / 像素组件基元
+   依赖：../assets/css/fonts.css（@font-face）
+   -----------------------------------------------------------------------------
+   本文件由 pixel-world/index.html 的 <style> 拆分而来，分块顺序与原始层叠顺序一致，
+   改动时请沿用「===== 分节 =====」横幅注释，便于定位。
+   ============================================================================= */
+
+:root{
+  --font-en:'Press Start 2P','ArkPixel','Zpix',monospace;
+  --font-cn:'ArkPixel','Zpix','Microsoft YaHei','PingFang SC',sans-serif;
+  --font-mix:'Press Start 2P','ArkPixel','Zpix','Microsoft YaHei',monospace;
+}
+/* 中英混排：Press Start 2P 的字面高、笔画分量都约为同字号中文的 1.2 倍，
+   英文段包在 .mix-en 里压到 .86em，才能和中文标题齐平 */
+.mix-en{ font-size:.86em; }
+/* ============ 主题变量 · 默认「紫夜」暗色 ============ */
+:root{
+  --bg:#0d0821; --bg2:#150d31;
+  --panel:#1d1244; --panel2:#271757; --panel3:#33206e;
+  --ink:#ece7ff; --dim:#a296d6; --faint:#6f639e;
+  --line:#07040f;
+  --accent:#b46cff; --accent2:#57e0ff; --gold:#ffd23f; --danger:#ff5d7a;
+  --btn-ink:#ffffff;
+  --sky-a:#0d0821; --sky-b:#24104a; --sky-c:#4a1d75;
+  --star:#ffffff; --orb:#ffe9a8; --cloud:#22134d;
+  --grass:#35a86b; --grass2:#22734a; --dirt:#7a5233; --dirt2:#523521;
+  --castle:#181030; --win:#ffd23f; --roof:#9c3a4d;
+  --hill1:#1c0f3e; --hill2:#110826;
+  --portal:#c86bff; --portal2:#e9d5ff;
+  --crt:.10; --grid:rgba(255,255,255,.028);
+}
+body[data-theme="forest"]{
+  --accent:#63e07a; --accent2:#c6f36d; --gold:#ffe066; --btn-ink:#0e2b16;
+  --sky-a:#081a12; --sky-b:#123526; --sky-c:#1f5a3c; --cloud:#173a28;
+  --portal:#6bffa8; --portal2:#d8ffe8; --hill1:#0f2b1e; --hill2:#091b12;
+  --grass:#3cb371; --grass2:#27794a;
+}
+body[data-theme="lava"]{
+  --accent:#ff8a4d; --accent2:#ffd23f; --gold:#ffe066;
+  --sky-a:#1a0a0c; --sky-b:#3a1418; --sky-c:#5e2226; --cloud:#3d1a1c;
+  --portal:#ff7a4d; --portal2:#ffe0c2; --hill1:#331216; --hill2:#1d0a0d;
+}
+body[data-theme="ice"]{
+  --accent:#5fc9ff; --accent2:#a8f0ff; --btn-ink:#082a3d;
+  --sky-a:#081426; --sky-b:#0f2440; --sky-c:#1a3a5e; --cloud:#152c4a;
+  --portal:#5fc9ff; --portal2:#e0f6ff; --hill1:#0f2038; --hill2:#091526;
+}
+/* ============ 白昼模式 ============ */
+body[data-mode="light"]{
+  --bg:#f3ead6; --bg2:#eae0c6;
+  --panel:#fff7e4; --panel2:#ffefc9; --panel3:#ffe3a8;
+  --ink:#33254a; --dim:#7a6a96; --faint:#a99bba;
+  --line:#4a3421;
+  --sky-a:#79c6f2; --sky-b:#a9dcf7; --sky-c:#dcf1fd;
+  --star:#ffffff; --orb:#ffcf3f; --cloud:#ffffff;
+  --grass:#5ec87c; --grass2:#3aa35c; --dirt:#a9754c; --dirt2:#7c5236;
+  --castle:#2e2352; --win:#ffb703; --roof:#c04a5e;
+  --hill1:#a9d8b6; --hill2:#8cc79e;
+  --crt:.05; --grid:rgba(60,40,20,.05);
+  color-scheme: light;
+}
+body[data-mode="dark"]{ color-scheme: dark; }
+
+/* ============ 基础 ============ */
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  font-family:var(--font-cn);
+  background:var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:32px 32px;
+  color:var(--ink);
+  line-height:1.7;
+  overflow-x:hidden;
+  transition:background-color .3s, color .3s;
+}
+::selection{ background:var(--accent); color:var(--btn-ink); }
+::-webkit-scrollbar{ width:12px; }
+::-webkit-scrollbar-track{ background:var(--bg2); }
+::-webkit-scrollbar-thumb{ background:var(--panel3); border:2px solid var(--bg2); }
+::-webkit-scrollbar-thumb:hover{ background:var(--accent); }
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; }
+:focus-visible{ outline:3px dashed var(--accent2); outline-offset:3px; }
+
+.container{ max-width:1120px; margin-inline:auto; padding-inline:20px; }
+section{ scroll-margin-top:84px; }
+
+/* ============ 像素组件 ============ */
+.px-panel{
+  background:var(--panel);
+  box-shadow:
+    inset -4px -4px 0 rgba(0,0,0,.30),
+    inset 4px 4px 0 rgba(255,255,255,.05),
+    0 -4px 0 0 var(--line), 0 4px 0 0 var(--line),
+    -4px 0 0 0 var(--line), 4px 0 0 0 var(--line),
+    8px 8px 0 0 rgba(0,0,0,.28);
+}
+.px-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-mix); font-size:11px; letter-spacing:.06em;
+  color:var(--ink); background:var(--panel2);
+  border:0; cursor:pointer; padding:13px 18px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 6px 0 0 rgba(0,0,0,.28);
+  transition:transform .08s steps(2), box-shadow .08s steps(2), background-color .15s, color .15s;
+  user-select:none;
+}
+.px-btn:hover{ background:var(--panel3); transform:translateY(-2px);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line), -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 8px 0 0 rgba(0,0,0,.28); }
+.px-btn:active{ transform:translate(3px,3px);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line), -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    0 0 0 0 rgba(0,0,0,.28); }
+.px-btn.primary{ background:var(--accent); color:var(--btn-ink); }
+.px-btn.primary:hover{ background:var(--accent2); color:#0b0618; }
+.px-btn.ghost{ background:transparent; color:var(--dim); }
+.px-btn:disabled{ opacity:.45; cursor:not-allowed; }
+.px-btn:disabled:hover{ transform:none; background:var(--panel2);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.10),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line),
+    6px 6px 0 0 rgba(0,0,0,.28); }
+.px-btn.primary:disabled:hover{ background:var(--accent); color:var(--btn-ink); }
+.game-controls{ display:flex; gap:10px; flex-wrap:wrap; }
+
+.tag{
+  font-family:var(--font-mix); font-size:9px; letter-spacing:.08em;
+  background:var(--panel3); color:var(--accent2);
+  padding:4px 8px; display:inline-block;
+  box-shadow:0 0 0 2px var(--line);
+}
+.date{ font-family:var(--font-en); font-size:9px; color:var(--faint); }

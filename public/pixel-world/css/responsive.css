@@ -1,0 +1,45 @@
+/* =============================================================================
+   css/responsive.css
+   全部媒体查询（窄屏适配 / 减少动态）
+   依赖：全部前缀文件
+   -----------------------------------------------------------------------------
+   本文件由 pixel-world/index.html 的 <style> 拆分而来，分块顺序与原始层叠顺序一致，
+   改动时请沿用「===== 分节 =====」横幅注释，便于定位。
+   ============================================================================= */
+
+@media (max-width:640px){
+  .picker{ left:16px; right:16px; width:auto; top:70px; }
+}
+
+@media (max-width:960px){
+  .arcade-grid, .gb-grid{ grid-template-columns:1fr; }
+  .link-grid{ grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:720px){
+  .article-grid{ grid-template-columns:1fr; }
+  .nav-inner{ gap:10px; padding:8px 12px; }
+  .brand small{ display:none; }
+  .home-btn{ padding:9px 8px; font-size:10px; gap:5px; }
+  .home-btn .lbl-long{ display:none; }
+  .home-btn .lbl-short{ display:inline; }
+  .nav-link{ padding:9px 7px; font-size:10px; }
+  .tool-btn{ width:38px; height:38px; }
+  .tool-btn::after{ left:auto; right:0; transform:translateX(0) translateY(-4px); }
+  .tool-btn:hover::after,.tool-btn:focus-visible::after{ transform:translateX(0) translateY(0); }
+  .section{ padding:72px 0 16px; }
+}
+@media (max-width:480px){
+  .link-grid{ grid-template-columns:1fr; }
+  .nav-links{ gap:2px; }
+  .nav-link{ padding:9px 5px; font-size:9px; }
+}
+@media (max-width:420px){
+  .brand{ display:none; }
+  .nav-inner{ justify-content:space-between; gap:8px; }
+  .nav-links{ margin-inline:0; }
+  .hero-cta .px-btn{ padding:12px 14px; font-size:10px; }
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+  html{ scroll-behavior:auto; }
+}

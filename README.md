@@ -87,9 +87,24 @@ python tools/check-links.py
 │  │  ├─ fonts/                  ArkPixel + Press Start 2P（woff2）
 │  │  └─ img/                    OG 分享图、QQ 图标
 │  ├─ pixel-world/               异世界门户
-│  │  ├─ index.html              游戏厅 / 文章 / 网页 / 留言栏
-│  │  ├─ img/                    本区专属壁纸
-│  │  └─ games/                  三个小游戏，各自单文件内联样式与脚本
+│  │  ├─ index.html              页面骨架：导航 / HERO / 四个 section / 页脚 / 弹窗
+│  │  ├─ css/                    本页样式，五个文件按层叠顺序串联
+│  │  │  ├─ base.css             字体与主题变量（紫夜/翠影/熔岩/冰蕊 + 白昼）、重置、像素组件
+│  │  │  ├─ layout.css           顶部导航、HERO 场景与壁纸、章节标题
+│  │  │  ├─ sections.css         游戏厅 / 文章 / 友链 / 留言栏 / 主题面板 / 页脚 / 弹窗
+│  │  │  ├─ effects.css          CRT 扫描线、场景动画、入场动效
+│  │  │  └─ responsive.css       全部 @media（窄屏适配、减少动态）
+│  │  ├─ js/                     本页脚本，七个文件按依赖顺序加载
+│  │  │  ├─ core.js              $ / $$ / store / toast + 星空与萤火虫（必须最先加载）
+│  │  │  ├─ pixel-trail.js       像素鼠标拖尾（WebGL2）
+│  │  │  ├─ theme.js             主题、亮暗、壁纸选择
+│  │  │  ├─ chiptune.js          8-bit 音乐合成与音乐按钮
+│  │  │  ├─ content.js           文章数据与渲染、友链渲染
+│  │  │  ├─ guestbook.js         留言栏（/api/guestbook + localStorage 降级）
+│  │  │  └─ ui.js                导航收起/高亮、入场动画、HERO 视差
+│  │  ├─ img/                    本区专属壁纸与配图
+│  │  └─ games/                  五个小游戏，各自单文件内联样式与脚本
+│  │     └─ kenney_tiny-farm/ · kenney_tiny-town/   tiny-realm 用的瓦片素材（CC0）
 │  └─ spaces/                    小世界展厅
 │     ├─ spaces.html             轮盘导航（切换下方三个场景）
 │     ├─ weather-cards.html      气象之间
@@ -157,13 +172,18 @@ cd src/konbini && npm install && node build.mjs
 - 目录与文件名一律 **kebab-case**，不含空格（URL 里空格要编码成 `%20`，脚本和 CI 都要跟着转义）。
 - 跨页复用的资源放 `public/assets/`；只有单个页面用的图片留在该页面自己的目录。
 - 新增页面时优先抽独立 `.css` / `.js` 文件，而不是继续往 HTML 里堆 `<style>`。
+- 单页要拆文件时，在该页目录下建 `css/` 与 `js/`，**文件名即职责**（见 `pixel-world/`）。两个硬约束：
+  - CSS 的 `<link>` 顺序必须保持层叠顺序（base → layout → sections → effects → responsive），后加规则往对应文件里放，别改成"哪里顺手放哪里"。
+  - JS 是普通 `<script>` 而非模块，靠加载顺序共享全局符号；`core.js`（`$` / `$$` / `store` / `toast`）必须最先加载，其余文件都依赖它。新增功能单独建文件、插在 `core.js` 之后即可。
+  - 拆出 CSS 文件后，**样式表里的相对图片路径要跟着改**（`img/x.webp` → `../img/x.webp`）；另外别用「自定义属性里塞 `url()`」这种做法——`var()` 代入的 `url()` 会按样式表路径解析，内联时正常、拆文件后变 404（本页壁纸踩过，现改为 `<html data-wall>` 切换）。
 - 页面之间的相对路径按所在目录写，不要写死域名。
 - 非站点文件（源码、脚本、文档）不要放进 `public/`，放仓库根。
 
 ## 刻意不做的事
 
 - **不引入打包器。** 零构建、push 即发布是这个站最大的优势，为了“结构整洁”上一个构建链是负收益。
-- **不共享游戏页样式。** `public/pixel-world/games/` 下三个游戏是小应用，各自内联样式与脚本（单请求加载、首屏更快）。它们的按钮和 HUD 看着相似但会各自演进，抽成公共样式后改一个就牵动另外两个，耦合成本高于重复成本。只共享 `@font-face`——因为字体路径带跨层级 `../`，散着写最容易改漏。
+- **不共享游戏页样式。** `public/pixel-world/games/` 下的小游戏是小应用，各自内联样式与脚本（单请求加载、首屏更快）。它们的按钮和 HUD 看着相似但会各自演进，抽成公共样式后改一个就牵动其他几个，耦合成本高于重复成本。只共享 `@font-face`——因为字体路径带跨层级 `../`，散着写最容易改漏。
+- **不把异世界首页的 HERO 内联 SVG 抽成外部文件。** 它靠 `style="stop-color:var(--sky-a)"` 继承主题变量、且 `#stars` / `.shoot` / `.cloud` 要被 JS 与 CSS 动画直接操作，改成 `<img>` 或异步插入会丢主题联动、首屏也会闪。
 
 ### OG 分享图怎么重新生成
 

@@ -1,0 +1,176 @@
+/* =============================================================================
+   css/layout.css
+   顶部导航 / HERO 场景 / 章节标题
+   依赖：base.css
+   -----------------------------------------------------------------------------
+   本文件由 pixel-world/index.html 的 <style> 拆分而来，分块顺序与原始层叠顺序一致，
+   改动时请沿用「===== 分节 =====」横幅注释，便于定位。
+   ============================================================================= */
+
+/* ============ 顶部导航 ============ */
+.nav{
+  position:fixed; inset:0 0 auto 0; z-index:270;
+  background:var(--panel);
+  box-shadow:0 4px 0 var(--line);
+  transition:transform .38s cubic-bezier(.22,1,.36,1), box-shadow .3s;
+}
+.nav.hide{ transform:translateY(-104%); }
+.nav.lift{ box-shadow:0 4px 0 var(--line), 0 10px 0 rgba(0,0,0,.22); }
+.nav-inner{
+  width:100%; margin-inline:auto; padding:10px 20px;
+  display:flex; align-items:center; gap:18px;
+}
+.home-btn{
+  flex:none; display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+  font-family:var(--font-mix); font-size:11px; color:var(--dim);
+  padding:9px 12px; background:var(--panel2);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.08),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line);
+  transition:transform .08s steps(2), background-color .15s, color .15s;
+}
+.home-btn svg{ display:block; transition:transform .15s steps(2); }
+.home-btn .lbl-short{ display:none; }
+.home-btn:hover{ background:var(--panel3); color:var(--ink); transform:translateY(-2px); }
+.home-btn:hover svg{ transform:translateX(-2px); }
+.home-btn:active{ transform:translate(2px,2px); }
+.home-btn:active svg{ transform:none; }
+
+.brand{ display:flex; flex-direction:column; line-height:1.15; flex:none; }
+.brand b{ font-family:var(--font-mix); font-size:13px; letter-spacing:.02em; color:var(--ink); }
+.brand b i{ font-style:normal; color:var(--accent); }
+.brand small{ font-family:var(--font-en); font-size:7px; color:var(--faint); letter-spacing:.14em; }
+.nav-links{ display:flex; gap:6px; list-style:none; margin-inline:auto; }
+.nav-link{
+  display:block; font-family:var(--font-mix); font-size:11px;
+  color:var(--dim); padding:10px 12px; position:relative;
+  box-shadow:0 0 0 2px transparent;
+  transition:color .15s, background-color .15s;
+}
+.nav-link:hover{ color:var(--ink); background:var(--panel2); }
+.nav-link.active{ color:var(--gold); }
+.nav-link.active::after{
+  content:""; position:absolute; left:12px; right:12px; bottom:4px; height:3px;
+  background:var(--gold);
+}
+.nav-tools{ display:flex; gap:8px; flex:none; }
+.tool-btn{
+  position:relative;
+  width:42px; height:42px; display:flex; align-items:center; justify-content:center; gap:3px; cursor:pointer;
+  background:var(--panel2); border:0; color:var(--ink);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,.30), inset 3px 3px 0 rgba(255,255,255,.08),
+    0 -3px 0 0 var(--line), 0 3px 0 0 var(--line),
+    -3px 0 0 0 var(--line), 3px 0 0 0 var(--line);
+  transition:transform .08s steps(2), background-color .15s;
+}
+.tool-btn:hover{ background:var(--panel3); transform:translateY(-2px); }
+.tool-btn:active{ transform:translate(2px,2px); }
+.tool-btn svg{ display:block; }
+/* 自定义像素字体提示（替代浏览器原生 title 提示） */
+.tool-btn::after{
+  content:attr(data-tip);
+  position:absolute; top:calc(100% + 12px); left:50%;
+  transform:translateX(-50%) translateY(-4px);
+  font-family:var(--font-mix); font-size:9px; letter-spacing:.05em; line-height:1;
+  color:var(--ink); background:var(--panel);
+  padding:7px 10px; white-space:nowrap;
+  box-shadow:0 0 0 2px var(--line), 4px 4px 0 rgba(0,0,0,.32);
+  opacity:0; pointer-events:none;
+  transition:opacity .12s steps(2), transform .12s steps(2);
+}
+.tool-btn:hover::after,.tool-btn:focus-visible::after{ opacity:1; transform:translateX(-50%) translateY(0); }
+.eq{ display:none; gap:2px; align-items:flex-end; height:12px; margin-left:1px; }
+.eq i{ width:3px; background:var(--accent2); animation:eq .6s steps(2) infinite; }
+.eq i:nth-child(1){ height:5px; animation-delay:0s; }
+.eq i:nth-child(2){ height:10px; animation-delay:.15s; }
+.eq i:nth-child(3){ height:7px; animation-delay:.3s; }
+.tool-btn.on .eq{ display:flex; }
+@keyframes eq{ 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
+
+/* ============ HERO ============ */
+.hero{
+  position:relative; min-height:100vh; min-height:100svh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; isolation:isolate;
+}
+.hero-scene{ position:absolute; inset:0; z-index:-2; }
+.hero-scene svg{ display:none; }
+.hero-photo{
+  position:absolute; inset:0;
+  /* 壁纸由 <html data-wall="bg1|bg2"> 切换（默认壁纸二 · 夜幕）。
+     不要改回「自定义属性里塞 url()」：CSS 文件里 var() 代入的 url() 会按样式表路径解析，
+     内联在 <style> 里时看不出问题，拆出成 .css 文件后就变成 css/img/xxx 404。 */
+  background:url('../img/hero-bg2.webp') center center / cover no-repeat;
+  transform:scale(1.18);
+}
+html[data-wall="bg1"] .hero-photo{ background-image:url('../img/hero-bg.webp'); }
+.hero::after{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(8,4,20,.06) 0%, rgba(8,4,20,0) 26%, rgba(8,4,20,.30) 74%, rgba(8,4,20,.66) 100%),
+    radial-gradient(ellipse 90% 70% at 50% 45%, transparent 55%, rgba(5,2,15,.42) 100%);
+}
+body[data-mode="light"] .hero::after{
+  background:
+    linear-gradient(180deg, rgba(8,4,20,.06) 0%, rgba(8,4,20,0) 26%, rgba(8,4,20,.30) 74%, rgba(8,4,20,.66) 100%),
+    radial-gradient(ellipse 90% 70% at 50% 45%, transparent 60%, rgba(40,25,60,.16) 100%);
+}
+.hero-content{ text-align:center; padding:120px 20px 80px; max-width:920px; position:relative; z-index:1; }
+.pixel-trail{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.hero-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:var(--font-en); font-size:9px; color:var(--gold);
+  background:var(--panel); padding:8px 14px; margin-bottom:26px;
+  box-shadow:0 0 0 3px var(--line), 5px 5px 0 rgba(0,0,0,.3);
+  animation:bob 2.4s steps(2) infinite;
+}
+@keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+.hero h1{
+  font-family:var(--font-mix); font-weight:700;
+  font-size:clamp(40px,7.5vw,72px); line-height:1.15;
+  color:var(--gold); letter-spacing:.04em;
+  text-shadow:
+    3px 0 0 var(--line), -3px 0 0 var(--line), 0 3px 0 var(--line), 0 -3px 0 var(--line),
+    3px 3px 0 var(--line), -3px 3px 0 var(--line), 3px -3px 0 var(--line), -3px -3px 0 var(--line),
+    7px 8px 0 rgba(0,0,0,.45);
+}
+.hero-sub{
+  margin-top:22px; font-family:var(--font-en); font-size:clamp(9px,1.4vw,12px);
+  color:var(--accent2); letter-spacing:.22em;
+  text-shadow:2px 2px 0 var(--line);
+}
+.hero-desc{ margin-top:16px; color:#ffffff; font-size:15px; }
+.hero-cta{ margin-top:36px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.scroll-hint{
+  position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
+  font-family:var(--font-en); font-size:8px; color:var(--dim);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  transition:opacity .3s;
+}
+.scroll-hint .arrow{ animation:hint 1.2s steps(2) infinite; }
+@keyframes hint{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+/* ============ 章节 ============ */
+.section{ padding:96px 0 24px; }
+.sec-head{ margin-bottom:44px; }
+.sec-tag{
+  font-family:var(--font-en); font-size:9px; color:var(--accent2);
+  letter-spacing:.2em; display:block; margin-bottom:12px;
+}
+.sec-head h2{
+  font-family:var(--font-mix); font-size:clamp(24px,4vw,34px); font-weight:700;
+  color:var(--ink); display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+}
+.sec-head h2::before{
+  content:""; width:14px; height:14px; background:var(--accent);
+  box-shadow:0 0 0 3px var(--line); flex:none;
+}
+.sec-head h2 em{ font-style:normal; font-family:var(--font-en); font-size:.45em; color:var(--faint); letter-spacing:.12em; }
+.sec-head p{ margin-top:12px; color:var(--dim); max-width:560px; font-size:15px; }
+.sec-divider{
+  height:8px; margin:14px 0 0;
+  background:repeating-linear-gradient(90deg, var(--accent) 0 8px, transparent 8px 16px);
+  opacity:.5;
+}
