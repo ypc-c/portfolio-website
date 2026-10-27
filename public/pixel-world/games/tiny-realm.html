@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tiny Realm · 农场漫游</title>
+<style>
+  :root{
+    --bg:#f2efe6;
+    --ink:#243027;
+    --muted:#6f7d70;
+    --line:rgba(36,48,39,.13);
+    --accent:#356b4c;
+    --accent-soft:#dbe8d8;
+    --card:rgba(255,255,255,.82);
+    --shadow:0 24px 48px -28px rgba(32,48,34,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 560px at 8% -12%, #fcfbf4 0%, rgba(252,251,244,0) 62%),
+      radial-gradient(900px 520px at 102% -6%, #e2ebda 0%, rgba(226,235,218,0) 58%),
+      var(--bg);
+    overflow:hidden;
+  }
+  .app{
+    height:100vh;
+    max-width:1560px;
+    margin:0 auto;
+    padding:18px 20px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:0 0 auto}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .logo{
+    width:36px;height:36px;border-radius:10px;
+    background:var(--accent-soft);
+    border:1px solid rgba(53,107,76,.18);
+    image-rendering:pixelated;
+    padding:2px;
+    box-shadow:inset 0 -2px 0 rgba(53,107,76,.10);
+  }
+  .titles{min-width:0}
+  .title{
+    font-size:15px;font-weight:650;letter-spacing:.2px;line-height:1.2;
+    display:flex;align-items:center;gap:8px;
+  }
+  .title .tag{
+    font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);background:rgba(53,107,76,.10);
+    padding:2px 6px;border-radius:5px;
+  }
+  .subtitle{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .pill{
+    font-size:11px;color:var(--muted);
+    background:rgba(255,255,255,.7);
+    border:1px solid var(--line);
+    padding:5px 10px;border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- stage ---------- */
+  .stage{
+    position:relative;flex:1 1 auto;min-height:0;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid rgba(36,48,39,.10);
+    background:#e9eddf;
+    box-shadow:var(--shadow);
+    isolation:isolate;
+  }
+  #game{
+    position:absolute;inset:0;display:block;
+    width:100%;height:100%;
+    image-rendering:pixelated;
+    image-rendering:-moz-crisp-edges;
+    cursor:pointer;
+    touch-action:none;
+  }
+
+  /* ---------- hud ---------- */
+  .hud{
+    position:absolute;
+    display:flex;align-items:center;gap:12px;
+    padding:7px 11px;
+    border-radius:11px;
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.75);
+    box-shadow:0 8px 22px -14px rgba(28,44,32,.75);
+    backdrop-filter:blur(10px) saturate(1.1);
+    -webkit-backdrop-filter:blur(10px) saturate(1.1);
+    font-size:12px;
+    user-select:none;
+    pointer-events:none;
+  }
+  .hud-tl{top:12px;left:12px}
+  .hud-br{bottom:12px;right:12px;pointer-events:auto;padding:6px;gap:6px}
+  .stat{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .stat + .stat{padding-left:11px;border-left:1px solid var(--line)}
+  .stat .k{color:var(--muted);font-size:11px}
+  .stat .v{font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.01em}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:0 0 auto}
+  .dot.warn{background:#c2603f}
+
+  .btn{
+    appearance:none;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.92);
+    color:var(--ink);
+    height:28px;min-width:28px;padding:0 9px;
+    border-radius:8px;
+    font-size:12px;font-family:inherit;line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .btn:hover{background:#fff;border-color:rgba(53,107,76,.42);color:var(--accent)}
+  .btn:active{transform:translateY(1px)}
+  .btn.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn svg{width:13px;height:13px}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:absolute;left:50%;bottom:22px;
+    transform:translate(-50%,8px);
+    padding:8px 14px;border-radius:10px;
+    background:rgba(28,40,31,.88);
+    color:#f4f7f1;font-size:12.5px;letter-spacing:.01em;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.8);
+    opacity:0;pointer-events:none;
+    transition:opacity .22s ease,transform .22s ease;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- footer ---------- */
+  .footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex:0 0 auto;flex-wrap:wrap}
+  .hints{display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+  .hint{display:inline-flex;align-items:center;gap:6px}
+  kbd{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:21px;height:21px;padding:0 5px;
+    border-radius:5px;background:#fff;
+    border:1px solid rgba(36,48,39,.16);
+    border-bottom-width:2px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11px;color:#3a4a3e;line-height:1;
+  }
+  .keys{display:inline-flex;gap:3px}
+  .credit{font-size:11px;color:#8b978c;letter-spacing:.01em}
+  .credit a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(139,151,140,.7)}
+
+  @media (max-width:720px){
+    .app{padding:12px 12px 10px;gap:9px}
+    .subtitle{display:none}
+    .footer .hints{gap:12px}
+    .credit{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <img class="logo" src="kenney_tiny-farm/Tiles/tile_0109.png" alt="玩家角色">
+      <div class="titles">
+        <div class="title">Tiny Realm <span class="tag">农场漫游</span></div>
+        <div class="subtitle">点击地面自动寻路，或用键盘逐格行走。障碍与地图边界不可穿越。</div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="pill" id="pillsize">30 × 17 瓦片</span>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="game"></canvas>
+
+    <div class="hud hud-tl">
+      <span class="stat"><span class="k">坐标</span><span class="v" id="coord">x 12 · y 7</span></span>
+      <span class="stat"><span class="dot" id="statusdot"></span><span class="v" id="status">待机</span></span>
+    </div>
+
+    <div class="hud hud-br">
+      <button class="btn" id="zoomout" title="缩小">−</button>
+      <button class="btn" id="zoomfit" title="适应窗口">适应</button>
+      <button class="btn" id="zoomin" title="放大">+</button>
+      <button class="btn" id="toggleblock" title="显示障碍格">障碍</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <footer class="footer">
+    <div class="hints">
+      <span class="hint"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>移动</span>
+      <span class="hint"><span class="keys"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span>移动</span>
+      <span class="hint">点击地面寻路</span>
+      <span class="hint">滚轮缩放</span>
+    </div>
+    <div class="credit">瓦片素材 <a href="https://kenney.nl" target="_blank" rel="noreferrer">Kenney Tiny Town / Tiny Farm</a> · CC0</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ data */
+  var MAP = {"w":30,"h":17,"tile":16,"tiles":[{"src":"kenney_tiny-town/Tiles/tile_0000.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0019.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0032.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0040.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0001.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0003.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0004.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0018.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0027.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0082.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0015.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0016.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0031.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0030.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0020.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0002.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0093.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0094.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0095.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0112.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0113.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0002.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0085.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0105.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0106.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0107.png","lvl":4,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0013.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0014.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0044.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0045.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0046.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0038.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0089.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0008.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0007.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0117.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0115.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0118.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0119.png","lvl":4,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0025.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0026.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0056.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0121.png","lvl":4,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0058.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0028.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0012.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0122.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0092.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0129.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0091.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0090.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0131.png","lvl":4,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0037.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0038.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0026.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0077.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0024.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0114.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0127.png","lvl":2,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0116.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0068.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0082.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0080.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0070.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0080.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0064.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0078.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0036.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0081.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0048.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0066.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0049.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0050.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0083.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0018.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0097.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0005.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0006.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0023.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0042.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0012.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0028.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0016.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0013.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0025.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0047.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0065.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0024.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0052.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0069.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0029.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0053.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0017.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0041.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0110.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0111.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0120.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0036.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0030.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0054.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0037.png","lvl":1,"solid":false}],"grid":[[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0],[0],[0],[0],[0,3],[0,4],[0],[0],[0],[0],[0,5],[0],[0,6],[0],[0],[0,7],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0],[0],[0],[0],[0],[0],[0,5],[0,8],[0,9],[0],[0],[0,4,10],[0,5],[0,11],[0],[0],[0,4],[0,12],[0,12],[0,12],[0,4,12],[0,12],[0,13],[0,1],[0,1],[0,1],[0,1],[0,1],[0,14],[0,15,5],[0],[0],[0],[0,5],[0,3],[0],[0,10],[0,16],[0,17],[0,18],[0],[0],[0,4,10],[0,4],[0,19],[0,20],[0,4],[0,4],[0,4,21],[0],[0,4],[0],[0],[0,13],[0,1],[0,1],[0,2],[0,4],[0,4],[0,10],[0],[0],[0],[0,10],[0,4,5],[0],[0,22],[0,23],[0,24],[0,25],[0,26],[0,27,28],[0,29],[0,29],[0,29],[0,30],[0],[0,21],[0,31],[0],[0,32],[0],[0,4],[0,7],[0,1],[0,1],[0,33],[0,4,34],[0,34],[0,15],[0],[0],[0,3],[0],[0,10],[0,15],[0],[0,35],[0,36,37],[0,38],[0,39],[0,40,41],[0,42],[0,4],[0,4],[0,43],[0],[0,31],[0],[0,44],[0],[0,32],[0,4],[0],[0,12],[0,1],[0,1],[0,1],[0,1],[0,33],[0],[0,5],[0,15],[0,4],[0,15],[0],[0,45,46],[0,47,48],[0,49],[0,50,51],[0,39,52],[0,53,41],[0],[0,4],[0,42],[0,43],[0],[0],[0,54],[0,4],[0,4,55],[0],[0,4],[0],[0],[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0,10],[0],[0],[0],[0,46],[0,56],[0,57],[0,58],[0,59],[0,32],[0,60],[0,4,61],[0],[0,62],[0,63],[0],[0],[0,4,31],[0],[0],[0],[0,4,64],[0],[0],[0,1],[0,14],[0],[0],[0],[0],[0,65],[0,66],[0],[0],[0],[0,67],[0,52],[0,52],[0,53],[0],[0,4],[0],[0],[0],[0],[0],[0,62],[0,68],[0,61],[0],[0,62],[0,68],[0,61],[0],[0],[0],[0],[0],[0,15],[0],[0,66],[0],[0,66],[0],[0],[0],[0],[0],[0],[0,15],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,45],[0,26],[0,26],[0,26],[0,26],[0,26],[0,26],[0,26],[0],[0,15],[0],[0,45],[0,26,73],[0,26],[0,26],[0,26],[0,27],[0],[0],[0,69,74],[0,71,74],[0,72,74],[0],[0],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0,75],[0,67],[0,52],[0,52],[0,52],[0,52],[0,52],[0,52],[0,52],[0,76],[0],[0,45,73],[0,39],[0,39],[0,39,73],[0,39],[0,52,39],[0,53],[0,4],[0],[0,69,77],[0,71,77],[0,72,77],[0],[0,4],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,62],[0,4,68],[0,61],[0],[0,62],[0,68],[0,61],[0],[0,15],[0],[0,67],[0,39,73],[0,39,73],[0,39],[0,40,39],[0,40,73],[0],[0,78],[0],[0,69,79],[0,71,79],[0,72,79],[0],[0],[0],[0],[0],[0],[0],[0,4],[0,80,81],[0,4],[80,82],[0],[0,83,82],[0,15],[0,84,83,3],[0],[0,34],[0],[0],[0,67],[0,52],[0,52],[0,53,39,52],[0,53],[0],[0],[0],[0],[0],[0],[0,85],[0],[0,69,65],[0,71,65],[0,71,65],[0,72,86],[0],[0,4],[87,81],[0],[0,87,88],[0,15],[0,84,82],[0],[0,84,3],[0],[0,1],[0,33],[0],[0],[0],[0,62],[0,29],[0,29],[0,29],[0,29],[0,89],[0,29],[0,29],[0,30],[0],[0],[0,69,86],[0,71,86],[0,71,86],[0,72,86],[0],[0],[0,87,90],[0],[0,87,91],[0],[0,84,92],[0],[0,84,93],[0],[0,1],[0,1],[0,33],[0],[0],[0],[0,94],[0,95],[0],[0],[0],[0,4],[0,96],[0,43],[0],[0,54],[0,69,86],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,87,90],[0,4],[0,87,91],[0],[0,84,92],[0,15],[0,84,93],[0],[0,1],[0,1],[0,1],[0,33],[0,34],[0,34],[0],[0],[0,45,96],[0,26],[0,26],[0,27],[0],[0,43],[0],[0,31],[0],[0],[0],[0],[0],[0],[0,97,98],[0],[0,97,99],[0],[0,100,74],[0],[0,100,79],[0,15],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,14],[0],[0,56],[0,39],[0,39],[0,40],[0],[0,43],[0],[0],[0],[0],[0,64],[0],[0],[0,4,64],[0],[0],[0],[0],[0,4],[0],[0],[0]]};
+  var TS = MAP.tile || 16;
+  var W = MAP.w, H = MAP.h;
+  var WORLD_W = W * TS, WORLD_H = H * TS;
+  var HERO_SRC = 'kenney_tiny-farm/Tiles/tile_0109.png';
+  var START = { x: 12, y: 7 };
+  var MOVE_MS = 132;
+
+  var stage = document.getElementById('stage');
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d', { alpha: false });
+
+  var coordEl = document.getElementById('coord');
+  var statusEl = document.getElementById('status');
+  var statusDot = document.getElementById('statusdot');
+  var toastEl = document.getElementById('toast');
+  var sizeEl = document.getElementById('pillsize');
+
+  /* --------------------------------------------------------------- helpers */
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function inBounds(x, y) { return x >= 0 && y >= 0 && x < W && y < H; }
+  function isSolid(x, y) { return blocked[y * W + x] === 1; }
+
+  /* ------------------------------------------------------------ collision */
+  // A cell is impassable when any of its layers is flagged solid.
+  var blocked = new Uint8Array(W * H);
+  // Layers are split by height so the player can walk *under* roofs, tree tops
+  // and other tall objects: level 1-2 = ground, level 3-4 = overhead.
+  var OVERHEAD_FROM = 3;
+  var gridGround = new Array(W * H);
+  var gridOver = new Array(W * H);
+
+  for (var i = 0; i < W * H; i++) {
+    var cell = MAP.grid[i] || [];
+    var g = [], o = [];
+    for (var j = 0; j < cell.length; j++) {
+      var t = MAP.tiles[cell[j]];
+      if (t.solid) blocked[i] = 1;
+      if (t.lvl >= OVERHEAD_FROM) o.push(cell[j]); else g.push(cell[j]);
+    }
+    gridGround[i] = g;
+    gridOver[i] = o;
+  }
+
+  /* ----------------------------------------------------------------- state */
+  var state = {
+    cx: START.x, cy: START.y,   // logical cell
+    x: START.x, y: START.y,     // rendered (float) position
+    moving: false
+  };
+  var step = null;              // active tween
+  var queue = [];               // remaining cells of a path
+  var dest = null;              // highlighted destination
+  var held = [];                // ordered pressed directions
+  var bump = { t: -1e9, dx: 0, dy: 0 };
+  var walkT = 0;
+  var destBorn = 0;
+  var showBlocked = false;
+  var hover = null;
+
+  var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+
+  /* --------------------------------------------------------------- images */
+  var tileImgs = [];
+  var heroImg = null;
+  var assetsReady = false;
+
+  function preload() {
+    var jobs = MAP.tiles.map(function (t, idx) {
+      return new Promise(function (res) {
+        var im = new Image();
+        im.onload = function () { tileImgs[idx] = im; res(); };
+        im.onerror = function () { tileImgs[idx] = null; res(); };
+        im.src = t.src;
+      });
+    });
+    jobs.push(new Promise(function (res) {
+      var im = new Image();
+      im.onload = function () { heroImg = im; res(); };
+      im.onerror = function () { res(); };
+      im.src = HERO_SRC;
+    }));
+    Promise.all(jobs).then(function () {
+      assetsReady = true;
+      resize();
+    });
+  }
+  preload();
+
+  /* ----------------------------------------------------------- view/camera */
+  var scale = 2, camX = 0, camY = 0, dpr = 1, viewW = 1, viewH = 1;
+  var userZoomed = false;
+  var dotPattern = null;
+
+  function fitScale() {
+    var s = Math.min(viewW / WORLD_W, viewH / WORLD_H);
+    s = Math.floor(s * 2) / 2;              // snap down to half steps so the whole map fits
+    return clamp(s, 1, 4);
+  }
+
+  function resize() {
+    var r = stage.getBoundingClientRect();
+    viewW = Math.max(1, Math.round(r.width));
+    viewH = Math.max(1, Math.round(r.height));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(viewW * dpr);
+    canvas.height = Math.round(viewH * dpr);
+    if (!userZoomed) scale = fitScale();
+    snapCamera();
+  }
+
+  function snapCamera() {
+    var vw = viewW / scale, vh = viewH / scale;
+    camX = (WORLD_W <= vw) ? (WORLD_W - vw) / 2
+      : clamp(state.x * TS + TS / 2 - vw / 2, 0, WORLD_W - vw);
+    camY = (WORLD_H <= vh) ? (WORLD_H - vh) / 2
+      : clamp(state.y * TS + TS / 2 - vh / 2, 0, WORLD_H - vh);
+  }
+
+  function updateCamera() {
+    var vw = viewW / scale, vh = viewH / scale;
+    var tx, ty;
+    if (WORLD_W <= vw) tx = (WORLD_W - vw) / 2;
+    else tx = clamp(state.x * TS + TS / 2 - vw / 2, 0, WORLD_W - vw);
+    if (WORLD_H <= vh) ty = (WORLD_H - vh) / 2;
+    else ty = clamp(state.y * TS + TS / 2 - vh / 2, 0, WORLD_H - vh);
+    camX += (tx - camX) * 0.16;
+    camY += (ty - camY) * 0.16;
+    if (Math.abs(tx - camX) < 0.05) camX = tx;
+    if (Math.abs(ty - camY) < 0.05) camY = ty;
+  }
+
+  function setZoom(next) {
+    userZoomed = true;
+    scale = clamp(Math.round(next * 2) / 2, 1, 4);
+    snapCamera();
+  }
+
+  /* ----------------------------------------------------------------- toast */
+  var toastTimer = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1500);
+  }
+
+  /* -------------------------------------------------------------- status UI */
+  var statusKey = '';
+  function setStatus(text, warn) {
+    if (statusKey === text) return;
+    statusKey = text;
+    statusEl.textContent = text;
+    statusDot.classList.toggle('warn', !!warn);
+  }
+  function updateCoord() {
+    coordEl.textContent = 'x ' + state.cx + ' · y ' + state.cy;
+  }
+
+  /* ------------------------------------------------------------------ path */
+  function bfs(sx, sy) {
+    var cost = new Int32Array(W * H).fill(-1);
+    var prev = new Int32Array(W * H).fill(-1);
+    var start = sy * W + sx;
+    cost[start] = 0; prev[start] = -2;
+    var q = new Int32Array(W * H), head = 0, tail = 0;
+    q[tail++] = start;
+    while (head < tail) {
+      var c = q[head++];
+      var x = c % W, y = (c / W) | 0;
+      var nx, ny, ni;
+      if (y > 0) { nx = x; ny = y - 1; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (y < H - 1) { nx = x; ny = y + 1; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (x > 0) { nx = x - 1; ny = y; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (x < W - 1) { nx = x + 1; ny = y; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+    }
+    return { cost: cost, prev: prev };
+  }
+
+  function goTo(tx, ty) {
+    if (!inBounds(tx, ty)) { toast('地图之外，走不过去'); return; }
+    if (tx === state.cx && ty === state.cy) { queue = []; dest = null; return; }
+
+    var res = bfs(state.cx, state.cy);
+    var startIdx = state.cy * W + state.cx;
+    var goal = -1;
+
+    if (!isSolid(tx, ty) && res.cost[ty * W + tx] >= 0) {
+      goal = ty * W + tx;
+    } else {
+      // blocked (or unreachable) target: land on the closest reachable cell
+      var bestD = Infinity, bestCost = Infinity;
+      for (var i = 0; i < W * H; i++) {
+        if (res.cost[i] < 0) continue;
+        var x = i % W, y = (i / W) | 0;
+        var d = Math.abs(x - tx) + Math.abs(y - ty);
+        if (d < bestD || (d === bestD && res.cost[i] < bestCost)) { bestD = d; bestCost = res.cost[i]; goal = i; }
+      }
+      if (isSolid(tx, ty)) toast('这块地过不去，先走到旁边');
+    }
+
+    if (goal < 0) { toast('没有可走的路'); return; }
+
+    var path = [];
+    var cur = goal;
+    while (cur >= 0 && cur !== startIdx) {
+      path.push({ x: cur % W, y: (cur / W) | 0 });
+      cur = res.prev[cur];
+    }
+    path.reverse();
+
+    if (!path.length) { queue = []; dest = null; return; }
+
+    queue = path;
+    dest = { x: goal % W, y: (goal / W) | 0 };
+    destBorn = performance.now();
+    setStatus('寻路中');
+    if (!step) tryStep();
+  }
+
+  /* --------------------------------------------------------------- movement */
+  function hitWall(dx, dy) {
+    var now = performance.now();
+    if (now - bump.t > 260) {
+      bump.t = now; bump.dx = dx; bump.dy = dy;
+      setStatus('前方不可通行', true);
+    }
+    if (queue.length) { queue = []; dest = null; }
+  }
+
+  function tryStep() {
+    if (step || !assetsReady) return;
+    var next = null;
+
+    while (queue.length) {
+      var c = queue[0];
+      if (Math.abs(c.x - state.cx) + Math.abs(c.y - state.cy) === 1 && !isSolid(c.x, c.y)) { next = c; break; }
+      queue.shift();
+    }
+
+    if (!next && held.length) {
+      var d = held[held.length - 1];
+      var v = DIRS[d];
+      var nx = state.cx + v[0], ny = state.cy + v[1];
+      if (!inBounds(nx, ny) || isSolid(nx, ny)) { hitWall(v[0], v[1]); return; }
+      next = { x: nx, y: ny };
+    }
+
+    if (!next) return;
+    if (queue.length) queue.shift();
+
+    step = {
+      fx: state.x, fy: state.y,
+      tx: next.x, ty: next.y,
+      t0: performance.now(), dur: MOVE_MS
+    };
+    state.moving = true;
+    setStatus(queue.length ? '寻路中' : '行走中');
+  }
+
+  function update(now) {
+    if (step) {
+      var t = (now - step.t0) / step.dur;
+      if (t > 1) t = 1;
+      state.x = step.fx + (step.tx - step.fx) * t;
+      state.y = step.fy + (step.ty - step.fy) * t;
+      walkT = t;
+      if (t >= 1) {
+        state.cx = step.tx; state.cy = step.ty;
+        state.x = state.cx; state.y = state.cy;
+        step = null;
+        state.moving = false;
+        updateCoord();
+        if (!queue.length) { dest = null; setStatus('待机'); }
+        tryStep();
+      }
+    } else {
+      tryStep();
+    }
+  }
+
+  /* ---------------------------------------------------------------- drawing */
+  function makeDotPattern() {
+    var p = document.createElement('canvas');
+    p.width = 14; p.height = 14;
+    var pc = p.getContext('2d');
+    pc.fillStyle = 'rgba(52,74,56,.13)';
+    pc.beginPath(); pc.arc(7, 7, 1, 0, Math.PI * 2); pc.fill();
+    return ctx.createPattern(p, 'repeat');
+  }
+
+  function drawBoardBackground() {
+    ctx.fillStyle = '#e9eddf';
+    ctx.fillRect(0, 0, viewW, viewH);
+    if (!dotPattern) dotPattern = makeDotPattern();
+    if (dotPattern) {
+      ctx.save();
+      ctx.fillStyle = dotPattern;
+      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.restore();
+    }
+  }
+
+  function drawMapShadow() {
+    var x0 = Math.round(-camX * scale);
+    var y0 = Math.round(-camY * scale);
+    var w = Math.round(WORLD_W * scale);
+    var h = Math.round(WORLD_H * scale);
+    ctx.save();
+    ctx.shadowColor = 'rgba(34,50,36,.26)';
+    ctx.shadowBlur = 26;
+    ctx.shadowOffsetY = 10;
+    ctx.fillStyle = '#dae2cb';
+    ctx.fillRect(x0, y0, w, h);
+    ctx.restore();
+  }
+
+  function drawWorld(now) {
+    var x0 = Math.max(0, Math.floor(camX / TS) - 1);
+    var y0 = Math.max(0, Math.floor(camY / TS) - 1);
+    var x1 = Math.min(W - 1, Math.ceil((camX + viewW / scale) / TS) + 1);
+    var y1 = Math.min(H - 1, Math.ceil((camY + viewH / scale) / TS) + 1);
+
+    // pass 1 — ground: everything the player walks on top of
+    for (var y = y0; y <= y1; y++) {
+      for (var x = x0; x <= x1; x++) {
+        var list = gridGround[y * W + x];
+        for (var k = 0; k < list.length; k++) {
+          var im = tileImgs[list[k]];
+          if (im) ctx.drawImage(im, x * TS, y * TS, TS, TS);
+        }
+      }
+    }
+
+    // hovered cell (aiming aid)
+    if (hover) {
+      ctx.strokeStyle = hover.blocked ? 'rgba(196,92,68,.85)' : 'rgba(255,255,255,.85)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hover.x * TS + 0.5, hover.y * TS + 0.5, TS - 1, TS - 1);
+      ctx.strokeStyle = 'rgba(30,46,34,.35)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(hover.x * TS - 0.25, hover.y * TS - 0.25, TS + 0.5, TS + 0.5);
+    }
+
+    // planned path
+    if (queue.length) {
+      ctx.fillStyle = 'rgba(38,84,58,.45)';
+      for (var q = 0; q < queue.length; q++) {
+        ctx.beginPath();
+        ctx.arc(queue[q].x * TS + TS / 2, queue[q].y * TS + TS / 2, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // destination ring
+    if (dest) {
+      var age = (now - destBorn) / 1000;
+      var pulse = 0.5 + 0.5 * Math.sin(age * 4.4);
+      var cx = dest.x * TS + TS / 2, cy = dest.y * TS + TS / 2;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(38,84,58,' + (0.45 + 0.35 * pulse).toFixed(3) + ')';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 3, 5.4 + pulse * 0.9, 3.1 + pulse * 0.5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // the player stands between ground and overhead layers
+    drawHero(now);
+
+    // pass 2 — overhead: roofs, tree tops, walls — these hide the player
+    for (var oy = y0; oy <= y1; oy++) {
+      for (var ox = x0; ox <= x1; ox++) {
+        var over = gridOver[oy * W + ox];
+        for (var m = 0; m < over.length; m++) {
+          var oim = tileImgs[over[m]];
+          if (oim) ctx.drawImage(oim, ox * TS, oy * TS, TS, TS);
+        }
+      }
+    }
+
+    // pass 3 — debug overlay on top of everything
+    if (showBlocked) {
+      for (var yy = y0; yy <= y1; yy++) {
+        for (var xx = x0; xx <= x1; xx++) {
+          if (!blocked[yy * W + xx]) continue;
+          ctx.fillStyle = 'rgba(26,38,30,.32)';
+          ctx.fillRect(xx * TS, yy * TS, TS, TS);
+          ctx.strokeStyle = 'rgba(255,255,255,.22)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(xx * TS + 0.25, yy * TS + 0.25, TS - 0.5, TS - 0.5);
+        }
+      }
+    }
+  }
+
+  function drawHero(now) {
+    if (!heroImg) return;
+    var px = state.x * TS, py = state.y * TS;
+
+    // bump nudge when a move is refused
+    var nb = 0;
+    var age = now - bump.t;
+    if (age >= 0 && age < 180) {
+      var k = 1 - age / 180;
+      nb = Math.sin(k * Math.PI) * 1.6 * k;
+    }
+    px += bump.dx * nb;
+    py += bump.dy * nb;
+
+    // shadow
+    ctx.fillStyle = 'rgba(26,40,28,.22)';
+    ctx.beginPath();
+    ctx.ellipse(px + TS / 2, py + TS - 1.2, 4.7, 2.0, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // bob while walking / breathing while idle
+    var bob = state.moving ? -Math.abs(Math.sin(walkT * Math.PI)) * 1.3 : Math.sin(now / 760) * 0.28;
+
+    ctx.drawImage(heroImg, px, py + bob, TS, TS);
+  }
+
+  function render(now) {
+    update(now);
+    updateCamera();
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    drawBoardBackground();
+    drawMapShadow();
+
+    var ox = Math.round(-camX * scale * dpr) / dpr;
+    var oy = Math.round(-camY * scale * dpr) / dpr;
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, ox * dpr, oy * dpr);
+    drawWorld(now);
+
+    requestAnimationFrame(render);
+  }
+
+  /* ----------------------------------------------------------------- input */
+  function dirOf(e) {
+    switch (e.key) {
+      case 'ArrowUp': case 'w': case 'W': return 'up';
+      case 'ArrowDown': case 's': case 'S': return 'down';
+      case 'ArrowLeft': case 'a': case 'A': return 'left';
+      case 'ArrowRight': case 'd': case 'D': return 'right';
+    }
+    return null;
+  }
+
+  window.addEventListener('keydown', function (e) {
+    var d = dirOf(e);
+    if (d) {
+      e.preventDefault();
+      if (held.indexOf(d) === -1) held.push(d);
+      queue = []; dest = null;            // manual input cancels a planned path
+      tryStep();
+      return;
+    }
+    if (e.key === 'Escape') { queue = []; dest = null; setStatus('待机'); }
+    if (e.key === '+' || e.key === '=' || e.key === ']') setZoom(scale + 0.5);
+    if (e.key === '-' || e.key === '_' || e.key === '[') setZoom(scale - 0.5);
+    if (e.key === '0') { userZoomed = false; scale = fitScale(); snapCamera(); }
+  }, { passive: false });
+
+  window.addEventListener('keyup', function (e) {
+    var d = dirOf(e);
+    if (!d) return;
+    var idx = held.indexOf(d);
+    if (idx !== -1) held.splice(idx, 1);
+  });
+
+  window.addEventListener('blur', function () { held = []; });
+
+  function cellFromEvent(e) {
+    var r = canvas.getBoundingClientRect();
+    var wx = (e.clientX - r.left) / scale + camX;
+    var wy = (e.clientY - r.top) / scale + camY;
+    return { x: Math.floor(wx / TS), y: Math.floor(wy / TS) };
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    var c = cellFromEvent(e);
+    if (!inBounds(c.x, c.y)) { toast('地图之外，走不过去'); return; }
+    goTo(c.x, c.y);
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    var c = cellFromEvent(e);
+    var bad = !inBounds(c.x, c.y) || isSolid(c.x, c.y);
+    canvas.style.cursor = bad ? 'not-allowed' : 'pointer';
+    hover = inBounds(c.x, c.y) ? { x: c.x, y: c.y, blocked: bad } : null;
+    if (!step && !held.length) {
+      if (bad) setStatus('不可通行', true);
+      else if (statusKey === '不可通行' || statusKey === '前方不可通行') setStatus('待机');
+    }
+  });
+
+  canvas.addEventListener('pointerleave', function () { hover = null; });
+
+  canvas.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    setZoom(scale + (e.deltaY < 0 ? 0.5 : -0.5));
+  }, { passive: false });
+
+  document.getElementById('zoomin').addEventListener('click', function () { setZoom(scale + 0.5); });
+  document.getElementById('zoomout').addEventListener('click', function () { setZoom(scale - 0.5); });
+  document.getElementById('zoomfit').addEventListener('click', function () {
+    userZoomed = false; scale = fitScale(); snapCamera();
+  });
+  var blockBtn = document.getElementById('toggleblock');
+  blockBtn.addEventListener('click', function () {
+    showBlocked = !showBlocked;
+    blockBtn.classList.toggle('is-on', showBlocked);
+  });
+
+  /* ------------------------------------------------------------------- boot */
+  sizeEl.textContent = W + ' × ' + H + ' 瓦片';
+  updateCoord();
+  resize();
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
