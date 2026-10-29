@@ -379,9 +379,12 @@
   }
   .qty-ctl button:hover{border-color:rgba(53,107,76,.42);color:var(--accent)}
   .qty-ctl button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .shop-body{display:grid;grid-template-columns:1.62fr 1fr;gap:0;overflow:auto}
-  .shop-col{padding:11px 12px 14px}
+  .shop-body{display:grid;grid-template-columns:1.62fr 1fr;gap:0;overflow:hidden}
+  .shop-col{padding:11px 12px 14px;overflow-y:auto;min-height:0;max-height:min(60vh,560px)}
   .shop-col + .shop-col{border-left:1px solid rgba(36,48,39,.09)}
+  .shop-col::-webkit-scrollbar{width:9px}
+  .shop-col::-webkit-scrollbar-thumb{background:rgba(36,48,39,.16);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+  .shop-col::-webkit-scrollbar-thumb:hover{background:rgba(36,48,39,.28);background-clip:content-box}
   #shopBuy{display:grid;grid-template-columns:1fr 1fr;gap:1px 4px;align-content:start}
   #shopBuy .sect{grid-column:1/-1}
   #shopBuy .row[data-pocket]{grid-column:1/-1}
@@ -490,6 +493,7 @@
     .shop-body{grid-template-columns:1fr}
     #shopBuy{grid-template-columns:1fr}
     .shop-col + .shop-col{border-left:0;border-top:1px solid rgba(36,48,39,.09)}
+    .shop-col{max-height:44vh}
   }
 </style>
 </head>
@@ -1299,6 +1303,7 @@
     inv.sel = d.sel || 0;
     if (Array.isArray(d.bag) && d.bag.length) inv.bag = d.bag;
     if (Array.isArray(d.hot) && d.hot.length) inv.hot = d.hot;
+    mergeBagStacks();
 
     blocked.set(BASE_BLOCKED);
     fieldCell.fill(0);
@@ -1362,23 +1367,51 @@
   }
 
 
-  /* 格子之间搬东西：桶是实体，整只搬走；别的只搬 id（堆叠物靠口袋里的数量） */
+  /* 格子之间搬东西：桶是实体，整只搬走；堆叠物连数量一起搬 */
   function entityForBag(s) {
     if (!s) return null;
     if (isBucket(s)) return s;
-    return { id: s.id, n: 1 };
+    return { id: s.id, n: (s.n || 1) };
   }
   function entityForHot(s) {
     if (!s) return null;
     if (isBucket(s)) return s;
-    return { id: s.id };
+    return { id: s.id, n: (s.n || 1) };
   }
 
   function bagSlotsUsed() { var n = 0; for (var i = 0; i < inv.bag.length; i++) if (inv.bag[i]) n++; return n; }
-  function countItem(id) {
+  /* 某物品在口袋里占的格子数（只看口袋，工具栏不占口袋格子） */
+  function bagSlotsFor(id) {
     var n = 0;
-    for (var i = 0; i < inv.bag.length; i++) if (inv.bag[i] && inv.bag[i].id === id) n += inv.bag[i].n;
+    for (var i = 0; i < inv.bag.length; i++) if (inv.bag[i] && inv.bag[i].id === id) n++;
     return n;
+  }
+  /* 全身上下（口袋 + 工具栏）一共多少个：这才是"拥有数"的唯一口径 */
+  function countItem(id) {
+    var n = 0, i;
+    for (i = 0; i < inv.bag.length; i++) if (inv.bag[i] && inv.bag[i].id === id) n += inv.bag[i].n;
+    for (i = 0; i < inv.hot.length; i++) if (inv.hot[i] && inv.hot[i].id === id) n += (inv.hot[i].n || 1);
+    return n;
+  }
+  /* 口袋里的重复堆叠合并成整格（每格最多 99），保持互斥、不散落 */
+  function mergeBagStacks() {
+    for (var i = 0; i < inv.bag.length; i++) {
+      var a = inv.bag[i];
+      if (!a || isBucket(a)) continue;
+      for (var j = i + 1; j < inv.bag.length && a.n < 99; j++) {
+        var b = inv.bag[j];
+        if (b && !isBucket(b) && b.id === a.id) {
+          var mv = Math.min(99 - a.n, b.n);
+          a.n += mv; b.n -= mv;
+          if (b.n <= 0) inv.bag[j] = null;
+        }
+      }
+    }
+    // 把空出来的位置压实到前面
+    var out = [];
+    for (i = 0; i < inv.bag.length; i++) if (inv.bag[i]) out.push(inv.bag[i]);
+    while (out.length < inv.bag.length) out.push(null);
+    inv.bag = out;
   }
   function addItem(id, n) {
     n = n || 1;
@@ -1397,12 +1430,14 @@
         inv.bag[i] = { id:id, n:put }; n -= put;
       }
     }
+    mergeBagStacks();
     return n <= 0;
   }
+  /* 先扣口袋，口袋不够再扣工具栏里的同名堆叠 */
   function takeItem(id, n) {
     n = n || 1;
-    var removed = 0;
-    for (var i = 0; i < inv.bag.length && removed < n; i++) {
+    var removed = 0, i;
+    for (i = 0; i < inv.bag.length && removed < n; i++) {
       var s = inv.bag[i];
       if (s && s.id === id) {
         var take = Math.min(s.n, n - removed);
@@ -1410,11 +1445,16 @@
         if (s.n <= 0) inv.bag[i] = null;
       }
     }
-    if (removed > 0) {
-      // 口袋空了就把工具栏上的同名快捷方式一起收掉
-      if (countItem(id) === 0) {
-        for (var h = 0; h < inv.hot.length; h++) if (inv.hot[h] && inv.hot[h].id === id) inv.hot[h] = null;
+    for (i = 0; i < inv.hot.length && removed < n; i++) {
+      var h = inv.hot[i];
+      if (h && h.id === id && !isBucket(h)) {
+        var tk = Math.min(h.n || 1, n - removed);
+        h.n -= tk; removed += tk;
+        if (h.n <= 0) inv.hot[i] = null;
       }
+    }
+    if (removed > 0) {
+      mergeBagStacks();
       renderHotbar(); renderPocket();
     }
     return removed;
@@ -1566,7 +1606,7 @@
           var bcls = s.fill <= 0 ? ' dry' : (s.type === 'milk' ? ' milk' : ' water');
           html += '<span class="cnt' + bcls + '">' + (s.fill || 0) + '</span>';
         } else if (it && (it.kind === 'seed' || it.kind === 'crop' || it.kind === 'mat' || it.kind === 'deco' || it.kind === 'animal')) {
-          var c = countItem(s.id);
+          var c = (s.n || 1);
           if (c > 1) html += '<span class="cnt">' + c + '</span>';
         }
       }
@@ -1613,16 +1653,9 @@
     var i = +el.getAttribute('data-hot');
     var s = inv.hot[i];
     if (!s || s.id === 'hand') return;
-    // 堆叠类物品在口袋里还有存货，只是去掉快捷键
-    if (countItem(s.id) > 0) {
-      inv.hot[i] = null;
-      if (inv.sel === i) inv.sel = 0;
-      renderHotbar();
-      toast('已从工具栏移除 ' + ITEMS[s.id].name);
-      return;
-    }
-    if (bagSlotsUsed() >= inv.bag.length) { toast('口袋满了'); return; }
-    inv.bag[inv.bag.indexOf(null)] = entityForBag(s);
+    // 堆叠物在工具栏里是独占的一份：右键把它整份放回口袋
+    if (!isBucket(s) && bagSlotsUsed() >= inv.bag.length) { toast('口袋满了'); return; }
+    addItem(s.id, s.n || 1);
     inv.hot[i] = null;
     if (inv.sel === i) inv.sel = 0;
     renderHotbar(); renderPocket();
@@ -1654,21 +1687,11 @@
 
     var prev = inv.hot[target];
 
-    if (it.kind === 'tool') {
-      // 工具是实体：真正从口袋搬进工具栏（桶连同桶里的水/奶一起搬）
-      inv.hot[target] = entityForHot(slot);
-      inv.bag[i] = entityForBag(prev);
-    } else {
-      // 种子 / 收成：堆叠留在口袋里，工具栏只放快捷键
-      inv.hot[target] = { id: slot.id };
-      if (prev && ITEMS[prev.id] && ITEMS[prev.id].kind === 'tool') {
-        // 用种子顶掉了镰刀这类工具 → 工具退回口袋
-        var empty = inv.bag.indexOf(null);
-        if (empty < 0) { toast('口袋满了，放不下' + ITEMS[prev.id].name); return; }
-        inv.bag[empty] = entityForBag(prev);
-      }
-    }
+    // 目标格原来有东西 → 原样退回口袋（工具/桶/堆叠物都整份搬回），再放进新东西
+    inv.hot[target] = entityForHot(slot);
+    inv.bag[i] = entityForBag(prev);   // prev 为 null 时就是清空这一格
 
+    mergeBagStacks();
     inv.sel = target;
     renderHotbar(); renderPocket();
     flashSlot(target);
@@ -1719,7 +1742,7 @@
   var SHOP_QTY = 1;
   function qtyWant() { return SHOP_QTY === 0 ? Infinity : SHOP_QTY; }
   function qtyLabel() { return SHOP_QTY === 0 ? '全部' : ('' + SHOP_QTY); }
-  /* 同一种东西还能往口袋里塞多少个（同 id 的空位补满 + 空格各 99） */
+  /* 同一种东西还能往口袋里塞多少个（口袋同 id 空位补满 + 空格各 99） */
   function bagRoomFor(id) {
     var room = 0;
     for (var i = 0; i < inv.bag.length; i++) {
@@ -1728,6 +1751,41 @@
       else if (s.id === id && s.n < 99) room += 99 - s.n;
     }
     return room;
+  }
+
+  /* 工具栏第一个空位，没有则 -1 */
+  function freeHotbarSlot() {
+    for (var k = 0; k < inv.hot.length; k++) if (!inv.hot[k]) return k;
+    return -1;
+  }
+
+  /* 购买落位：优先进工具栏空位；工具栏没空位或已同款在身则进/并入口袋 */
+  function buyPlace(id, n) {
+    var existing = -1, empty = -1;
+    for (var i = 0; i < inv.hot.length; i++) {
+      if (inv.hot[i] && inv.hot[i].id === id) { existing = i; break; }
+    }
+    if (existing < 0) empty = freeHotbarSlot();
+    if (existing >= 0) {
+      // 工具栏已有同款：并进去（每格最多 99，满了就溢出口袋）
+      var slot = inv.hot[existing];
+      if (isBucket(slot)) { addItem(id, n); return existing; }
+      var room = 99 - (slot.n || 1);
+      var put = Math.min(room, n);
+      slot.n = (slot.n || 1) + put;
+      if (n - put > 0) addItem(id, n - put);
+      return existing;
+    }
+    if (empty >= 0) {
+      // 工具栏有空位：整份放上去（互斥，不进重复口袋）
+      var put2 = Math.min(99, n);
+      inv.hot[empty] = { id: id, n: put2 };
+      if (n - put2 > 0) addItem(id, n - put2);
+      return empty;
+    }
+    // 没有工具栏位置：回落口袋
+    addItem(id, n);
+    return -1;
   }
 
   function openShop() {
@@ -1916,30 +1974,43 @@
         if (allBuckets().length >= MAX_BUCKETS) { toast('最多备两把桶'); return; }
       } else if (ownsTool(id)) { toast('已经有一把' + it.name + '了'); return; }
       if (inv.gold < it.price) { toast('金币不够'); return; }
-      if (bagSlotsUsed() >= inv.bag.length) { toast('口袋满了，先卖掉些东西'); return; }
+      if (bagSlotsUsed() >= inv.bag.length && freeHotbarSlot() < 0) { toast('没地方放了，先腾个位置'); return; }
       inv.gold -= it.price;
-      if (id === 'bucket') inv.bag[inv.bag.indexOf(null)] = mkBucket();
-      else addItem(id, 1);
+      if (id === 'bucket') {
+        // 桶优先放工具栏空位，没空位才进空口袋
+        var bkSlot = freeHotbarSlot();
+        if (bkSlot >= 0) inv.hot[bkSlot] = mkBucket();
+        else inv.bag[inv.bag.indexOf(null)] = mkBucket();
+      } else {
+        buyPlace(id, 1);
+      }
       syncGold();
       renderShop(); renderPocket(); renderHotbar();
       toast((id === 'bucket'
         ? ('买入 ' + it.name + ' · 现在有 ' + allBuckets().length + '/' + MAX_BUCKETS + ' 把')
-        : ('买入 ' + it.name + ' · 点口袋里的它放进工具栏')) +
+        : ('买入 ' + it.name)) +
         (SHOP_QTY === 1 ? '' : '（工具一次只买一把）'));
       return;
     }
 
-    /* 可堆叠的东西才走批量：上限由 数量 / 金币 / 口袋余量 三者取小 */
+    /* 可堆叠的东西才走批量：上限由 数量 / 金币 / 口袋+工具栏余量 三者取小 */
     var want = qtyWant();
     var afford = it.price > 0 ? Math.floor(inv.gold / it.price) : 99;
     var room = bagRoomFor(id);
+    // 工具栏里同款或空位也算能装：优先落到工具栏
+    var hotRoom = 0;
+    for (var hi = 0; hi < inv.hot.length; hi++) {
+      if (inv.hot[hi] && inv.hot[hi].id === id) hotRoom += 99 - (inv.hot[hi].n || 1);
+      else if (!inv.hot[hi]) hotRoom += 99;
+    }
+    room += hotRoom;
     if (afford < 1) { toast('金币不够（要 ' + it.price + '，现有 ' + inv.gold + '）'); return; }
-    if (room < 1) { toast('口袋满了，先卖掉些东西'); return; }
+    if (room < 1) { toast('没地方放了，先腾个位置'); return; }
     var n = Math.min(want, afford, room, 99);
     if (n < 1) n = 1;
 
     inv.gold -= it.price * n;
-    addItem(id, n);
+    buyPlace(id, n);
     syncGold();
     renderShop(); renderPocket(); renderHotbar();
 
@@ -2024,6 +2095,8 @@
   /* ============================================================ view/camera */
   var scale = 2, camX = 0, camY = 0, dpr = 1, viewW = 1, viewH = 1;
   var userZoomed = false;
+  /* 默认视角比"看全图"再拉近一点，画面更大更有沉浸感 */
+  var DEFAULT_ZOOM_FACTOR = 1.5;
 
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
@@ -2032,6 +2105,10 @@
     s = Math.floor(s * 2) / 2;
     return clamp(s, 1, 4);
   }
+  /* 启动/未手动缩放时的默认缩放：在 fitScale 基础上放大 DEFAULT_ZOOM_FACTOR 倍 */
+  function defaultScale() {
+    return clamp(Math.round(fitScale() * DEFAULT_ZOOM_FACTOR * 2) / 2, 1, 4);
+  }
   function resize() {
     var r = stage.getBoundingClientRect();
     viewW = Math.max(1, Math.round(r.width));
@@ -2039,7 +2116,7 @@
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(viewW * dpr);
     canvas.height = Math.round(viewH * dpr);
-    if (!userZoomed) scale = fitScale();
+    if (!userZoomed) scale = defaultScale();
     snapCamera();
   }
   function camTarget() {
@@ -2864,7 +2941,13 @@
           if (!bb) return false;
           inv.hot[i] = bb;                 // 桶是实体：整只搬，别再新建一只
         } else {
-          inv.hot[i] = { id:id };
+          // 工具/堆叠物：从口袋整份搬上工具栏（互斥，不重复）
+          var src = -1;
+          for (var b = 0; b < inv.bag.length; b++) if (inv.bag[b] && inv.bag[b].id === id) { src = b; break; }
+          if (src < 0) return false;
+          inv.hot[i] = entityForHot(inv.bag[src]);
+          inv.bag[src] = null;
+          mergeBagStacks();
         }
         inv.sel = i; return true;
       }
