@@ -336,7 +336,7 @@
   .shop-panel{
     left:50%;top:50%;
     transform:translate(-50%,-48%) scale(.98);
-    width:min(880px,94%);
+    width:min(780px,94%);
     max-height:calc(100% - 40px);
     display:flex;flex-direction:column;
     border-radius:16px;
@@ -379,26 +379,19 @@
   }
   .qty-ctl button:hover{border-color:rgba(53,107,76,.42);color:var(--accent)}
   .qty-ctl button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .shop-body{
-    display:grid;grid-template-columns:1.55fr 1fr;gap:0;overflow:auto;
-    scrollbar-width:thin;scrollbar-color:rgba(36,48,39,.3) transparent;
-  }
-  .shop-body::-webkit-scrollbar{width:9px}
-  .shop-body::-webkit-scrollbar-track{background:transparent}
-  .shop-body::-webkit-scrollbar-thumb{background:rgba(36,48,39,.22);border-radius:5px;border:2px solid #fffdf7}
-  .shop-body::-webkit-scrollbar-thumb:hover{background:rgba(36,48,39,.38)}
+  .shop-body{display:grid;grid-template-columns:1.62fr 1fr;gap:0;overflow:auto}
   .shop-col{padding:11px 12px 14px}
   .shop-col + .shop-col{border-left:1px solid rgba(36,48,39,.09)}
-  /* 每行都要塞下「数量输入 + 买 + 全部」，所以买列改单列，不再并排两行 */
-  #shopBuy{display:grid;grid-template-columns:1fr;gap:1px;align-content:start}
+  #shopBuy{display:grid;grid-template-columns:1fr 1fr;gap:1px 4px;align-content:start}
   #shopBuy .sect{grid-column:1/-1}
+  #shopBuy .row[data-pocket]{grid-column:1/-1}
   .col-head{
     font-size:10.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
     color:var(--muted);margin:0 2px 8px;display:flex;justify-content:space-between;
   }
   .row{
-    display:flex;align-items:center;gap:7px;
-    padding:5px 7px;border-radius:9px;
+    display:flex;align-items:center;gap:9px;
+    padding:6px 7px;border-radius:9px;
     cursor:pointer;
     transition:background .13s;
   }
@@ -426,32 +419,6 @@
   }
   .row .pr img{width:13px;height:13px}
   .row .st{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:26px;text-align:right}
-  /* 行内数量：默认 1，可自己填；改完按钮上的数字和右侧合计跟着变 */
-  .row .qn{
-    width:32px;height:21px;flex:0 0 auto;
-    border:1px solid rgba(36,48,39,.18);border-radius:6px;background:#fff;
-    font:inherit;font-size:11px;font-variant-numeric:tabular-nums;
-    color:var(--ink);text-align:center;padding:0 2px;
-    transition:border-color .13s, box-shadow .13s;
-  }
-  .row .qn:hover{border-color:rgba(36,48,39,.32)}
-  .row .qn:focus{
-    outline:none;border-color:var(--accent);
-    box-shadow:0 0 0 2px rgba(53,107,76,.16);
-  }
-  .row .act{
-    appearance:none;flex:0 0 auto;
-    height:21px;padding:0 6px;border-radius:6px;
-    border:1px solid rgba(53,107,76,.28);background:rgba(53,107,76,.08);
-    font:inherit;font-size:10.5px;font-weight:620;color:var(--accent);
-    cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap;
-    transition:background .13s,border-color .13s,color .13s;
-  }
-  .row .act:hover{background:rgba(53,107,76,.16);border-color:rgba(53,107,76,.5)}
-  .row .act.all{background:#fff;border-color:rgba(36,48,39,.2);color:var(--muted);font-weight:560}
-  .row .act.all:hover{color:var(--ink);border-color:rgba(36,48,39,.4);background:#fff}
-  .row.na .act{opacity:.6;cursor:not-allowed}
-  .row .total{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex:0 0 auto}
   .sect{
     font-size:10.5px;font-weight:650;letter-spacing:.08em;
     color:var(--muted);margin:11px 2px 5px;
@@ -596,21 +563,22 @@
           <div class="shop-title"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">旅行商人</div>
           <div class="shop-sub">种子、牲畜、工具、家什，收成和牛奶都换金币</div>
         </div>
-        <div class="qty-ctl" id="qtyCtl" title="把所有行的数量一次设成这个值">
-          <span>统一设</span>
+        <div class="qty-ctl" id="qtyCtl" title="一次交易的数量">
+          <span>数量</span>
           <button type="button" data-qty="1">1</button>
           <button type="button" data-qty="5">5</button>
           <button type="button" data-qty="10">10</button>
+          <button type="button" data-qty="max">全部</button>
         </div>
         <button class="x-btn" id="shopClose">✕</button>
       </div>
       <div class="shop-body">
         <div class="shop-col">
-          <div class="col-head"><span>买 · 种子 / 牲畜 / 工具 / 家什</span><span id="buyHint">填数量 → 买 / 全部</span></div>
+          <div class="col-head"><span>买 · 种子 / 牲畜 / 工具 / 家什</span><span id="buyHint">每次买 1 个</span></div>
           <div id="shopBuy"></div>
         </div>
         <div class="shop-col">
-          <div class="col-head"><span>卖 · 收成</span><span id="sellHint">填数量 → 卖 / 全部</span></div>
+          <div class="col-head"><span>卖 · 收成</span><span id="sellHint">点击出售 1 个</span></div>
           <div id="shopSell"></div>
         </div>
       </div>
@@ -1747,21 +1715,10 @@
   /* ================================================================== shop */
   var shopOpen = false;
 
-  /* 每一行自带数量：默认 1，key 是物品 id（牛奶用 '__milk'）。
-     顶部「统一设」只负责一次性把这些数字批量刷成同一个值。 */
-  var SHOP_N = {};
-  function qtyOf(id) {
-    var n = SHOP_N[id];
-    if (!(n > 0)) return 1;
-    return Math.min(Math.floor(n), 99);
-  }
-  function setQty(id, v) {
-    var n = parseInt(v, 10);
-    if (!(n > 0)) n = 1;
-    if (n > 99) n = 99;
-    SHOP_N[id] = n;
-    return n;
-  }
+  /* 批量买卖：1 / 5 / 10 / 0(=全部) */
+  var SHOP_QTY = 1;
+  function qtyWant() { return SHOP_QTY === 0 ? Infinity : SHOP_QTY; }
+  function qtyLabel() { return SHOP_QTY === 0 ? '全部' : ('' + SHOP_QTY); }
   /* 同一种东西还能往口袋里塞多少个（同 id 的空位补满 + 空格各 99） */
   function bagRoomFor(id) {
     var room = 0;
@@ -1771,50 +1728,6 @@
       else if (s.id === id && s.n < 99) room += 99 - s.n;
     }
     return room;
-  }
-
-  /* ---- 行内交易控件：输入框 + 主按钮 + 全部 ----------------------------
-     数量按行记在 SHOP_N 里，默认 1；改数字时按钮上的数字和右侧合计立刻跟着变。
-     重渲染（买卖成功）后仍从 SHOP_N 取值，所以连续买卖不用重新填。          */
-  function qtyHTML(id, kind, off, max) {
-    if (off) return '';
-    var n = qtyOf(id), isBuy = (kind === 'buy');
-    return '<input class="qn" type="text" inputmode="numeric" maxlength="2" value="' + n +
-      '" data-qn="' + id + '"' + (max > 0 ? ' data-max="' + max + '"' : '') +
-      ' title="要几个（1–99）">' +
-      '<button class="act" type="button" data-do="' + kind + '" data-id="' + id + '">' +
-      (isBuy ? '买 ' : '卖 ') + n + '</button>' +
-      '<button class="act all" type="button" data-do="' + kind + 'all" data-id="' + id + '" title="' +
-      (isBuy ? '口袋和金币允许多少就买多少' : '这一类一次卖光') + '">全部</button>';
-  }
-  /* 价格区：把单价带在 data-unit 上，输入数量后只改数字，不重建整行。
-     显示的永远是「这一趟要花 / 能拿多少」，单价挂在 title 上。 */
-  function priceHTML(unit, n) {
-    var nn = n || 1;
-    var total = (unit > 0 ? unit * nn : unit);
-    return '<span class="pr" data-unit="' + unit + '" title="单价 ' + unit +
-      (nn > 1 ? (' × ' + nn + ' = ' + total) : '') + '">' +
-      '<img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt=""><b>' + total + '</b></span>';
-  }
-  /* 输入框变动 → 同步 SHOP_N、按钮数字、右侧合计 */
-  function syncRowQty(inp) {
-    var id = inp.getAttribute('data-qn');
-    var n = setQty(id, inp.value);
-    var max = +inp.getAttribute('data-max') || 0;
-    if (max > 0 && n > max) { n = max; SHOP_N[id] = n; inp.value = n; }
-    var row = inp.closest('.row');
-    if (!row) return;
-    var btn = row.querySelector('[data-do="buy"],[data-do="sell"]');
-    if (btn) btn.textContent = (btn.getAttribute('data-do') === 'buy' ? '买 ' : '卖 ') + n;
-    var pr = row.querySelector('.pr[data-unit]');
-    if (pr) {
-      var unit = +pr.getAttribute('data-unit');
-      var b = pr.querySelector('b');
-      if (b && unit > 0) {
-        b.textContent = unit * n;
-        pr.title = '单价 ' + unit + (n > 1 ? (' × ' + n + ' = ' + (unit * n)) : '');
-      }
-    }
   }
 
   function openShop() {
@@ -1840,6 +1753,14 @@
 
   function renderShop() {
     shopGold.textContent = inv.gold;
+    /* 数量开关的高亮 + 两列表头提示 */
+    var qbtns = qtyCtl.querySelectorAll('[data-qty]');
+    for (var qi = 0; qi < qbtns.length; qi++) {
+      var qv = qbtns[qi].getAttribute('data-qty');
+      qbtns[qi].classList.toggle('on', (qv === 'max' ? 0 : +qv) === SHOP_QTY);
+    }
+    buyHint.textContent = SHOP_QTY === 0 ? '每次都买满' : ('每次买 ' + SHOP_QTY + ' 个');
+    sellHint.textContent = SHOP_QTY === 0 ? '点击卖出全部' : ('点击卖出 ' + SHOP_QTY + ' 个');
     var html = '';
     for (var i = 0; i < SEED_ORDER.length; i++) {
       var cid = SEED_ORDER[i];
@@ -1854,8 +1775,7 @@
         '<span class="nm">' + it.name + '</span>' +
         (owner ? '<span class="st">×' + owner + '</span>' : '') +
         (lock ? '<span class="lk">Lv.' + it.lv + '</span>' : '') +
-        qtyHTML(seedId, 'buy', lock) +
-        priceHTML(it.price, lock ? 1 : qtyOf(seedId)) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + it.price + '</span>' +
         '</div>';
     }
 
@@ -1871,8 +1791,7 @@
         '<span class="nm">' + anIt.name + '</span>' +
         (ownAn ? '<span class="st">×' + ownAn + '</span>' : '') +
         (lockAn ? '<span class="lk">Lv.' + anIt.lv + '</span>' : '') +
-        qtyHTML(animalId, 'buy', lockAn) +
-        priceHTML(anIt.price, lockAn ? 1 : qtyOf(animalId)) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + anIt.price + '</span>' +
         '</div>';
     }
 
@@ -1891,9 +1810,8 @@
         '<span class="nm">' + ti.name + '</span>' +
         (owned && !has && !lockT ? '<span class="st">×' + owned + '/' + MAX_BUCKETS + '</span>' : '') +
         (lockT ? '<span class="lk">Lv.' + ti.lv + '</span>'
-          : (has ? '<span class="st" style="margin-left:auto">' + (isBk ? '已备齐' : '已拥有') + '</span>'
-                 : '<button class="act" type="button" data-do="buy" data-id="' + toolId + '">买</button>')) +
-        (has && !lockT ? '' : priceHTML(ti.price, 1)) +
+          : (has ? '<span class="st">' + (isBk ? '已备齐' : '已拥有') + '</span>'
+                 : '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + ti.price + '</span>')) +
         '</div>';
     }
 
@@ -1915,8 +1833,7 @@
         '<span class="nm">' + gi2.name + '</span>' +
         (ownG ? '<span class="st">×' + ownG + '</span>' : '') +
         (lockG ? '<span class="lk">Lv.' + gi2.lv + '</span>' : '') +
-        qtyHTML(gid, 'buy', lockG) +
-        priceHTML(gi2.price, lockG ? 1 : qtyOf(gid)) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + gi2.price + '</span>' +
         '</div>';
     }
 
@@ -1932,8 +1849,7 @@
         '<span class="nm">' + dy.name + '</span>' +
         (own ? '<span class="st">×' + own + '</span>' : '') +
         (lockD ? '<span class="lk">Lv.' + dy.lv + '</span>' : '') +
-        qtyHTML(decoId, 'buy', lockD) +
-        priceHTML(dy.price, lockD ? 1 : qtyOf(decoId)) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + dy.price + '</span>' +
         '</div>';
     }
 
@@ -1944,8 +1860,8 @@
       '<img class="px" src="' + tfile('town-107') + '" alt="">' +
       '<span class="nm">口袋扩容 · +1 格</span>' +
       '<span class="st">' + inv.bag.length + '/' + POCKET.max + '</span>' +
-      (pocketFull ? '<span class="st" style="margin-left:auto">满级</span>'
-                  : '<button class="act" type="button">扩容</button>' + priceHTML(pocketPrice, 1)) +
+      (pocketFull ? '<span class="pr" style="color:var(--muted)">满级</span>'
+                  : '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + pocketPrice + '</span>') +
       '</div>';
     shopBuy.innerHTML = html;
 
@@ -1955,12 +1871,11 @@
     var milkAll = milkTotal();
     if (milkAll > 0) {
       any = true;
-      sells += '<div class="row" data-sellmilk="1">' +
+      sells += '<div class="row" data-sellmilk="1" title="每点一次卖 1 份，桶空变回空桶">' +
         '<img class="px" src="' + tfile('farm-124') + '" alt="">' +
         '<span class="nm">牛奶（桶里）</span>' +
         '<span class="st">×' + milkAll + ' 份</span>' +
-        qtyHTML('__milk', 'sell', false, milkAll) +
-        priceHTML(sellPrice(MILK_PRICE), qtyOf('__milk')) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + sellPrice(MILK_PRICE) + '</span>' +
         '</div>';
     }
     for (var j = 0; j < SELL_ORDER.length; j++) {
@@ -1973,38 +1888,23 @@
         '<img class="px" src="' + tfile(pi.icon) + '" alt="">' +
         '<span class="nm">' + pi.name + '</span>' +
         '<span class="st">×' + have + '</span>' +
-        qtyHTML(pid, 'sell', false, have) +
-        priceHTML(sellPrice(pi.price), qtyOf(pid)) +
+        '<span class="pr"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">' + sellPrice(pi.price) + '</span>' +
         '</div>';
     }
     if (!any) sells = '<div class="row na" style="cursor:default"><span class="nm" style="color:var(--muted)">口袋里还没有收成</span></div>';
     shopSell.innerHTML = sells;
-
-    /* 顶部「统一设」：只有当所有行的数字都等于它时才高亮 */
-    var qbtns = qtyCtl.querySelectorAll('[data-qty]');
-    var qins = shopPanel.querySelectorAll('.qn');
-    for (var qi = 0; qi < qbtns.length; qi++) {
-      var qv = +qbtns[qi].getAttribute('data-qty'), same = qins.length > 0;
-      for (var vi = 0; vi < qins.length; vi++) { if (+qins[vi].value !== qv) { same = false; break; } }
-      qbtns[qi].classList.toggle('on', same);
-    }
   }
 
   shopBuy.addEventListener('click', function (e) {
-    /* 点输入框不算交易：那是要改数量 */
-    if (e.target.classList && e.target.classList.contains('qn')) return;
-
     var pEl = e.target.closest('[data-pocket]');
     if (pEl) {
       if (LV.lv < 5) { toast('口袋扩容 Lv.5 才开放（当前 Lv.' + LV.lv + '）'); return; }
       upgradePocket(); return;
     }
 
-    var doEl = e.target.closest('[data-do]');
-    var all = doEl ? /all$/.test(doEl.getAttribute('data-do')) : false;
-    var el = doEl || e.target.closest('[data-buy]');
+    var el = e.target.closest('[data-buy]');
     if (!el) return;
-    var id = doEl ? doEl.getAttribute('data-id') : el.getAttribute('data-buy');
+    var id = el.getAttribute('data-buy');
     var it = ITEMS[id];
     if (!lvOk(it.lv)) {
       toast(it.name + ' · 要 Lv.' + it.lv + ' 才能买（当前 Lv.' + LV.lv + '）');
@@ -2022,14 +1922,15 @@
       else addItem(id, 1);
       syncGold();
       renderShop(); renderPocket(); renderHotbar();
-      toast(id === 'bucket'
+      toast((id === 'bucket'
         ? ('买入 ' + it.name + ' · 现在有 ' + allBuckets().length + '/' + MAX_BUCKETS + ' 把')
-        : ('买入 ' + it.name + ' · 点口袋里的它放进工具栏'));
+        : ('买入 ' + it.name + ' · 点口袋里的它放进工具栏')) +
+        (SHOP_QTY === 1 ? '' : '（工具一次只买一把）'));
       return;
     }
 
-    /* 可堆叠的东西：上限由 行内数量 / 金币 / 口袋余量 三者取小 */
-    var want = all ? Infinity : qtyOf(id);
+    /* 可堆叠的东西才走批量：上限由 数量 / 金币 / 口袋余量 三者取小 */
+    var want = qtyWant();
     var afford = it.price > 0 ? Math.floor(inv.gold / it.price) : 99;
     var room = bagRoomFor(id);
     if (afford < 1) { toast('金币不够（要 ' + it.price + '，现有 ' + inv.gold + '）'); return; }
@@ -2043,7 +1944,7 @@
     renderShop(); renderPocket(); renderHotbar();
 
     var buyMsg = '买入 ' + it.name + ' ×' + n + ' · -' + (it.price * n) + ' 金币';
-    if (n < want) buyMsg += '（最多只能买 ' + n + ' 个）';
+    if (want !== Infinity && n < want) buyMsg += '（只能买 ' + n + ' 个）';
     /* 买牲畜时把"没水没料就不生产"说清楚，不然 Lv4 会得到一只永远不下蛋的鸡 */
     if (ANIMAL_DEF[id]) {
       var supB = animalSupply();
@@ -2055,17 +1956,11 @@
   });
 
   shopSell.addEventListener('click', function (e) {
-    /* 点输入框不算交易 */
-    if (e.target.classList && e.target.classList.contains('qn')) return;
-
-    var doEl = e.target.closest('[data-do]');
-    var all = doEl ? /all$/.test(doEl.getAttribute('data-do')) : false;
-
     var milkEl = e.target.closest('[data-sellmilk]');
-    if (milkEl || (doEl && doEl.getAttribute('data-id') === '__milk')) {
+    if (milkEl) {
       var avail = milkTotal();
       if (!avail) return;
-      var wantM = all ? avail : Math.min(qtyOf('__milk'), avail), sold = 0;
+      var wantM = Math.min(qtyWant(), avail), sold = 0;
       while (sold < wantM) {
         var mb = milkBucket();
         if (!mb) break;
@@ -2081,59 +1976,26 @@
       return;
     }
 
-    var el = doEl || e.target.closest('[data-sell]');
+    var el = e.target.closest('[data-sell]');
     if (!el) return;
-    var id = doEl ? doEl.getAttribute('data-id') : el.getAttribute('data-sell');
+    var id = el.getAttribute('data-sell');
     var it = ITEMS[id];
-    if (!it) return;
     var sp = sellPrice(it.price);
     var have = countItem(id);
-    if (!have) { toast('没有' + it.name + '可卖'); return; }
-    var n = all ? have : Math.min(qtyOf(id), have);
+    if (!have) return;
+    var n = Math.min(qtyWant(), have);
     var removed = takeItem(id, n);
     if (!removed) return;
     addGold(sp * removed);
-    renderShop(); renderPocket(); renderHotbar();
+    renderShop();
     toast('卖出 ' + it.name + ' ×' + removed + ' · +' + (sp * removed) + ' 金币');
-  });
-
-  /* 行内数量：边打边同步按钮数字与合计 */
-  shopPanel.addEventListener('input', function (e) {
-    var inp = e.target;
-    if (inp && inp.classList && inp.classList.contains('qn')) syncRowQty(inp);
-  });
-  /* 输入框里的回车 = 立刻按这个数字交易；Esc 只退出输入框，不关店 */
-  shopPanel.addEventListener('keydown', function (e) {
-    var inp = e.target;
-    if (!inp || !inp.classList || !inp.classList.contains('qn')) return;
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      var n = setQty(inp.getAttribute('data-qn'), inp.value);
-      inp.value = n;
-      /* 直接点这一行的主按钮，买卖逻辑只留一份 */
-      var row = inp.closest('.row');
-      var btn = row && row.querySelector('[data-do="buy"],[data-do="sell"]');
-      if (btn) btn.click();
-      return;
-    }
-    if (e.key === 'Escape' || e.key === 'Tab') {
-      if (e.key === 'Escape') inp.blur();
-      e.stopPropagation();      // 别让 Tab 变成"折叠工具栏"，也把 Esc 截在这儿
-      return;
-    }
-    /* 别让数字键 / W A S D / B 漏到世界快捷键上去 */
-    e.stopPropagation();
   });
 
   qtyCtl.addEventListener('click', function (e) {
     var b = e.target.closest('[data-qty]');
     if (!b) return;
-    var v = +b.getAttribute('data-qty');
-    if (!(v > 0)) return;
-    /* 统一设：把当前所有行的数量一次刷成 v，之后各行还能单独改 */
-    var ins = shopPanel.querySelectorAll('.qn');
-    for (var i = 0; i < ins.length; i++) SHOP_N[ins[i].getAttribute('data-qn')] = v;
+    var v = b.getAttribute('data-qty');
+    SHOP_QTY = (v === 'max') ? 0 : +v;
     renderShop();
   });
 
@@ -3690,12 +3552,6 @@
   }
 
   window.addEventListener('keydown', function (e) {
-    /* 焦点在输入框里（商店的行内数量）：别把按键当成世界快捷键 */
-    var tgt = e.target;
-    if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) {
-      if (e.key === 'Escape') { tgt.blur(); e.stopPropagation(); }
-      return;
-    }
     if (e.key === 'Escape') {
       if (shopOpen) { closeShop(); return; }
       closePocket();
