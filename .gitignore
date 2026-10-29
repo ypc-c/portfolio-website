@@ -8,3 +8,10 @@ node_modules/
 # 系统杂物
 .DS_Store
 Thumbs.db
+
+# Kenney 素材包自带的无关文件（预览图/示例图/快捷方式/样例地图/说明），仅 Tiles/ 与 License.txt 入库
+public/pixel-world/games/kenney_tiny-*/Preview.png
+public/pixel-world/games/kenney_tiny-*/Sample*.png
+public/pixel-world/games/kenney_tiny-*/Tilesheet.txt
+public/pixel-world/games/kenney_tiny-*/Tilemap/
+public/pixel-world/games/kenney_tiny-*/*.url

@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Tiny Realm · 农场漫游</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAAB5QTFRFAAAAw0s1JitEdjs24Zpl8oRiUmB8vWxK98KCPyYxQnsNawAAAAF0Uk5TAEDm2GYAAABuSURBVAjXY2BAgJlAAKI5QYwJIIHJ5eWWIKGZ5uXlxWBGeXt5O5hR0dHRAWZ0aHRogBkeKi4qYMYUjw7PmSBjwsrLU4EGzZwaFhqaGjkTqFYsLS2xA8SYlpaWCWLMnJY5LRNoLefM6ZXTK2dOAACSfC/XN61bGAAAAABJRU5ErkJggg==">
+
 <style>
   :root{
     --bg:#f2efe6;
@@ -12,7 +14,8 @@
     --line:rgba(36,48,39,.13);
     --accent:#356b4c;
     --accent-soft:#dbe8d8;
-    --card:rgba(255,255,255,.82);
+    --gold:#b8873a;
+    --card:rgba(255,255,255,.86);
     --shadow:0 24px 48px -28px rgba(32,48,34,.45);
   }
   *{box-sizing:border-box}
@@ -38,6 +41,7 @@
     flex-direction:column;
     gap:12px;
   }
+  .px{image-rendering:pixelated;image-rendering:-moz-crisp-edges}
 
   /* ---------- top bar ---------- */
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:0 0 auto}
@@ -46,7 +50,6 @@
     width:36px;height:36px;border-radius:10px;
     background:var(--accent-soft);
     border:1px solid rgba(53,107,76,.18);
-    image-rendering:pixelated;
     padding:2px;
     box-shadow:inset 0 -2px 0 rgba(53,107,76,.10);
   }
@@ -83,44 +86,402 @@
   #game{
     position:absolute;inset:0;display:block;
     width:100%;height:100%;
-    image-rendering:pixelated;
-    image-rendering:-moz-crisp-edges;
     cursor:pointer;
     touch-action:none;
   }
 
-  /* ---------- hud ---------- */
-  .hud{
+  /* ---------- hud shared ---------- */
+  .hud-el{
     position:absolute;
-    display:flex;align-items:center;gap:12px;
-    padding:7px 11px;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .chip{
+    display:flex;align-items:center;gap:7px;
+    padding:6px 11px 6px 8px;
     border-radius:11px;
     background:var(--card);
-    border:1px solid rgba(255,255,255,.75);
-    box-shadow:0 8px 22px -14px rgba(28,44,32,.75);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 10px 24px -16px rgba(28,44,32,.9), inset 0 0 0 1px rgba(36,48,39,.05);
     backdrop-filter:blur(10px) saturate(1.1);
     -webkit-backdrop-filter:blur(10px) saturate(1.1);
     font-size:12px;
-    user-select:none;
-    pointer-events:none;
   }
-  .hud-tl{top:12px;left:12px}
-  .hud-br{bottom:12px;right:12px;pointer-events:auto;padding:6px;gap:6px}
-  .stat{display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .stat + .stat{padding-left:11px;border-left:1px solid var(--line)}
-  .stat .k{color:var(--muted);font-size:11px}
-  .stat .v{font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.01em}
+  .chip img{width:20px;height:20px}
+
+  /* coins */
+  #coinChip{top:12px;left:12px;gap:8px;padding:5px 12px 5px 7px}
+  #coinChip .num{
+    font-size:14px;font-weight:680;letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+    color:#7c5a20;
+    min-width:20px;
+  }
+  #coinChip .lbl{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+  #coinChip.pulse{animation:coinpulse .45s ease}
+  @keyframes coinpulse{0%{transform:scale(1)}45%{transform:scale(1.055)}100%{transform:scale(1)}}
+
+  /* status */
+  #statusChip{top:52px;left:12px;font-size:11.5px;color:var(--muted);padding:4px 10px}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:0 0 auto}
   .dot.warn{background:#c2603f}
+  .dot.gold{background:#c9963e}
 
+  /* 等级 + 经验条 */
+  #lvChip{top:84px;left:12px;gap:7px;padding:4px 10px 4px 8px}
+  #lvChip .lvtag{
+    font-size:11.5px;font-weight:700;letter-spacing:.02em;color:#2f4a37;
+    font-variant-numeric:tabular-nums;
+  }
+  #lvChip .lvtag b{font-weight:800}
+  #lvChip .xpbar{
+    width:64px;height:5px;border-radius:3px;overflow:hidden;
+    background:rgba(36,48,39,.13);
+  }
+  #lvChip .xpbar i{
+    display:block;height:100%;width:0;border-radius:3px;
+    background:linear-gradient(90deg,#7fb069,#4f8a52);
+    transition:width .28s ease;
+  }
+  #lvChip .xptxt{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+  #lvChip.up{animation:lvup .7s ease}
+  @keyframes lvup{
+    0%{transform:scale(1);box-shadow:0 0 0 0 rgba(214,164,66,.55)}
+    38%{transform:scale(1.09);box-shadow:0 0 0 7px rgba(214,164,66,.22)}
+    100%{transform:scale(1);box-shadow:0 0 0 0 rgba(214,164,66,0)}
+  }
+
+  /* ---------- bag ---------- */
+  /* 口袋按钮挂在工具栏左外侧，跟槽位同一行对齐；口袋面板从按钮上方展开 */
+  /* 注意：这两层包裹容器都设了 pointer-events:none。
+     面板收起时元素只是 opacity:0，但仍然占着布局盒子，
+     如果不放行指针，点在地图上会被这个空盒子吃掉（表现为“这片区域点不动”）。 */
+  .bag-wrap{
+    position:absolute;right:calc(100% + 6px);bottom:7px;z-index:4;
+    display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+    pointer-events:none;
+  }
+  .bag-wrap > *{pointer-events:auto}
+  .bag-btn{
+    position:relative;width:44px;height:44px;padding:0;
+    border-radius:10px;
+    background:rgba(255,255,255,.86);
+    border:1px solid rgba(36,48,39,.14);
+    box-shadow:inset 0 -2px 0 rgba(36,48,39,.05), 0 10px 24px -16px rgba(28,44,32,.9);
+    backdrop-filter:blur(10px) saturate(1.1);
+    -webkit-backdrop-filter:blur(10px) saturate(1.1);
+    font:inherit;color:inherit;cursor:pointer;
+    display:grid;place-items:center;
+    transition:border-color .15s, box-shadow .15s, background .15s;
+  }
+  .bag-btn:hover{border-color:rgba(53,107,76,.42);background:#fff}
+  .bag-btn.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(53,107,76,.2), inset 0 -2px 0 rgba(53,107,76,.14)}
+  .bag-btn img{width:28px;height:28px;pointer-events:none}
+  .bag-btn .cap{
+    position:absolute;right:1px;bottom:1px;
+    padding:0 2px;border-radius:5px;
+    background:rgba(255,255,255,.94);
+    box-shadow:0 0 0 1px rgba(36,48,39,.07);
+    font-size:9px;line-height:12px;font-weight:650;letter-spacing:-.3px;
+    color:#8b9490;font-variant-numeric:tabular-nums;pointer-events:none;
+  }
+  .bag-btn .cap b{color:#2c3a2f;font-weight:700}
+
+  .pocket{
+    width:262px;
+    padding:10px;
+    border-radius:14px;
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 18px 40px -22px rgba(28,44,32,.95), inset 0 0 0 1px rgba(36,48,39,.05);
+    backdrop-filter:blur(14px) saturate(1.1);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);
+    transform-origin:100% 100%;
+    transition:opacity .16s ease, transform .16s ease;
+  }
+  .pocket.out{opacity:0;transform:translateY(6px) scale(.98);pointer-events:none}
+  .pocket-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin:0 2px 8px;font-size:11.5px;font-weight:650;
+  }
+  .pocket-head span{font-weight:450;color:var(--muted);font-size:10.5px}
+  .pocket-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+
+  /* ---------- hotbar ---------- */
+  .hotbar-wrap{
+    left:50%;bottom:12px;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    pointer-events:none;            /* 收起后整条隐形带子不能再吃点击 */
+  }
+  .hotbar-wrap .bar-toggle,
+  .hotbar-wrap .hotbar{pointer-events:auto}
+  .hotbar{
+    display:flex;gap:6px;padding:6px;
+    border-radius:14px;
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 16px 36px -20px rgba(28,44,32,.95), inset 0 0 0 1px rgba(36,48,39,.05);
+    backdrop-filter:blur(12px) saturate(1.1);
+    -webkit-backdrop-filter:blur(12px) saturate(1.1);
+  }
+  /* 收起：不只透明，还要彻底让出位置，不然底下那 84px 会一直挡着地图 */
+  .hotbar-wrap.hidden .hotbar{
+    opacity:0;transform:translateY(14px) scale(.96);pointer-events:none;
+    visibility:hidden;
+    transition:opacity .18s ease, transform .18s ease, visibility .18s;
+  }
+  .hotbar-wrap .hotbar{transition:opacity .18s ease, transform .18s ease}
+  .bar-toggle{
+    display:inline-flex;align-items:center;gap:5px;
+    height:20px;padding:0 9px;border-radius:999px;
+    background:rgba(255,255,255,.72);
+    border:1px solid var(--line);
+    color:var(--muted);font:inherit;font-size:10.5px;
+    cursor:pointer;
+    transition:color .15s,border-color .15s,background .15s;
+  }
+  .bar-toggle:hover{color:var(--accent);border-color:rgba(53,107,76,.4);background:#fff}
+  .bar-toggle svg{width:9px;height:9px;transition:transform .18s ease}
+  .hotbar-wrap.hidden .bar-toggle svg{transform:rotate(180deg)}
+
+  /* ---------- slots ---------- */
+  .slot{
+    position:relative;
+    width:44px;height:44px;
+    border-radius:10px;
+    background:rgba(255,255,255,.86);
+    border:1px solid rgba(36,48,39,.14);
+    box-shadow:inset 0 -2px 0 rgba(36,48,39,.05);
+    display:grid;place-items:center;
+    cursor:pointer;
+    transition:border-color .13s, box-shadow .13s, transform .13s, background .13s;
+    flex:0 0 auto;
+  }
+  .slot:hover{border-color:rgba(53,107,76,.42);background:#fff}
+  .slot.on{
+    border-color:var(--accent);
+    background:#fff;
+    box-shadow:0 0 0 2px rgba(53,107,76,.2), inset 0 -2px 0 rgba(53,107,76,.14);
+    transform:translateY(-2px);
+  }
+  .slot.empty{background:rgba(255,255,255,.42);border-style:dashed;border-color:rgba(36,48,39,.16);cursor:default}
+  .slot.empty:hover{border-color:rgba(36,48,39,.16);background:rgba(255,255,255,.42)}
+  .slot.flash{animation:slotflash .6s ease}
+  @keyframes slotflash{
+    0%{box-shadow:0 0 0 0 rgba(53,107,76,.55)}
+    100%{box-shadow:0 0 0 9px rgba(53,107,76,0)}
+  }
+  .slot img{width:30px;height:30px;pointer-events:none}
+  .slot svg.ic{width:24px;height:24px;color:#5b6b5e;pointer-events:none}
+  .slot .cnt{
+    position:absolute;right:1px;bottom:1px;
+    font-size:10px;font-weight:700;
+    color:#2c3a2f;
+    background:rgba(255,255,255,.94);
+    border-radius:5px;
+    padding:0 3px;
+    line-height:12px;
+    font-variant-numeric:tabular-nums;
+    pointer-events:none;
+    box-shadow:0 0 0 1px rgba(36,48,39,.07);
+  }
+  .slot .cnt.water{color:#1f6389}
+  .slot .cnt.milk{color:#8a6a26}
+  .slot .cnt.dry{color:#a4482f}
+  .slot .key{
+    position:absolute;left:3px;top:1px;
+    font-size:9px;font-weight:600;color:rgba(36,48,39,.34);
+    pointer-events:none;
+  }
+
+  /* ---------- tooltip ---------- */
+  .tip{
+    left:0;top:0;
+    max-width:230px;
+    padding:7px 10px;
+    border-radius:9px;
+    background:rgba(28,40,31,.93);
+    color:#f2f6ee;
+    font-size:11.5px;line-height:1.5;
+    box-shadow:0 12px 26px -16px rgba(0,0,0,.9);
+    opacity:0;pointer-events:none;
+    transition:opacity .12s ease;
+    white-space:nowrap;
+    z-index:5;
+  }
+  .tip.show{opacity:1}
+  .tip b{font-weight:650}
+  .tip .m{color:#a9c2a9}
+  .tip .bar{display:block;height:3px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:5px;overflow:hidden}
+  .tip .bar i{display:block;height:100%;background:#93c48b;border-radius:2px}
+
+  /* ---------- toast ---------- */
+  .toast{
+    left:50%;bottom:96px;
+    transform:translate(-50%,10px);
+    padding:8px 14px;border-radius:10px;
+    background:rgba(28,40,31,.9);
+    color:#f4f7f1;font-size:12.5px;letter-spacing:.01em;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.8);
+    opacity:0;pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;
+    white-space:nowrap;
+    z-index:6;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------- shop ---------- */
+  .shop-scrim{inset:0;background:rgba(30,42,32,.28);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:7}
+  .shop-scrim.on{opacity:1;pointer-events:auto}
+  .shop-panel{
+    left:50%;top:50%;
+    transform:translate(-50%,-48%) scale(.98);
+    width:min(880px,94%);
+    max-height:calc(100% - 40px);
+    display:flex;flex-direction:column;
+    border-radius:16px;
+    background:#fffdf7;
+    border:1px solid rgba(36,48,39,.14);
+    box-shadow:0 28px 60px -26px rgba(24,36,26,.55);
+    opacity:0;pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:8;
+    overflow:hidden;
+  }
+  .shop-panel.on{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+  .shop-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:13px 15px 12px;
+    background:linear-gradient(180deg,#f6f3e7,#f1eee1);
+    border-bottom:1px solid rgba(36,48,39,.1);
+  }
+  .shop-title{font-size:13.5px;font-weight:680;display:flex;align-items:center;gap:7px}
+  .shop-title img{width:18px;height:18px}
+  .shop-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .x-btn{
+    width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;color:var(--muted);cursor:pointer;font:inherit;font-size:12px;
+    display:grid;place-items:center;line-height:1;
+  }
+  .x-btn:hover{color:var(--ink);border-color:rgba(36,48,39,.28)}
+  /* 批量买卖：一次交易的数量 */
+  .qty-ctl{
+    display:flex;align-items:center;gap:3px;margin-left:auto;margin-right:8px;
+    font-size:10.5px;color:var(--muted);
+  }
+  .qty-ctl > span{margin-right:3px;letter-spacing:.02em}
+  .qty-ctl button{
+    appearance:none;border:1px solid var(--line);background:#fff;
+    height:22px;min-width:26px;padding:0 7px;border-radius:7px;
+    font:inherit;font-size:11px;color:var(--ink);cursor:pointer;
+    font-variant-numeric:tabular-nums;
+    transition:background .13s,border-color .13s,color .13s;
+  }
+  .qty-ctl button:hover{border-color:rgba(53,107,76,.42);color:var(--accent)}
+  .qty-ctl button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .shop-body{
+    display:grid;grid-template-columns:1.55fr 1fr;gap:0;overflow:auto;
+    scrollbar-width:thin;scrollbar-color:rgba(36,48,39,.3) transparent;
+  }
+  .shop-body::-webkit-scrollbar{width:9px}
+  .shop-body::-webkit-scrollbar-track{background:transparent}
+  .shop-body::-webkit-scrollbar-thumb{background:rgba(36,48,39,.22);border-radius:5px;border:2px solid #fffdf7}
+  .shop-body::-webkit-scrollbar-thumb:hover{background:rgba(36,48,39,.38)}
+  .shop-col{padding:11px 12px 14px}
+  .shop-col + .shop-col{border-left:1px solid rgba(36,48,39,.09)}
+  /* 每行都要塞下「数量输入 + 买 + 全部」，所以买列改单列，不再并排两行 */
+  #shopBuy{display:grid;grid-template-columns:1fr;gap:1px;align-content:start}
+  #shopBuy .sect{grid-column:1/-1}
+  .col-head{
+    font-size:10.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin:0 2px 8px;display:flex;justify-content:space-between;
+  }
+  .row{
+    display:flex;align-items:center;gap:7px;
+    padding:5px 7px;border-radius:9px;
+    cursor:pointer;
+    transition:background .13s;
+  }
+  .row:hover{background:rgba(53,107,76,.07)}
+  .row.na{opacity:.42;cursor:not-allowed}
+  .row.na:hover{background:none}
+  /* 等级没到：灰显 + 右上角挂个 Lv.x 标签，看得见目标但买不了 */
+  .row.locked{opacity:.5;cursor:not-allowed}
+  .row.locked:hover{background:none}
+  .row.locked img{filter:grayscale(1)}
+  .row .lk{
+    font-size:9.5px;font-weight:700;letter-spacing:.02em;
+    color:#7d857f;background:rgba(36,48,39,.08);
+    padding:1px 5px;border-radius:5px;flex:0 0 auto;
+    font-variant-numeric:tabular-nums;
+  }
+  .row img{width:24px;height:24px;flex:0 0 auto}
+  /* 占两格的家什：图标画成摆放后的两格连在一起 */
+  .row .duo-ic{width:26px;height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .row .duo-ic img{width:13px;height:13px}
+  .row .nm{font-size:12px;font-weight:520;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .pr{
+    font-size:11.5px;font-weight:650;font-variant-numeric:tabular-nums;
+    color:#8a6a26;display:flex;align-items:center;gap:3px;
+  }
+  .row .pr img{width:13px;height:13px}
+  .row .st{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:26px;text-align:right}
+  /* 行内数量：默认 1，可自己填；改完按钮上的数字和右侧合计跟着变 */
+  .row .qn{
+    width:32px;height:21px;flex:0 0 auto;
+    border:1px solid rgba(36,48,39,.18);border-radius:6px;background:#fff;
+    font:inherit;font-size:11px;font-variant-numeric:tabular-nums;
+    color:var(--ink);text-align:center;padding:0 2px;
+    transition:border-color .13s, box-shadow .13s;
+  }
+  .row .qn:hover{border-color:rgba(36,48,39,.32)}
+  .row .qn:focus{
+    outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 2px rgba(53,107,76,.16);
+  }
+  .row .act{
+    appearance:none;flex:0 0 auto;
+    height:21px;padding:0 6px;border-radius:6px;
+    border:1px solid rgba(53,107,76,.28);background:rgba(53,107,76,.08);
+    font:inherit;font-size:10.5px;font-weight:620;color:var(--accent);
+    cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap;
+    transition:background .13s,border-color .13s,color .13s;
+  }
+  .row .act:hover{background:rgba(53,107,76,.16);border-color:rgba(53,107,76,.5)}
+  .row .act.all{background:#fff;border-color:rgba(36,48,39,.2);color:var(--muted);font-weight:560}
+  .row .act.all:hover{color:var(--ink);border-color:rgba(36,48,39,.4);background:#fff}
+  .row.na .act{opacity:.6;cursor:not-allowed}
+  .row .total{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .sect{
+    font-size:10.5px;font-weight:650;letter-spacing:.08em;
+    color:var(--muted);margin:11px 2px 5px;
+    border-top:1px solid rgba(36,48,39,.09);padding-top:9px;
+  }
+  .shop-foot{
+    padding:8px 14px 10px;border-top:1px solid rgba(36,48,39,.09);
+    font-size:11px;color:var(--muted);
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:#fbf9f0;
+  }
+  .shop-foot b{color:#7c5a20;font-variant-numeric:tabular-nums}
+  .reset-link{
+    border:0;background:none;padding:1px 3px;border-radius:5px;
+    font:inherit;font-size:11px;color:#9aa29b;cursor:pointer;
+    text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(154,162,155,.6);
+    margin-right:auto;
+  }
+  .reset-link:hover{color:#b0542f;text-decoration-color:rgba(176,84,47,.6)}
+
+  /* ---------- view controls ---------- */
+  .viewctl{right:12px;bottom:12px;display:flex;gap:6px;opacity:.92}
   .btn{
     appearance:none;
     border:1px solid var(--line);
-    background:rgba(255,255,255,.92);
+    background:rgba(255,255,255,.9);
     color:var(--ink);
-    height:28px;min-width:28px;padding:0 9px;
+    height:26px;min-width:26px;padding:0 8px;
     border-radius:8px;
-    font-size:12px;font-family:inherit;line-height:1;
+    font-size:11.5px;font-family:inherit;line-height:1;
     display:inline-flex;align-items:center;justify-content:center;
     cursor:pointer;
     transition:background .15s,border-color .15s,color .15s;
@@ -128,25 +489,10 @@
   .btn:hover{background:#fff;border-color:rgba(53,107,76,.42);color:var(--accent)}
   .btn:active{transform:translateY(1px)}
   .btn.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn svg{width:13px;height:13px}
-
-  /* ---------- toast ---------- */
-  .toast{
-    position:absolute;left:50%;bottom:22px;
-    transform:translate(-50%,8px);
-    padding:8px 14px;border-radius:10px;
-    background:rgba(28,40,31,.88);
-    color:#f4f7f1;font-size:12.5px;letter-spacing:.01em;
-    box-shadow:0 10px 24px -14px rgba(0,0,0,.8);
-    opacity:0;pointer-events:none;
-    transition:opacity .22s ease,transform .22s ease;
-    white-space:nowrap;
-  }
-  .toast.show{opacity:1;transform:translate(-50%,0)}
 
   /* ---------- footer ---------- */
   .footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex:0 0 auto;flex-wrap:wrap}
-  .hints{display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+  .hints{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px}
   .hint{display:inline-flex;align-items:center;gap:6px}
   kbd{
     display:inline-flex;align-items:center;justify-content:center;
@@ -161,11 +507,22 @@
   .credit{font-size:11px;color:#8b978c;letter-spacing:.01em}
   .credit a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(139,151,140,.7)}
 
+  @media (max-width:860px){
+    .pocket{width:234px}
+    .slot{width:38px;height:38px}
+    .slot img{width:26px;height:26px}
+    .bag-btn{width:38px;height:38px}
+    .bag-btn img{width:25px;height:25px}
+    .bag-btn .cap{font-size:8.5px;line-height:11px}
+  }
   @media (max-width:720px){
     .app{padding:12px 12px 10px;gap:9px}
     .subtitle{display:none}
-    .footer .hints{gap:12px}
+    .footer .hints{gap:10px}
     .credit{display:none}
+    .shop-body{grid-template-columns:1fr}
+    #shopBuy{grid-template-columns:1fr}
+    .shop-col + .shop-col{border-left:0;border-top:1px solid rgba(36,48,39,.09)}
   }
 </style>
 </head>
@@ -173,10 +530,10 @@
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <img class="logo" src="kenney_tiny-farm/Tiles/tile_0109.png" alt="玩家角色">
+      <img class="logo px" src="kenney_tiny-farm/Tiles/tile_0109.png" alt="玩家角色">
       <div class="titles">
         <div class="title">Tiny Realm <span class="tag">农场漫游</span></div>
-        <div class="subtitle">点击地面自动寻路，或用键盘逐格行走。障碍与地图边界不可穿越。</div>
+        <div class="subtitle">种菜收成、养鸡放羊、砍树挖石。收割和收蛋给经验，升级解锁新作物与新牲畜。</div>
       </div>
     </div>
     <div class="meta">
@@ -187,27 +544,97 @@
   <div class="stage" id="stage">
     <canvas id="game"></canvas>
 
-    <div class="hud hud-tl">
-      <span class="stat"><span class="k">坐标</span><span class="v" id="coord">x 12 · y 7</span></span>
-      <span class="stat"><span class="dot" id="statusdot"></span><span class="v" id="status">待机</span></span>
+    <div class="chip hud-el" id="coinChip">
+      <img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">
+      <span class="num" id="goldNum">0</span>
+      <span class="lbl">金币</span>
     </div>
 
-    <div class="hud hud-br">
+    <div class="chip hud-el" id="statusChip">
+      <span class="dot" id="statusdot"></span>
+      <span id="status">待机</span>
+    </div>
+
+    <div class="chip hud-el" id="lvChip">
+      <span class="lvtag">Lv.<b id="lvNum">1</b></span>
+      <span class="xpbar"><i id="xpFill"></i></span>
+      <span class="xptxt" id="xpTxt">0 / 30</span>
+    </div>
+
+    <div class="hud-el hotbar-wrap" id="hotbarWrap">
+      <button class="bar-toggle" id="barToggle">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+        工具栏
+      </button>
+      <div class="hotbar" id="hotbar"></div>
+      <div class="bag-wrap" id="bagWrap">
+        <div class="pocket out" id="pocket">
+          <div class="pocket-head">口袋 <span id="bagHint">点击物品 → 放入工具栏</span></div>
+          <div class="pocket-grid" id="pocketGrid"></div>
+        </div>
+        <button class="bag-btn" id="bagBtn" title="口袋 · 按 B 开关">
+          <img class="px" src="kenney_tiny-town/Tiles/tile_0107.png" alt="">
+          <span class="cap"><b id="bagCount">0</b>/<span id="bagMax">10</span></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hud-el viewctl">
       <button class="btn" id="zoomout" title="缩小">−</button>
       <button class="btn" id="zoomfit" title="适应窗口">适应</button>
       <button class="btn" id="zoomin" title="放大">+</button>
       <button class="btn" id="toggleblock" title="显示障碍格">障碍</button>
     </div>
 
-    <div class="toast" id="toast"></div>
+    <div class="tip hud-el" id="tip"></div>
+    <div class="toast hud-el" id="toast"></div>
+
+    <div class="hud-el shop-scrim" id="shopScrim"></div>
+    <div class="hud-el shop-panel" id="shopPanel">
+      <div class="shop-head">
+        <div>
+          <div class="shop-title"><img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt="">旅行商人</div>
+          <div class="shop-sub">种子、牲畜、工具、家什，收成和牛奶都换金币</div>
+        </div>
+        <div class="qty-ctl" id="qtyCtl" title="把所有行的数量一次设成这个值">
+          <span>统一设</span>
+          <button type="button" data-qty="1">1</button>
+          <button type="button" data-qty="5">5</button>
+          <button type="button" data-qty="10">10</button>
+        </div>
+        <button class="x-btn" id="shopClose">✕</button>
+      </div>
+      <div class="shop-body">
+        <div class="shop-col">
+          <div class="col-head"><span>买 · 种子 / 牲畜 / 工具 / 家什</span><span id="buyHint">填数量 → 买 / 全部</span></div>
+          <div id="shopBuy"></div>
+        </div>
+        <div class="shop-col">
+          <div class="col-head"><span>卖 · 收成</span><span id="sellHint">填数量 → 卖 / 全部</span></div>
+          <div id="shopSell"></div>
+        </div>
+      </div>
+      <div class="shop-foot">
+        <span>站在推车旁按 <kbd>F</kbd>，或直接点推车 · <kbd>Esc</kbd> 关闭</span>
+        <button class="reset-link" id="resetBtn" title="清掉存档，从 Lv.1 重新开始">重开一局</button>
+        <span>持有 <img class="px" style="width:12px;height:12px;vertical-align:-2px" src="kenney_tiny-town/Tiles/tile_0093.png" alt=""> <b id="shopGold">0</b></span>
+      </div>
+    </div>
   </div>
 
   <footer class="footer">
     <div class="hints">
       <span class="hint"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>移动</span>
-      <span class="hint"><span class="keys"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span>移动</span>
-      <span class="hint">点击地面寻路</span>
-      <span class="hint">滚轮缩放</span>
+      <span class="hint"><span class="keys"><kbd>F</kbd></span>对脚下 / 面前动手</span>
+      <span class="hint"><span class="keys"><kbd>1</kbd>–<kbd>7</kbd></span>切换栏位</span>
+      <span class="hint">锄头开地 · 铲子还原 · 水井打水</span>
+      <span class="hint">斧头砍树 · 镐子敲石</span>
+      <span class="hint">树苗 / 岩石拿在手里，面朝空地按 <kbd>F</kbd> 摆下</span>
+      <span class="hint">牲畜要水槽和饲料槽都有东西才生产 · 靠近按 <kbd>F</kbd> 收蛋 / 剪毛 / 拿桶挤奶</span>
+      <span class="hint">水槽倒 5 份水 · 饲料槽塞 5 个小麦 · 动物越多烧得越快</span>
+      <span class="hint">浇一次水润 10 分钟 · 生长快 30%</span>
+      <span class="hint">Lv7 起能用铲子把野外浆果丛挖回家</span>
+      <span class="hint">点地图走过去，顺手把活儿干完</span>
     </div>
     <div class="credit">瓦片素材 <a href="https://kenney.nl" target="_blank" rel="noreferrer">Kenney Tiny Town / Tiny Farm</a> · CC0</div>
   </footer>
@@ -217,107 +644,1532 @@
 (function () {
   'use strict';
 
-  /* ------------------------------------------------------------------ data */
-  var MAP = {"w":30,"h":17,"tile":16,"tiles":[{"src":"kenney_tiny-town/Tiles/tile_0000.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0019.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0032.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0040.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0001.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0003.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0004.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0018.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0027.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0082.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0015.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0016.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0031.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0030.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0020.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0002.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0093.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0094.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0095.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0112.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0113.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0002.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0085.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0105.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0106.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0107.png","lvl":4,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0013.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0014.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0044.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0045.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0046.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0038.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0089.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0008.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0007.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0117.png","lvl":4,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0115.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0118.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0119.png","lvl":4,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0025.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0026.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0056.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0121.png","lvl":4,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0058.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0028.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0012.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0122.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0092.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0129.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0091.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0090.png","lvl":2,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0131.png","lvl":4,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0037.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0038.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0026.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0077.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0024.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0114.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0127.png","lvl":2,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0116.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0068.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0082.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0080.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0070.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0080.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0064.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0078.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0036.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0081.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0048.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0066.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0049.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0050.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0083.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0018.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0097.png","lvl":3,"solid":true},{"src":"kenney_tiny-town/Tiles/tile_0005.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0006.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0023.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0042.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0012.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0028.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0016.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0013.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0025.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0047.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0065.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0024.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0052.png","lvl":1,"solid":false},{"src":"kenney_tiny-town/Tiles/tile_0069.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0029.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0053.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0017.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0041.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0110.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0111.png","lvl":3,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0120.png","lvl":4,"solid":true},{"src":"kenney_tiny-farm/Tiles/tile_0036.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0030.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0054.png","lvl":1,"solid":false},{"src":"kenney_tiny-farm/Tiles/tile_0037.png","lvl":1,"solid":false}],"grid":[[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0],[0],[0],[0],[0,3],[0,4],[0],[0],[0],[0],[0,5],[0],[0,6],[0],[0],[0,7],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0],[0],[0],[0],[0],[0],[0,5],[0,8],[0,9],[0],[0],[0,4,10],[0,5],[0,11],[0],[0],[0,4],[0,12],[0,12],[0,12],[0,4,12],[0,12],[0,13],[0,1],[0,1],[0,1],[0,1],[0,1],[0,14],[0,15,5],[0],[0],[0],[0,5],[0,3],[0],[0,10],[0,16],[0,17],[0,18],[0],[0],[0,4,10],[0,4],[0,19],[0,20],[0,4],[0,4],[0,4,21],[0],[0,4],[0],[0],[0,13],[0,1],[0,1],[0,2],[0,4],[0,4],[0,10],[0],[0],[0],[0,10],[0,4,5],[0],[0,22],[0,23],[0,24],[0,25],[0,26],[0,27,28],[0,29],[0,29],[0,29],[0,30],[0],[0,21],[0,31],[0],[0,32],[0],[0,4],[0,7],[0,1],[0,1],[0,33],[0,4,34],[0,34],[0,15],[0],[0],[0,3],[0],[0,10],[0,15],[0],[0,35],[0,36,37],[0,38],[0,39],[0,40,41],[0,42],[0,4],[0,4],[0,43],[0],[0,31],[0],[0,44],[0],[0,32],[0,4],[0],[0,12],[0,1],[0,1],[0,1],[0,1],[0,33],[0],[0,5],[0,15],[0,4],[0,15],[0],[0,45,46],[0,47,48],[0,49],[0,50,51],[0,39,52],[0,53,41],[0],[0,4],[0,42],[0,43],[0],[0],[0,54],[0,4],[0,4,55],[0],[0,4],[0],[0],[0,1],[0,1],[0,1],[0,1],[0,2],[0],[0,10],[0],[0],[0],[0,46],[0,56],[0,57],[0,58],[0,59],[0,32],[0,60],[0,4,61],[0],[0,62],[0,63],[0],[0],[0,4,31],[0],[0],[0],[0,4,64],[0],[0],[0,1],[0,14],[0],[0],[0],[0],[0,65],[0,66],[0],[0],[0],[0,67],[0,52],[0,52],[0,53],[0],[0,4],[0],[0],[0],[0],[0],[0,62],[0,68],[0,61],[0],[0,62],[0,68],[0,61],[0],[0],[0],[0],[0],[0,15],[0],[0,66],[0],[0,66],[0],[0],[0],[0],[0],[0],[0,15],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,45],[0,26],[0,26],[0,26],[0,26],[0,26],[0,26],[0,26],[0],[0,15],[0],[0,45],[0,26,73],[0,26],[0,26],[0,26],[0,27],[0],[0],[0,69,74],[0,71,74],[0,72,74],[0],[0],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0,75],[0,67],[0,52],[0,52],[0,52],[0,52],[0,52],[0,52],[0,52],[0,76],[0],[0,45,73],[0,39],[0,39],[0,39,73],[0,39],[0,52,39],[0,53],[0,4],[0],[0,69,77],[0,71,77],[0,72,77],[0],[0,4],[0,69,70],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,62],[0,4,68],[0,61],[0],[0,62],[0,68],[0,61],[0],[0,15],[0],[0,67],[0,39,73],[0,39,73],[0,39],[0,40,39],[0,40,73],[0],[0,78],[0],[0,69,79],[0,71,79],[0,72,79],[0],[0],[0],[0],[0],[0],[0],[0,4],[0,80,81],[0,4],[80,82],[0],[0,83,82],[0,15],[0,84,83,3],[0],[0,34],[0],[0],[0,67],[0,52],[0,52],[0,53,39,52],[0,53],[0],[0],[0],[0],[0],[0],[0,85],[0],[0,69,65],[0,71,65],[0,71,65],[0,72,86],[0],[0,4],[87,81],[0],[0,87,88],[0,15],[0,84,82],[0],[0,84,3],[0],[0,1],[0,33],[0],[0],[0],[0,62],[0,29],[0,29],[0,29],[0,29],[0,89],[0,29],[0,29],[0,30],[0],[0],[0,69,86],[0,71,86],[0,71,86],[0,72,86],[0],[0],[0,87,90],[0],[0,87,91],[0],[0,84,92],[0],[0,84,93],[0],[0,1],[0,1],[0,33],[0],[0],[0],[0,94],[0,95],[0],[0],[0],[0,4],[0,96],[0,43],[0],[0,54],[0,69,86],[0,71,70],[0,71,70],[0,72,70],[0],[0],[0,87,90],[0,4],[0,87,91],[0],[0,84,92],[0,15],[0,84,93],[0],[0,1],[0,1],[0,1],[0,33],[0,34],[0,34],[0],[0],[0,45,96],[0,26],[0,26],[0,27],[0],[0,43],[0],[0,31],[0],[0],[0],[0],[0],[0],[0,97,98],[0],[0,97,99],[0],[0,100,74],[0],[0,100,79],[0,15],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,14],[0],[0,56],[0,39],[0,39],[0,40],[0],[0,43],[0],[0],[0],[0],[0,64],[0],[0],[0,4,64],[0],[0],[0],[0],[0,4],[0],[0],[0]]};
-  var TS = MAP.tile || 16;
-  var W = MAP.w, H = MAP.h;
+  /* ================================================================= data */
+  var MAP = {"generator":"Tile Editor export (lvl/solid from 瓦片素材表.xlsx)","width":30,"height":17,"tileSize":16,"packDirs":{"town":{"dir":"kenney_tiny-town","label":"小镇 Town"},"farm":{"dir":"kenney_tiny-farm","label":"农场 Farm"},"dungeon":{"dir":"kenney_tiny-dungeon","label":"地牢 Dungeon"}},"legend":{"town:tile_0000":{"file":"kenney_tiny-town/Tiles/tile_0000.png","level":1,"solid":false},"town:tile_0019":{"file":"kenney_tiny-town/Tiles/tile_0019.png","level":3,"solid":true},"town:tile_0032":{"file":"kenney_tiny-town/Tiles/tile_0032.png","level":3,"solid":true},"town:tile_0001":{"file":"kenney_tiny-town/Tiles/tile_0001.png","level":1,"solid":false},"farm:tile_0040":{"file":"kenney_tiny-farm/Tiles/tile_0040.png","level":2,"solid":false},"farm:tile_0003":{"file":"kenney_tiny-farm/Tiles/tile_0003.png","level":4,"solid":false},"town:tile_0004":{"file":"kenney_tiny-town/Tiles/tile_0004.png","level":4,"solid":false},"town:tile_0018":{"file":"kenney_tiny-town/Tiles/tile_0018.png","level":3,"solid":true},"town:tile_0002":{"file":"kenney_tiny-town/Tiles/tile_0002.png","level":1,"solid":false},"farm:tile_0027":{"file":"kenney_tiny-farm/Tiles/tile_0027.png","level":3,"solid":true},"farm:tile_0015":{"file":"kenney_tiny-farm/Tiles/tile_0015.png","level":3,"solid":true},"town:tile_0016":{"file":"kenney_tiny-town/Tiles/tile_0016.png","level":3,"solid":true},"town:tile_0031":{"file":"kenney_tiny-town/Tiles/tile_0031.png","level":3,"solid":true},"town:tile_0030":{"file":"kenney_tiny-town/Tiles/tile_0030.png","level":3,"solid":true},"town:tile_0020":{"file":"kenney_tiny-town/Tiles/tile_0020.png","level":3,"solid":true},"farm:tile_0082":{"file":"kenney_tiny-farm/Tiles/tile_0082.png","level":4,"solid":false},"farm:tile_0002":{"file":"kenney_tiny-farm/Tiles/tile_0002.png","level":4,"solid":false},"town:tile_0029":{"file":"kenney_tiny-town/Tiles/tile_0029.png","level":2,"solid":false},"farm:tile_0093":{"file":"kenney_tiny-farm/Tiles/tile_0093.png","level":4,"solid":false},"town:tile_0012":{"file":"kenney_tiny-town/Tiles/tile_0012.png","level":1,"solid":false},"farm:tile_0094":{"file":"kenney_tiny-farm/Tiles/tile_0094.png","level":4,"solid":false},"town:tile_0013":{"file":"kenney_tiny-town/Tiles/tile_0013.png","level":1,"solid":false},"farm:tile_0095":{"file":"kenney_tiny-farm/Tiles/tile_0095.png","level":4,"solid":false},"town:tile_0014":{"file":"kenney_tiny-town/Tiles/tile_0014.png","level":1,"solid":false},"farm:tile_0038":{"file":"kenney_tiny-farm/Tiles/tile_0038.png","level":3,"solid":true},"farm:tile_0089":{"file":"kenney_tiny-farm/Tiles/tile_0089.png","level":3,"solid":true},"town:tile_0008":{"file":"kenney_tiny-town/Tiles/tile_0008.png","level":3,"solid":true},"town:tile_0007":{"file":"kenney_tiny-town/Tiles/tile_0007.png","level":3,"solid":true},"farm:tile_0105":{"file":"kenney_tiny-farm/Tiles/tile_0105.png","level":4,"solid":true},"town:tile_0024":{"file":"kenney_tiny-town/Tiles/tile_0024.png","level":1,"solid":false},"farm:tile_0106":{"file":"kenney_tiny-farm/Tiles/tile_0106.png","level":4,"solid":true},"town:tile_0025":{"file":"kenney_tiny-town/Tiles/tile_0025.png","level":1,"solid":false},"farm:tile_0107":{"file":"kenney_tiny-farm/Tiles/tile_0107.png","level":4,"solid":true},"town:tile_0026":{"file":"kenney_tiny-town/Tiles/tile_0026.png","level":1,"solid":false},"town:tile_0028":{"file":"kenney_tiny-town/Tiles/tile_0028.png","level":3,"solid":true},"farm:tile_0117":{"file":"kenney_tiny-farm/Tiles/tile_0117.png","level":4,"solid":true},"farm:tile_0126":{"file":"kenney_tiny-farm/Tiles/tile_0126.png","level":3,"solid":true},"farm:tile_0118":{"file":"kenney_tiny-farm/Tiles/tile_0118.png","level":4,"solid":true},"town:tile_0037":{"file":"kenney_tiny-town/Tiles/tile_0037.png","level":1,"solid":false},"town:tile_0038":{"file":"kenney_tiny-town/Tiles/tile_0038.png","level":1,"solid":false},"farm:tile_0026":{"file":"kenney_tiny-farm/Tiles/tile_0026.png","level":4,"solid":false},"farm:tile_0090":{"file":"kenney_tiny-farm/Tiles/tile_0090.png","level":3,"solid":true},"farm:tile_0129":{"file":"kenney_tiny-farm/Tiles/tile_0129.png","level":4,"solid":true},"farm:tile_0091":{"file":"kenney_tiny-farm/Tiles/tile_0091.png","level":3,"solid":true},"farm:tile_0130":{"file":"kenney_tiny-farm/Tiles/tile_0130.png","level":4,"solid":true},"farm:tile_0092":{"file":"kenney_tiny-farm/Tiles/tile_0092.png","level":3,"solid":true},"farm:tile_0131":{"file":"kenney_tiny-farm/Tiles/tile_0131.png","level":4,"solid":true},"farm:tile_0080":{"file":"kenney_tiny-farm/Tiles/tile_0080.png","level":2,"solid":false},"farm:tile_0064":{"file":"kenney_tiny-farm/Tiles/tile_0064.png","level":2,"solid":false},"town:tile_0005":{"file":"kenney_tiny-town/Tiles/tile_0005.png","level":2,"solid":false},"town:tile_0036":{"file":"kenney_tiny-town/Tiles/tile_0036.png","level":1,"solid":false},"farm:tile_0114":{"file":"kenney_tiny-farm/Tiles/tile_0114.png","level":3,"solid":true},"farm:tile_0127":{"file":"kenney_tiny-farm/Tiles/tile_0127.png","level":3,"solid":true},"farm:tile_0116":{"file":"kenney_tiny-farm/Tiles/tile_0116.png","level":3,"solid":true},"town:tile_0080":{"file":"kenney_tiny-town/Tiles/tile_0080.png","level":3,"solid":true},"town:tile_0081":{"file":"kenney_tiny-town/Tiles/tile_0081.png","level":3,"solid":true},"town:tile_0082":{"file":"kenney_tiny-town/Tiles/tile_0082.png","level":3,"solid":true},"farm:tile_0081":{"file":"kenney_tiny-farm/Tiles/tile_0081.png","level":2,"solid":false},"town:tile_0092":{"file":"kenney_tiny-town/Tiles/tile_0092.png","level":4,"solid":false},"town:tile_0104":{"file":"kenney_tiny-town/Tiles/tile_0104.png","level":2,"solid":false},"farm:tile_0012":{"file":"kenney_tiny-farm/Tiles/tile_0012.png","level":1,"solid":false},"farm:tile_0024":{"file":"kenney_tiny-farm/Tiles/tile_0024.png","level":1,"solid":false},"town:tile_0017":{"file":"kenney_tiny-town/Tiles/tile_0017.png","level":2,"solid":false},"farm:tile_0036":{"file":"kenney_tiny-farm/Tiles/tile_0036.png","level":1,"solid":false}},"matrix":[[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0032"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0040"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000"],["town:tile_0000","town:tile_0004"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0018"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0032"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000","farm:tile_0027"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001","farm:tile_0015"],["town:tile_0000","farm:tile_0003"],["town:tile_0000","town:tile_0016"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0031"],["town:tile_0000","town:tile_0031"],["town:tile_0000","town:tile_0031"],["town:tile_0000","town:tile_0001","town:tile_0031"],["town:tile_0000","town:tile_0031"],["town:tile_0000","town:tile_0030"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0020"],["town:tile_0000","town:tile_0002","farm:tile_0003"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000","farm:tile_0040"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000"],["town:tile_0000","farm:tile_0082"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001","farm:tile_0015"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0001","farm:tile_0002"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0030"],["town:tile_0000","town:tile_0019"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0032"],["town:tile_0000","town:tile_0001","town:tile_0029"],["town:tile_0000","town:tile_0001"],["town:tile_0000","farm:tile_0015"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000","town:tile_0001","farm:tile_0003"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0093"],["town:tile_0000","town:tile_0012","farm:tile_0094"],["town:tile_0000","town:tile_0013","farm:tile_0095"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0014"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","farm:tile_0002"],["town:tile_0000","farm:tile_0038"],["town:tile_0000"],["town:tile_0000","farm:tile_0089"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0018"],["town:tile_0000","town:tile_0019"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0008"],["town:tile_0000","town:tile_0001","town:tile_0007"],["town:tile_0000","town:tile_0007"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0040"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","farm:tile_0105"],["town:tile_0000","town:tile_0024","farm:tile_0106"],["town:tile_0000","town:tile_0025","farm:tile_0107"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0026"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0038"],["town:tile_0000"],["town:tile_0000","town:tile_0028"],["town:tile_0000"],["town:tile_0000","farm:tile_0089"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","town:tile_0031"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0008"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000","town:tile_0002"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","town:tile_0012"],["town:tile_0000","town:tile_0013","farm:tile_0117"],["town:tile_0000","town:tile_0025","farm:tile_0126","farm:tile_0118"],["town:tile_0000","town:tile_0025","farm:tile_0107"],["town:tile_0000","town:tile_0025","town:tile_0037"],["town:tile_0000","town:tile_0038"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0026"],["town:tile_0000","town:tile_0001"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0032"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0024"],["town:tile_0000","town:tile_0025","farm:tile_0090","farm:tile_0129"],["town:tile_0000","town:tile_0025","farm:tile_0091","farm:tile_0130"],["town:tile_0000","town:tile_0026","farm:tile_0092","farm:tile_0131"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001","farm:tile_0038"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001","farm:tile_0080"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0020"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0064"],["town:tile_0000","town:tile_0005"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0036"],["town:tile_0000","town:tile_0037","farm:tile_0114"],["town:tile_0000","town:tile_0037","farm:tile_0127"],["town:tile_0000","town:tile_0038","farm:tile_0116"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0080"],["town:tile_0000","town:tile_0081"],["town:tile_0000","town:tile_0082"],["town:tile_0000"],["town:tile_0000","town:tile_0080"],["town:tile_0000","town:tile_0081"],["town:tile_0000","town:tile_0082"],["town:tile_0000"]],[["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","town:tile_0005"],["town:tile_0000"],["town:tile_0000","town:tile_0005"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000","town:tile_0002"],["town:tile_0000","town:tile_0012"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"]],[["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","town:tile_0012"],["town:tile_0000","town:tile_0013","farm:tile_0081"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0014"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0092"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0036"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"]],[["town:tile_0000","town:tile_0005"],["town:tile_0000"],["town:tile_0000","town:tile_0012","farm:tile_0081"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0025","farm:tile_0081"],["town:tile_0000","town:tile_0037","town:tile_0025"],["town:tile_0000","town:tile_0038"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0104"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0027"],["town:tile_0000","town:tile_0080"],["town:tile_0000","town:tile_0001","town:tile_0081"],["town:tile_0000","town:tile_0082"],["town:tile_0000"],["town:tile_0000","town:tile_0080"],["town:tile_0000","town:tile_0081"],["town:tile_0000","town:tile_0082"],["town:tile_0000"]],[["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000","town:tile_0036"],["town:tile_0000","town:tile_0025","farm:tile_0081"],["town:tile_0000","town:tile_0025","farm:tile_0081"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0026","town:tile_0025"],["town:tile_0000","town:tile_0026","farm:tile_0081"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000","farm:tile_0012"],["town:tile_0000","town:tile_0001"],["farm:tile_0012"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0007"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0036"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0037"],["town:tile_0000","town:tile_0038","town:tile_0025","town:tile_0037"],["town:tile_0000","town:tile_0038"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000","farm:tile_0089"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0003"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["farm:tile_0024"],["town:tile_0000"],["town:tile_0000","farm:tile_0024"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0008"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0089"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000","farm:tile_0015"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0024"],["town:tile_0000"],["town:tile_0000","farm:tile_0024"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0008"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0026"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0024"],["town:tile_0000","town:tile_0001"],["town:tile_0000","farm:tile_0024"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0008"],["town:tile_0000","town:tile_0007"],["town:tile_0000","town:tile_0007"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0012"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0013"],["town:tile_0000","town:tile_0014"],["town:tile_0000","town:tile_0017"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0038"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0036"],["town:tile_0000"],["town:tile_0000","farm:tile_0036"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0002"]],[["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0019"],["town:tile_0000","town:tile_0020"],["town:tile_0000","town:tile_0017"],["town:tile_0000","town:tile_0024"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0025"],["town:tile_0000","town:tile_0026"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","farm:tile_0080"],["town:tile_0000","farm:tile_0089"],["town:tile_0000"],["town:tile_0000","town:tile_0001","farm:tile_0080"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000","town:tile_0001"],["town:tile_0000"],["town:tile_0000"],["town:tile_0000"]]],"blocked":[[true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,true,true,true,true,true],[true,true,true,true,false,false,false,false,false,false,false,false,true,false,false,false,true,false,true,false,false,false,true,true,true,true,true,true,true,true],[true,true,true,true,false,false,false,false,false,false,false,true,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,true],[true,true,false,false,true,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false,true,true],[true,true,true,true,false,false,false,false,false,true,false,false,true,true,true,false,false,false,false,false,false,false,true,false,true,false,true,false,false,true],[true,true,true,true,true,false,false,false,false,false,false,false,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[true,true,true,true,true,false,true,false,false,false,false,false,true,true,true,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false],[true,true,false,false,false,false,false,false,false,false,false,false,true,true,true,false,false,false,false,true,false,false,true,true,true,false,true,true,true,false],[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true,true,true,true,false,true,true,true,false],[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[true,false,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[true,true,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false],[true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false],[true,true,true,true,true,true,true,false,false,false,false,false,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false,false,false]]};
+
+  var TS = MAP.tileSize || 16;
+  var W = MAP.width, H = MAP.height;
   var WORLD_W = W * TS, WORLD_H = H * TS;
-  var HERO_SRC = 'kenney_tiny-farm/Tiles/tile_0109.png';
-  var START = { x: 12, y: 7 };
+
+  function tfile(id) {
+    var p = id.split('-');
+    var n = ('0000' + p[1]).slice(-4);
+    return 'kenney_tiny-' + p[0] + '/Tiles/tile_' + n + '.png';
+  }
+
+  /* ---- 作物定义：苗 →(时间)→ 长 →(时间)→ 熟 →(镰刀)→ 枯 ---------------
+     编号规则（见 瓦片素材表）：以“苗”为基址 B，
+       B+0 苗 / B+1 长 / B+2 熟 / B+3 枯(耕作土) / B+4 收获物
+       B+5 商店种子袋图标 / B+6 工具栏·口袋种子袋图标
+     向日葵是特例：81 苗 → 83 熟，只有两张图，所以 dur 只有一段（= 总时长）。
+     lv   = 解锁等级（商店灰显 + 野外采摘门槛）
+     exp  = 收割一次的经验
+     yield= 收割一次产出几个（小麦 2 个，好喂牲口）
+     dur  = 每一段的秒数，加起来就是总生长时长                          */
+  var CROPS = {
+    carrot:    { name:'胡萝卜', lv:1, exp:4,  yield:1, stages:['farm-4','farm-5','farm-6'],    dur:[14,16], dry:'farm-7',  icon:'farm-8',  item:'carrot',    seedShop:'farm-9',  seedBag:'farm-10' },
+    beet:      { name:'甜菜',   lv:2, exp:8,  yield:1, stages:['farm-16','farm-17','farm-18'], dur:[28,32], dry:'farm-19', icon:'farm-20', item:'beet',      seedShop:'farm-21', seedBag:'farm-22' },
+    wheat:     { name:'小麦',   lv:3, exp:12, yield:2, stages:['farm-64','farm-65','farm-66'], dur:[42,48], dry:'farm-67', icon:'farm-68', item:'wheat',     seedShop:'farm-69', seedBag:'farm-70' },
+    cabbage:   { name:'白菜',   lv:4, exp:17, yield:1, stages:['farm-52','farm-53','farm-54'], dur:[56,64], dry:'farm-55', icon:'farm-56', item:'cabbage',   seedShop:'farm-57', seedBag:'farm-58' },
+    corn:      { name:'玉米',   lv:5, exp:21, yield:1, stages:['farm-28','farm-29','farm-30'], dur:[70,80], dry:'farm-31', icon:'farm-32', item:'corn',      seedShop:'farm-33', seedBag:'farm-34' },
+    tomato:    { name:'番茄',   lv:6, exp:25, yield:1, stages:['farm-40','farm-41','farm-42'], dur:[84,96], dry:'farm-43', icon:'farm-44', item:'tomato',    seedShop:'farm-45', seedBag:'farm-46' },
+    sunflower: { name:'向日葵', lv:8, exp:42, yield:1, stages:['farm-81','farm-83'],           dur:[300],   dry:'farm-79', icon:'farm-83', item:'sunflower', seedShop:'farm-81', seedBag:'farm-81' }
+  };
+
+  /* 瓦片编号 → {作物, 阶段}，用于认地图上预置的作物 */
+  var CROP_TILE = {};
+  (function () {
+    for (var ck in CROPS) {
+      var C = CROPS[ck];
+      for (var si = 0; si < C.stages.length; si++) CROP_TILE[C.stages[si]] = { t: ck, s: si };
+      CROP_TILE[C.dry] = { t: ck, s: C.stages.length };   // 枯
+    }
+  })();
+
+  function tidOf(key) {
+    var p = key.split('tile_');
+    return (p[0].charAt(0) === 'f' ? 'farm-' : 'town-') + parseInt(p[1], 10);
+  }
+
+  /* lv = 商店解锁等级；野外资源也用它当采摘门槛 */
+  var ITEMS = {
+    hand:  { name:'空手',   kind:'tool' },
+    scythe:{ name:'镰刀',   kind:'tool', icon:'farm-88', tip:'站在成熟作物上按 F 收割' },
+    can:   { name:'浇水壶', kind:'tool', icon:'farm-84', tip:'站在耕地或作物上按 F 浇水' },
+    axe:   { name:'斧头',   kind:'tool', icon:'town-127', price:55, lv:3, tip:'对着树按 F 砍倒 · 得木头' },
+    pickaxe:{ name:'镐子',  kind:'tool', icon:'town-115', price:55, lv:3, tip:'对着岩石按 F 敲碎 · 得石头' },
+    hoe:   { name:'锄头',   kind:'tool', icon:'farm-87', price:45, lv:2, tip:'站在空地上按 F 开垦成耕地' },
+    shovel:{ name:'铲子',   kind:'tool', icon:'farm-86', price:35, lv:2, tip:'站在耕地上按 F 铲回草地 · 也能挖走浆果丛' },
+
+    seed_carrot:    { name:'胡萝卜种子', icon:'farm-10', shopIcon:'farm-9',  kind:'seed', crop:'carrot',    price:10, lv:1 },
+    seed_beet:      { name:'甜菜种子',   icon:'farm-22', shopIcon:'farm-21', kind:'seed', crop:'beet',      price:15, lv:2 },
+    seed_wheat:     { name:'小麦种子',   icon:'farm-70', shopIcon:'farm-69', kind:'seed', crop:'wheat',     price:18, lv:3 },
+    seed_cabbage:   { name:'白菜种子',   icon:'farm-58', shopIcon:'farm-57', kind:'seed', crop:'cabbage',   price:26, lv:4 },
+    seed_corn:      { name:'玉米种子',   icon:'farm-34', shopIcon:'farm-33', kind:'seed', crop:'corn',      price:34, lv:5 },
+    seed_tomato:    { name:'番茄种子',   icon:'farm-46', shopIcon:'farm-45', kind:'seed', crop:'tomato',    price:44, lv:6 },
+    seed_sunflower: { name:'向日葵种子', icon:'farm-81', shopIcon:'farm-81', kind:'seed', crop:'sunflower', price:65, lv:8 },
+
+    carrot:    { name:'胡萝卜', icon:'farm-8',  kind:'crop', price:22  },
+    beet:      { name:'甜菜',   icon:'farm-20', kind:'crop', price:42  },
+    wheat:     { name:'小麦',   icon:'farm-68', kind:'crop', price:32  },
+    cabbage:   { name:'白菜',   icon:'farm-56', kind:'crop', price:92  },
+    corn:      { name:'玉米',   icon:'farm-32', kind:'crop', price:124 },
+    tomato:    { name:'番茄',   icon:'farm-44', kind:'crop', price:160 },
+    sunflower: { name:'向日葵', icon:'farm-83', kind:'crop', price:290 },
+
+    wood:  { name:'木头', icon:'town-106', kind:'mat', price:40 },
+    stone: { name:'石头', icon:'farm-77',  kind:'mat', price:20 },
+
+    sapling_oak:  { name:'阔叶树苗', icon:'town-28', kind:'deco', place:'oak',  price:45, lv:3, tip:'面朝空地按 F 放下 · 8 分钟长成阔叶树，砍倒得 5 木头' },
+    sapling_pine: { name:'松树苗',   icon:'farm-27', kind:'deco', place:'pine', price:45, lv:3, tip:'面朝空地按 F 放下 · 8 分钟长成松树，砍倒得 5 木头' },
+    rock:         { name:'岩石',     icon:'farm-89', kind:'deco', place:'rock', price:30, lv:3, tip:'面朝空地按 F 放下 · 以后能敲掉' },
+
+    /* 栅栏：一格一截，相邻的会自动换瓦片接上；门能穿过去 */
+    fence:      { name:'栅栏',   icon:'town-47', kind:'deco', place:'fence', price:16, lv:3, tip:'面朝空地按 F 放下 · 旁边的栅栏会自动接上' },
+    fence_gate: { name:'栅栏门', icon:'town-69', kind:'deco', place:'gate',  price:34, lv:3, tip:'面朝空地按 F 放下 · 栅栏中间留个门，人能从这儿过' },
+
+    /* 牲畜：放在地上会自己溜达，水料齐全才会产出 */
+    chicken: { name:'鸡', icon:'farm-122', kind:'animal', place:'chicken', price:100, lv:4, tip:'面朝空地按 F 放下 · 水槽和饲料槽都有东西才会下蛋' },
+    sheep:   { name:'羊', icon:'farm-120', kind:'animal', place:'sheep',   price:260, lv:6, tip:'面朝空地按 F 放下 · 水料齐全才长毛' },
+    cow:     { name:'牛', icon:'farm-121', kind:'animal', place:'cow',     price:380, lv:8, tip:'面朝空地按 F 放下 · 水料齐全才出奶，用空桶接' },
+
+    /* 家什 */
+    bucket:       { name:'空桶',     icon:'farm-72',  kind:'tool', price:30, lv:4, tip:'对水井打水 · 对牛接奶 · 对空地倒空' },
+    trough_water: { name:'空水槽',   icon:'farm-98',  kind:'deco', place:'trough_water', price:50, lv:4, tip:'占两格 · 倒 5 份水进去 · 缺了它牲畜停工' },
+    trough_feed:  { name:'空饲料槽', icon:'farm-100', kind:'deco', place:'trough_feed',  price:50, lv:4, tip:'占两格 · 塞 5 个小麦装满 · 缺了它牲畜停工' },
+
+    /* 浆果丛苗：商店不卖，Lv7 之后用铲子从野外挖回来 */
+    berry_bush:   { name:'浆果丛苗', icon:'farm-39', kind:'deco', place:'berry', price:0, lv:7, tip:'面朝空地按 F 种下 · 3 分钟后结浆果' },
+
+    /* 畜产品 */
+    egg:  { name:'鸡蛋', icon:'farm-125', kind:'crop', price:26 },
+    wool: { name:'羊毛', icon:'farm-123', kind:'crop', price:58 },
+    milk: { name:'牛奶', icon:'farm-124', kind:'crop', price:60 }
+  };
+  var SEED_ORDER = ['carrot','beet','wheat','cabbage','corn','tomato','sunflower'];
+  var TOOL_ORDER = ['axe','pickaxe','hoe','shovel','bucket'];   // 商店里卖的工具
+  var ANIMAL_ORDER = ['chicken','sheep','cow'];                 // 商店里卖的牲畜
+  var TROUGH_ORDER = ['trough_water','trough_feed'];            // 商店里卖的家什
+  var DECO_ORDER = ['sapling_oak','sapling_pine','fence','fence_gate','rock'];  // 商店里卖的装饰（栅栏和门排一行）
+  var SELL_ORDER = SEED_ORDER.concat(['wood','stone','egg','wool']);  // 商店收货清单（牛奶单算）
+
+  /* ---- 牲畜 / 水槽 / 桶 ------------------------------------------------
+     动物：farm-122 鸡 / farm-121 牛 / farm-120 羊
+     可产出状态：farm-125 蛋 / farm-124 奶 / farm-123 毛（到点换这张图）
+     水槽：空 farm-98+99 → 满 farm-110+111
+     料槽：空 farm-100+101 → 满 farm-112+113
+
+     cycle  = 生产周期（秒，唯一周期）。判定 an.prod >= cycle
+     yield  = 一次收几个（牛奶一次 2 份）
+     appetite = 食量系数：只影响水料消耗速度，不影响产量
+     exp    = 收一次的经验                                               */
+  var ANIMAL_DEF = {
+    /* speed = 挪一格要多少毫秒，慢悠悠地走 */
+    chicken: { name:'鸡', lv:4, icon:'farm-122', ready:'farm-125', item:'egg',  cycle:90,  yield:1, appetite:1.0, exp:6,  speed:520 },
+    sheep:   { name:'羊', lv:6, icon:'farm-120', ready:'farm-123', item:'wool', cycle:120, yield:1, appetite:1.5, exp:12, speed:620 },
+    cow:     { name:'牛', lv:8, icon:'farm-121', ready:'farm-124', item:'milk', cycle:150, yield:2, appetite:2.0, exp:16, speed:700 }
+  };
+  var TROUGH_DEF = {
+    water: { name:'水槽',   empty:['farm-98','farm-99'],   full:['farm-110','farm-111'] },
+    feed:  { name:'饲料槽', empty:['farm-100','farm-101'], full:['farm-112','farm-113'] }
+  };
+  var TROUGH_OF = { trough_water:'water', trough_feed:'feed' };
+  var TROUGH_ITEM = { water:'trough_water', feed:'trough_feed' };
+  /* 栅栏用得到的图：4 个转角 / 横 / 3 种竖 / 4 个单端 / 门（town-81 无柱横不用） */
+  var FENCE_TILES = ['town-44','town-45','town-46','town-47','town-56','town-58','town-59',
+                     'town-68','town-69','town-70','town-71','town-80','town-82'];
+  var BUCKET_MAX = 10;        // 桶容量：水或牛奶，共 10 份
+  var MAX_BUCKETS = 2;        // 商店里空桶最多能买两把
+
+  /* ---- 水槽 / 饲料槽的消耗模型 ----------------------------------------
+     1 份水或料 = TROUGH_UNIT「食量秒」；满槽 5 份 = 1800 食量秒
+     → 1 只鸡（食量 1.0）撑满 30 分钟，6 只鸡只有 5 分钟。
+     "动物越多消耗越快"就落在这条换算上：每帧扣 dt × Σ食量 / TROUGH_UNIT 份。
+     注意 Σ食量 只算**还在攒产出**的牲畜：产出已经攒满、等玩家来收的那几只
+     不干活，也就不吃料（见 herdInfo().active）。 */
+  var TROUGH_CAP = 5;         // 单槽容量（份）
+  var TROUGH_UNIT = 360;      // 1 份支撑的「食量秒」
+  var TROUGH_WATER = 5;       // 装满水槽要倒掉 5 份水
+  var FEED_WHEAT = 5;         // 装满料槽要 5 个小麦
+  var MILK_PRICE = 60;        // 每卖 1 份牛奶的金币
+  var ANIMAL_ACTION_RATE = 0.5;   // 动物行动频率系数（0.5 = 减半）
+
+  /* ---- 等级 ------------------------------------------------------------
+     LEVEL_REQ[n] = 达到 n 级所需的累计经验；Lv10 封顶 */
+  var LEVEL_REQ = [0, 0, 30, 100, 220, 380, 600, 890, 1270, 1670, 2150];
+  var LV = { lv:1, exp:0 };
+  var MAX_LV = 10;
+  var UNLOCK_TEXT = {
+    2: '锄头、铲子',
+    3: '小麦 · 斧头 · 镐子 · 栅栏',
+    4: '白菜 · 鸡 · 水槽 · 饲料槽 · 空桶',
+    5: '玉米 · 口袋可扩容（先送 2 格）',
+    6: '番茄 · 羊',
+    7: '浆果丛（可采、可用铲子挖回家）',
+    8: '向日葵 · 牛',
+    9: '—',
+    10: '集市常客 · 所有售价 +10%'
+  };
+
+  /* 全局调参旋钮 */
+  var WATER_BOOST = 1.3;      // 浇水后生长速度倍率（只加 30%）
+  var WET_TIME = 600;         // 湿润持续 10 分钟：浇一次，这 10 分钟内种什么都算
+  var GROWTH_SCALE = 1;       // 作物时长倍率（<1 更快）
+  var ANIMAL_RATE = 1;        // 牲畜生产速度倍率
+  var XP_SCALE = 1;           // 经验倍率
+
+  function lvOk(need) { return !need || need <= LV.lv; }
+  /* Lv10「集市常客」：所有售价 +10% */
+  function sellPrice(base) { return Math.round(base * (LV.lv >= MAX_LV ? 1.1 : 1)); }
+
+  /* ---- 桶 ------------------------------------------------------------
+     每把桶都是独立实体（type=null 空 / 'water' 水 / 'milk' 牛奶），
+     实体就存在工具栏或口袋的格子里，搬家时整只搬走，桶里的东西跟着走 */
+  function mkBucket() { return { id:'bucket', n:1, type:null, fill:0 }; }
+  function isBucket(s) { return !!(s && s.id === 'bucket'); }
+  /* 手上那把桶；没拿桶就是 null */
+  function curBucket() {
+    var s = inv.hot[inv.sel];
+    return isBucket(s) ? s : null;
+  }
+  function allBuckets() {
+    var out = [], i;
+    for (i = 0; i < inv.hot.length; i++) if (isBucket(inv.hot[i])) out.push(inv.hot[i]);
+    for (i = 0; i < inv.bag.length; i++) if (isBucket(inv.bag[i])) out.push(inv.bag[i]);
+    return out;
+  }
+  function milkTotal() {
+    var a = allBuckets(), n = 0;
+    for (var i = 0; i < a.length; i++) if (a[i].type === 'milk') n += (a[i].fill || 0);
+    return n;
+  }
+  function milkBucket() {
+    var a = allBuckets();
+    for (var i = 0; i < a.length; i++) if (a[i].type === 'milk' && a[i].fill > 0) return a[i];
+    return null;
+  }
+
+  function bucketIcon(b) {
+    b = b || mkBucket();
+    if (b.type === 'water' && b.fill > 0) return 'farm-73';
+    if (b.type === 'milk'  && b.fill > 0) return 'farm-124';
+    return 'farm-72';
+  }
+  function bucketName(b) {
+    b = b || mkBucket();
+    if (b.type === 'water' && b.fill > 0) return '水桶';
+    if (b.type === 'milk'  && b.fill > 0) return '牛奶桶';
+    return '空桶';
+  }
+  function clearBucket(b) { if (b) { b.type = null; b.fill = 0; } }
+  function bucketLabel(b) {
+    b = b || mkBucket();
+    if (b.type === 'water') return '水 ' + b.fill + '/' + BUCKET_MAX;
+    if (b.type === 'milk') return '牛奶 ' + b.fill + '/' + BUCKET_MAX;
+    return '空';
+  }
+
+  /* ---- 耕地自动拼接 ----------------------------------------------------
+     单块   → farm-0
+     上下连 → 上端 farm-12 / 中间 farm-24 / 下端 farm-36（优先上下）
+     左右连 → 左端 farm-60 / 中间 farm-61 / 右端 farm-62
+     浇水后换成同形状的“湿耕地”变体                                        */
+  var FARM_TILE = {
+    single: { d:'farm-0',  w:'farm-1'  },
+    vtop:   { d:'farm-12', w:'farm-13' },
+    vmid:   { d:'farm-24', w:'farm-25' },
+    vbot:   { d:'farm-36', w:'farm-37' },
+    hleft:  { d:'farm-60', w:'farm-48' },
+    hmid:   { d:'farm-61', w:'farm-49' },
+    hright: { d:'farm-62', w:'farm-50' }
+  };
+  var GRASS_TILE = 'town-0';        // 铲子还原出来的草地
+  var WELL_TILE  = 'town-104';      // 水井（下半截）：不可穿过，可打水
+  var CAN_MAX = 8;                  // 浇水壶容量（格）
+
+  var BERRY_KEY = 'town:tile_0005';
+  var BERRY_RIPE = 'farm-78';              // 浆果丛(熟)
+  var BERRY_BARE = 'town-5';               // 野生丛(青)
+  var BERRY_SEED = 'farm-39';              // 移植过来的苗（还没结果）
+  var BERRY_REGROW = 180;                  // 秒（3 分钟）
+  var BERRY_GOLD = 45;
+  var BERRY_LV = 7;                        // 采摘 / 移植的等级门槛
+  var BERRY_EXP = 6;
+
+  var SHOP = { x: 29, y: 8, sprite: 'town-57' };   // 小路尽头
+  var START = { x: 13, y: 8 };
+
+  var HERO = tfile('farm-109');   // 农夫（戴帽），全程只用这一张
+
+  /* ---- 树 / 树苗 / 岩石 ------------------------------------------------
+     树占上下两格：树干在下、挡路；树顶在上、只画不挡（会盖住走过来的人）。
+     树干与树顶的配对见 树.json —— 砍掉树干时，头顶那格一起清掉。
+     树苗（town-28 / farm-27）长大后变成对应的树干 + 树顶。              */
+  var TREE_TRUNK = {
+    'town-16': { name:'阔叶树', kind:'oak'  },
+    'farm-15': { name:'松树',   kind:'pine' },
+    'town-15': { name:'金叶树', kind:'palm' },
+    'farm-38': { name:'枯树',   kind:'bare' },
+    'farm-14': { name:'枯树',   kind:'bare' }
+  };
+  var TREE_TOP = { 'town-4':1, 'farm-3':1, 'town-3':1, 'farm-2':1, 'farm-26':1 };
+  var SAPLING_OF = { 'town-28':'oak', 'farm-27':'pine' };
+  var SAPLING = {
+    oak:  { name:'阔叶树苗', tile:'town-28', trunk:'town-16', top:'town-4' },
+    pine: { name:'松树苗',   tile:'farm-27', trunk:'farm-15', top:'farm-3' }
+  };
+  var TREE_GROW = 480;           // 树苗 → 大树 的秒数（8 分钟）
+  var ROCK_TILE  = 'farm-89';    // 岩石
+  var WOOD_TILE  = 'town-106';   // 木头
+  var STONE_TILE = 'farm-77';    // 石头
+  var WOOD_TREE = 5, WOOD_SAPLING = 1, STONE_ROCK = 2;
+  var WOOD_EXP = 6, STONE_EXP = 4;
+
+  var POCKET = { start:10, max:20, cost:function (size) { return 40 + (size - 10) * 25; } };
+
+  /* ================================================================ image */
+  var IMG = {};
+  function img(src) { return IMG[src] || null; }
+
+  function collectSources() {
+    var set = {};
+    var i, k;
+    for (k in MAP.legend) set[MAP.legend[k].file] = 1;
+    for (k in CROPS) {
+      var c = CROPS[k];
+      for (i = 0; i < c.stages.length; i++) set[tfile(c.stages[i])] = 1;
+      set[tfile(c.dry)] = 1;
+      set[tfile(c.icon)] = 1;
+      set[tfile(c.seedShop)] = 1;
+      set[tfile(c.seedBag)] = 1;
+    }
+    for (k in ITEMS) if (ITEMS[k].icon) set[tfile(ITEMS[k].icon)] = 1;
+    for (k in ITEMS) if (ITEMS[k].shopIcon) set[tfile(ITEMS[k].shopIcon)] = 1;
+    for (k in FARM_TILE) { set[tfile(FARM_TILE[k].d)] = 1; set[tfile(FARM_TILE[k].w)] = 1; }
+    for (k in TREE_TRUNK) set[tfile(k)] = 1;
+    for (k in TREE_TOP) set[tfile(k)] = 1;
+    for (k in SAPLING_OF) set[tfile(k)] = 1;
+    for (k in ANIMAL_DEF) { set[tfile(ANIMAL_DEF[k].icon)] = 1; set[tfile(ANIMAL_DEF[k].ready)] = 1; }
+    for (k in TROUGH_DEF) {
+      var TD = TROUGH_DEF[k];
+      for (i = 0; i < TD.empty.length; i++) set[tfile(TD.empty[i])] = 1;
+      for (i = 0; i < TD.full.length; i++) set[tfile(TD.full[i])] = 1;
+    }
+    set[tfile('farm-72')] = 1; set[tfile('farm-73')] = 1; set[tfile('farm-124')] = 1;
+    for (i = 0; i < FENCE_TILES.length; i++) set[tfile(FENCE_TILES[i])] = 1;
+    set[tfile(ROCK_TILE)] = 1;
+    set[tfile(WOOD_TILE)] = 1;
+    set[tfile(STONE_TILE)] = 1;
+    set[tfile(GRASS_TILE)] = 1;
+    set[tfile(BERRY_RIPE)] = 1;
+    set[tfile(BERRY_BARE)] = 1;
+    set[tfile(BERRY_SEED)] = 1;
+    set[tfile(SHOP.sprite)] = 1;
+    set[HERO] = 1;
+    return Object.keys(set);
+  }
+
+  var assetsReady = false;
+  function preload(done) {
+    var list = collectSources(), left = list.length;
+    if (!left) { assetsReady = true; done(); return; }
+    for (var i = 0; i < list.length; i++) {
+      (function (src) {
+        var im = new Image();
+        /* 加载失败就存 null：坏图 complete 也是 true，drawImage 会直接抛异常并打断整帧绘制 */
+        im.onload = function () {
+          IMG[src] = im;
+          if (--left === 0) { assetsReady = true; done(); }
+        };
+        im.onerror = function () {
+          IMG[src] = null;
+          if (--left === 0) { assetsReady = true; done(); }
+        };
+        im.src = src;
+      })(list[i]);
+    }
+  }
+
+  /* ================================================================= grid */
+  var blocked = new Uint8Array(W * H);
+  var gridGround = new Array(W * H);
+  var gridOver = new Array(W * H);
+  var fieldCell = new Uint8Array(W * H);
+  var farmTileOf = new Array(W * H);      // 当前显示的干耕地瓦片
+  var wetTileOf = new Array(W * H);       // 对应的湿耕地瓦片
+  var wellCell = new Uint8Array(W * H);   // 水井格
+  var wells = [];                          // 水井实体（参与前后遮挡排序）
+  var trees = {};                          // key(树干格) -> { x, y, trunk, top, name }
+  var saplings = {};                       // key -> { x, y, kind, acc }
+  var rocks = {};                          // key -> { x, y }
+  var animals = {};                        // key(当前格) -> 动物实体
+  var troughs = {};                        // key(左半格) -> { x, y, kind, amt }
+  var fences = {};                         // key -> { x, y, gate }  栅栏 / 栅栏门
+
+  for (var idx = 0; idx < W * H; idx++) {
+    gridGround[idx] = [];
+    gridOver[idx] = [];
+  }
+
+  (function buildGrid() {
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) {
+        var i = y * W + x;
+        var keys = MAP.matrix[y][x] || [];
+        if (MAP.blocked && MAP.blocked[y] && MAP.blocked[y][x]) blocked[i] = 1;
+
+        for (var j = 0; j < keys.length; j++) {
+          var key = keys[j];
+          var e = MAP.legend[key];
+          if (!e) continue;
+
+          if (key === BERRY_KEY) continue;          // 变成动态实体
+          if (CROP_TILE[tidOf(key)]) continue;      // 作物同样是动态实体
+
+          var tid = tidOf(key);
+
+          // 树：树干在下、树顶在上。配对见 树.json，砍树干时头顶一起清掉
+          if (TREE_TRUNK[tid]) {
+            var top = null;
+            if (y > 0) {
+              var upKeys = MAP.matrix[y - 1][x] || [];
+              for (var u = 0; u < upKeys.length; u++) {
+                var ut = tidOf(upKeys[u]);
+                if (TREE_TOP[ut]) { top = ut; break; }
+              }
+            }
+            blocked[i] = 1;
+            trees[i] = { x: x, y: y, trunk: tid, top: top, name: TREE_TRUNK[tid].name };
+            continue;
+          }
+
+          // 树顶：交给下面的树干画，自己不进静态层
+          if (TREE_TOP[tid] && y + 1 < H) {
+            var dnKeys = MAP.matrix[y + 1][x] || [];
+            var paired = false;
+            for (var d2 = 0; d2 < dnKeys.length; d2++) {
+              if (TREE_TRUNK[tidOf(dnKeys[d2])]) { paired = true; break; }
+            }
+            if (paired) continue;
+          }
+
+          // 树苗：小树苗，长大以后变成树干 + 树顶
+          if (SAPLING_OF[tid]) {
+            blocked[i] = 1;
+            saplings[i] = { x: x, y: y, kind: SAPLING_OF[tid], acc: 0 };
+            continue;
+          }
+
+          // 岩石：镐子能敲碎
+          if (tid === ROCK_TILE) {
+            blocked[i] = 1;
+            rocks[i] = { x: x, y: y };
+            continue;
+          }
+
+          // 水井下半截：素材表标“可穿过”，但实际是井壁，改成障碍；
+          // 同时当成实体画，人站到井后面时会被井挡住
+          if (tid === WELL_TILE) {
+            blocked[i] = 1;
+            wellCell[i] = 1;
+            wells.push({ x: x, y: y, file: e.file });
+            continue;
+          }
+
+          // 耕地：不铺进静态地面，交给动态层按相邻关系拼接
+          if (e.level === 1 && tid.indexOf('farm-') === 0 &&
+              isFarmGroundTile(parseInt(tid.split('-')[1], 10))) {
+            fieldCell[i] = 1;
+            continue;
+          }
+
+          if (e.level >= 3) gridOver[i].push(e.file);
+          else gridGround[i].push(e.file);
+        }
+
+        // 有些田格原本只压了一张耕地瓦片，没有底层地面 → 补一块草地
+        if (fieldCell[i] && !gridGround[i].length) gridGround[i].push(tfile(GRASS_TILE));
+      }
+    }
+    // 推车：素材表里是不可穿过，站在旁边就能开店
+    blocked[SHOP.y * W + SHOP.x] = 1;
+    // 地图上原有的耕地按新规则重新拼接一遍
+    for (var fy = 0; fy < H; fy++) for (var fx = 0; fx < W; fx++) {
+      if (fieldCell[fy * W + fx]) retile(fx, fy);
+    }
+  })();
+
+  /* 是不是“耕地地面”那一类瓦片（单块 / 竖条三段 / 横条三段 / 十字） */
+  function isFarmGroundTile(n) {
+    return n === 0 || n === 1 || n === 12 || n === 13 || n === 24 || n === 25 ||
+           n === 36 || n === 37 || n === 60 || n === 61 || n === 62 || n === 63 ||
+           (n >= 48 && n <= 51);
+  }
+
+  function fieldAt(x, y) {
+    return inBounds(x, y) && fieldCell[y * W + x] === 1;
+  }
+
+  /* 按上下 / 左右邻接决定这一格该用哪块耕地瓦片（上下优先）。
+     中间件的左右/上下边都是直的，所以撞在别的田边上能严丝合缝 */
+  function farmShapeAt(x, y) {
+    var up = fieldAt(x, y - 1), dn = fieldAt(x, y + 1);
+    var lf = fieldAt(x - 1, y), rt = fieldAt(x + 1, y);
+    if (up || dn) {
+      if (up && dn) return 'vmid';
+      if (up) return 'vbot';      // 上面接着田 → 自己是竖条的下端
+      return 'vtop';              // 下面接着田 → 自己是竖条的上端
+    }
+    if (lf || rt) {
+      if (lf && rt) return 'hmid';
+      if (lf) return 'hright';    // 左边接着田 → 自己是横条的右端
+      return 'hleft';
+    }
+    return 'single';
+  }
+
+  function retile(x, y) {
+    if (!inBounds(x, y)) return;
+    var i = y * W + x;
+    if (!fieldCell[i]) { farmTileOf[i] = null; wetTileOf[i] = null; return; }
+    var t = FARM_TILE[farmShapeAt(x, y)];
+    farmTileOf[i] = tfile(t.d);
+    wetTileOf[i] = tfile(t.w);
+  }
+
+  /* 自己变了，附近两圈内的拼接都要重算（走向变化会影响隔一格的邻居） */
+  function retileAround(x, y) {
+    for (var dy = -2; dy <= 2; dy++) {
+      for (var dx = -2; dx <= 2; dx++) retile(x + dx, y + dy);
+    }
+  }
+
+  function inBounds(x, y) { return x >= 0 && y >= 0 && x < W && y < H; }
+  /* 静态障碍 + 站在那儿的动物，人和寻路都算过不去 */
+  function solidIdx(i) { return blocked[i] === 1 || !!animals[i]; }
+  function isSolid(x, y) { return solidIdx(y * W + x); }
+  function cellKey(x, y) { return y * W + x; }
+
+  /* 水槽占左右两格，点哪一格都算它 */
+  function troughAt(x, y) {
+    if (!inBounds(x, y)) return null;
+    var k = cellKey(x, y);
+    if (troughs[k]) return troughs[k];
+    if (x > 0 && troughs[k - 1]) return troughs[k - 1];
+    return null;
+  }
+
+  /* ---- 水槽 / 饲料槽的余量 ----------------------------------------------
+     余量按「份」存（0 ~ TROUGH_CAP），每帧按 dt × Σ食量 / TROUGH_UNIT 扣。
+     同类型的槽算总量：多买一个槽 = 缓冲翻倍，这是扩张时的第一个选择。      */
+  function troughLeft(kind) {
+    var sum = 0;
+    for (var k in troughs) if (troughs[k].kind === kind) sum += (troughs[k].amt || 0);
+    return sum;
+  }
+  function troughFull(tr) { return (tr.amt || 0) >= TROUGH_CAP - 1e-6; }
+  function fmtMins(min) {
+    if (!(min > 0)) return '0 秒';
+    if (min < 1) return Math.round(min * 60) + ' 秒';
+    return Math.round(min) + ' 分';
+  }
+  function drainTrough(kind, need) {
+    var left = troughLeft(kind);
+    if (left <= 0 || need <= 0) return;
+    if (need > left) need = left;
+    for (var k in troughs) {
+      var tr = troughs[k];
+      if (tr.kind !== kind) continue;
+      tr.amt = Math.max(0, (tr.amt || 0) - (tr.amt || 0) / left * need);
+    }
+  }
+  /* 牲畜总览：几只、合计食量多少。食量决定水料烧得多快。
+     appetite  = 全部牲畜的食量（面板展示用）
+     active   = 只统计"还在攒产出"的牲畜：已经 ready 待收的那几只不干活，不该吃料。
+                否则玩家走开一会儿，蛋攒着没拿，水料照样见底。 */
+  function herdInfo() {
+    var n = 0, appetite = 0, active = 0, working = 0;
+    for (var k in animals) {
+      var a = animals[k];
+      if (!a) continue;
+      n++;
+      var ap = ANIMAL_DEF[a.kind].appetite;
+      appetite += ap;
+      if (!a.ready) { active += ap; working++; }
+    }
+    return { n: n, appetite: appetite, active: active, working: working };
+  }
+  /* 养殖开工的前提：水槽和饲料槽都必须还有东西。缺一样就整群停产 */
+  function animalSupply() {
+    var w = troughLeft('water'), f = troughLeft('feed');
+    return { water: w, feed: f, ok: w > 0 && f > 0 };
+  }
+  function haltReason(s) {
+    if (s.water <= 0 && s.feed <= 0) return '水槽和饲料槽都空了';
+    if (s.water <= 0) return '水槽空了（去水井打水）';
+    return '饲料槽空了（装 ' + FEED_WHEAT + ' 个小麦）';
+  }
+
+  /* ---- 栅栏：按四邻自动挑瓦片 ------------------------------------------
+     素材表 D 列这一套（town-44~47 / 56~59 / 68~71 / 80~82）：
+       44 左上  接 右+下        45 横    接 左+右        46 右上  接 左+下
+       68 左下  接 上+右        70 右下  接 上+左
+       56 左竖 / 59 中竖 / 58 右竖   接 上+下（只是接缝偏左/居中/偏右）
+       47 连接下 上端封口       71 连接上 下端封口
+       80 连接右 左起柱         82 连接左 右起柱
+     69 栅栏门单独一张。
+     town-81 是“无柱横段”，拼接时一律不用，否则接出来会出现没有柱子的断口。 */
+  function isFenceCell(x, y) {
+    return inBounds(x, y) && !!fences[y * W + x];
+  }
+  /* virtual=true 表示这一格“当作已经有栅栏”，给放置前的虚影用 */
+  function fenceTile(x, y, virtual) {
+    function on(ax, ay) {
+      if (virtual && ax === x && ay === y) return true;
+      return isFenceCell(ax, ay);
+    }
+    var U = on(x, y - 1), D = on(x, y + 1), L = on(x - 1, y), R = on(x + 1, y);
+    if (!U && !D && !L && !R) return 'town-45';          // 孤零零一根柱
+    if (U && D && L && R) return 'town-45';              // 十字：横杆贯穿，柱子正好在中间
+    if (U && D) return (L && !R) ? 'town-58' : ((!L && R) ? 'town-56' : 'town-59');
+    if (L && R) return 'town-45';
+    if (U && R) return 'town-68';                        // 左下角
+    if (U && L) return 'town-70';                        // 右下角
+    if (D && R) return 'town-44';                        // 左上角
+    if (D && L) return 'town-46';                        // 右上角
+    if (U) return 'town-71';                             // 只往上：下端封口
+    if (D) return 'town-47';                             // 只往下：上端封口
+    if (R) return 'town-80';                             // 只往右
+    if (L) return 'town-82';                             // 只往左
+    return 'town-45';
+  }
+  function fenceSprite(f) {
+    return f.gate ? 'town-69' : fenceTile(f.x, f.y, false);
+  }
+
+  /* ============================================================== entities */
+  var crops = {};      // key -> { t, s, acc }
+  var berries = {};    // key -> { x, y, ripe, acc, planted }
+  var wet = {};        // key -> 剩余秒数
+
+  (function seedEntities() {
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) {
+        var keys = MAP.matrix[y][x] || [];
+        for (var j = 0; j < keys.length; j++) {
+          var key = keys[j], k = cellKey(x, y);
+          /* 浆果丛要记坐标：Lv7 之后铲子能把它挖走，得靠 x/y 把格子还原 */
+          if (key === BERRY_KEY) { berries[k] = { x: x, y: y, ripe: false, acc: 0 }; continue; }
+
+          var ct = CROP_TILE[tidOf(key)];
+          if (ct && !crops[k]) {
+            // 地图上预置的作物（野外的向日葵等）：按已有阶段继续长，
+            // 给一点随机起始进度，别让它们同时熟
+            var Cw = CROPS[ct.t], lastS = Cw.stages.length - 1;
+            var head = 0;
+            if (ct.s < lastS) head = Math.random() * (Cw.dur[ct.s] || 1) * 0.55;
+            crops[k] = { t: ct.t, s: ct.s, acc: head };
+          }
+        }
+      }
+    }
+  })();
+
+  /* ========================================================= inventory */
+  var inv = {
+    gold: 80,
+    water: CAN_MAX,                 // 浇水壶里的水（格）
+    hot: [{ id:'hand' }, { id:'scythe' }, { id:'can' }, null, null, null, null],
+    sel: 0,
+    bag: new Array(POCKET.start).fill(null)
+  };
+  inv.bag[0] = { id:'seed_carrot', n:8 };     // 开局只有胡萝卜：Lv1 的教学关
+
+  /* ================================================================ save
+     一局 30 分钟，刷新丢档不可接受。世界只有 30×17，全量序列化也就几 KB。
+     blocked 里既有地图自带的墙，也有玩家自己摆的东西：先存一份底图，
+     读档时用底图重置，再把动态障碍按存档重新压上去。                      */
+  var SAVE_KEY = 'tinyrealm.v1';
+  var BASE_BLOCKED = blocked.slice();
+  var saveAcc = 0;
+
+  function saveGame() {
+    try {
+      var d = { v:1, lv:LV.lv, exp:LV.exp, gold:inv.gold, water:inv.water, sel:inv.sel,
+                bag:inv.bag, hot:inv.hot,
+                field:[], crops:[], berries:[], wet:[], trees:[], saplings:[],
+                rocks:[], fences:[], troughs:[], animals:[] };
+      var i, k;
+      for (i = 0; i < W * H; i++) if (fieldCell[i]) d.field.push(i);
+      for (k in crops) d.crops.push([+k, crops[k].t, crops[k].s, crops[k].acc]);
+      for (k in berries) d.berries.push([+k, berries[k].ripe ? 1 : 0, berries[k].acc, berries[k].planted ? 1 : 0]);
+      for (k in wet) d.wet.push([+k, Math.round(wet[k])]);
+      for (k in trees) d.trees.push([+k, trees[k].trunk, trees[k].top, trees[k].name]);
+      for (k in saplings) d.saplings.push([+k, saplings[k].kind, saplings[k].acc]);
+      for (k in rocks) d.rocks.push(+k);
+      for (k in fences) d.fences.push([+k, fences[k].gate ? 1 : 0]);
+      for (k in troughs) d.troughs.push([+k, troughs[k].kind, troughs[k].amt || 0]);
+      for (k in animals) {
+        var a = animals[k];
+        d.animals.push([a.kind, a.x, a.y, a.prod, a.ready ? 1 : 0]);
+      }
+      localStorage.setItem(SAVE_KEY, JSON.stringify(d));
+    } catch (e) { /* 无痕模式或配额满：不存档也照样玩 */ }
+  }
+
+  function loadGame() {
+    var raw = null, d = null;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+    if (!raw) return false;
+    try { d = JSON.parse(raw); } catch (e) { return false; }
+    if (!d || d.v !== 1) return false;
+
+    LV.lv = clamp(d.lv || 1, 1, MAX_LV);
+    LV.exp = d.exp || 0;
+    inv.gold = d.gold || 0;
+    inv.water = d.water || 0;
+    inv.sel = d.sel || 0;
+    if (Array.isArray(d.bag) && d.bag.length) inv.bag = d.bag;
+    if (Array.isArray(d.hot) && d.hot.length) inv.hot = d.hot;
+
+    blocked.set(BASE_BLOCKED);
+    fieldCell.fill(0);
+    crops = {}; berries = {}; wet = {}; trees = {}; saplings = {};
+    rocks = {}; fences = {}; troughs = {}; animals = {};
+    farmTileOf = new Array(W * H);
+    wetTileOf = new Array(W * H);
+
+    (d.field || []).forEach(function (i) { if (i >= 0 && i < W * H) fieldCell[i] = 1; });
+    (d.crops || []).forEach(function (r) { crops[r[0]] = { t:r[1], s:r[2], acc:r[3] }; });
+    (d.berries || []).forEach(function (r) {
+      berries[r[0]] = { x: r[0] % W, y: (r[0] / W) | 0, ripe: !!r[1], acc: r[2], planted: !!r[3] };
+    });
+    (d.wet || []).forEach(function (r) { wet[r[0]] = r[1]; });
+    (d.trees || []).forEach(function (r) {
+      var x = r[0] % W, y = (r[0] / W) | 0;
+      trees[r[0]] = { x:x, y:y, trunk:r[1], top:r[2], name:r[3] };
+      blocked[r[0]] = 1;
+    });
+    (d.saplings || []).forEach(function (r) {
+      var x = r[0] % W, y = (r[0] / W) | 0;
+      saplings[r[0]] = { x:x, y:y, kind:r[1], acc:r[2] };
+      blocked[r[0]] = 1;
+    });
+    (d.rocks || []).forEach(function (k) {
+      rocks[k] = { x: k % W, y: (k / W) | 0 };
+      blocked[k] = 1;
+    });
+    (d.fences || []).forEach(function (r) {
+      var x = r[0] % W, y = (r[0] / W) | 0;
+      fences[r[0]] = { x:x, y:y, gate: !!r[1] };
+      blocked[r[0]] = r[1] ? 0 : 1;
+    });
+    (d.troughs || []).forEach(function (r) {
+      var x = r[0] % W, y = (r[0] / W) | 0;
+      troughs[r[0]] = { x:x, y:y, kind:r[1], amt:r[2] };
+      blocked[r[0]] = 1;
+      if (x + 1 < W) blocked[cellKey(x + 1, y)] = 1;
+    });
+    (d.animals || []).forEach(function (r) {
+      var def = ANIMAL_DEF[r[0]];
+      if (!def) return;
+      animals[cellKey(r[1], r[2])] = {
+        kind:r[0], x:r[1], y:r[2], px:r[1], py:r[2], fx:r[1], fy:r[2],
+        dir:'right', moving:false, t0:0, dur:def.speed, walkT:0,
+        wait:1.2 + Math.random() * 2, prod:r[3], ready:!!r[4], seed:Math.random() * 6.28
+      };
+    });
+
+    for (var y = 0; y < H; y++) {
+      for (var x = 0; x < W; x++) if (fieldCell[cellKey(x, y)]) retile(x, y);
+    }
+    return true;
+  }
+
+  /* 重开一局：清掉存档再刷新（只由商店里那个小按钮调用） */
+  function resetGame() {
+    if (!window.confirm('重开一局？当前的等级、金币和农场都会清空。')) return;
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    location.reload();
+  }
+
+
+  /* 格子之间搬东西：桶是实体，整只搬走；别的只搬 id（堆叠物靠口袋里的数量） */
+  function entityForBag(s) {
+    if (!s) return null;
+    if (isBucket(s)) return s;
+    return { id: s.id, n: 1 };
+  }
+  function entityForHot(s) {
+    if (!s) return null;
+    if (isBucket(s)) return s;
+    return { id: s.id };
+  }
+
+  function bagSlotsUsed() { var n = 0; for (var i = 0; i < inv.bag.length; i++) if (inv.bag[i]) n++; return n; }
+  function countItem(id) {
+    var n = 0;
+    for (var i = 0; i < inv.bag.length; i++) if (inv.bag[i] && inv.bag[i].id === id) n += inv.bag[i].n;
+    return n;
+  }
+  function addItem(id, n) {
+    n = n || 1;
+    var i;
+    for (i = 0; i < inv.bag.length; i++) {
+      if (inv.bag[i] && inv.bag[i].id === id && inv.bag[i].n < 99) {
+        var room = 99 - inv.bag[i].n;
+        var take = Math.min(room, n);
+        inv.bag[i].n += take; n -= take;
+        if (n <= 0) return true;
+      }
+    }
+    for (i = 0; i < inv.bag.length && n > 0; i++) {
+      if (!inv.bag[i]) {
+        var put = Math.min(99, n);
+        inv.bag[i] = { id:id, n:put }; n -= put;
+      }
+    }
+    return n <= 0;
+  }
+  function takeItem(id, n) {
+    n = n || 1;
+    var removed = 0;
+    for (var i = 0; i < inv.bag.length && removed < n; i++) {
+      var s = inv.bag[i];
+      if (s && s.id === id) {
+        var take = Math.min(s.n, n - removed);
+        s.n -= take; removed += take;
+        if (s.n <= 0) inv.bag[i] = null;
+      }
+    }
+    if (removed > 0) {
+      // 口袋空了就把工具栏上的同名快捷方式一起收掉
+      if (countItem(id) === 0) {
+        for (var h = 0; h < inv.hot.length; h++) if (inv.hot[h] && inv.hot[h].id === id) inv.hot[h] = null;
+      }
+      renderHotbar(); renderPocket();
+    }
+    return removed;
+  }
+  function addGold(n) {
+    inv.gold += n;
+    syncGold();
+    coinChip.classList.remove('pulse');
+    void coinChip.offsetWidth;
+    coinChip.classList.add('pulse');
+  }
+  function syncGold() {
+    goldNum.textContent = inv.gold;
+    shopGold.textContent = inv.gold;
+  }
+
+  /* ---- 等级 / 经验 ------------------------------------------------------
+     只有"实际产出"给经验：收割、收蛋剪毛挤奶、摘浆果、砍树敲石。
+     卖东西、浇水、播种都不给，避免刷经验。                                  */
+  function levelStart(lv) { return LEVEL_REQ[lv] || 0; }
+  function levelNext(lv) { return lv >= MAX_LV ? -1 : LEVEL_REQ[lv + 1]; }
+
+  function renderLevel() {
+    lvNum.textContent = LV.lv;
+    var next = levelNext(LV.lv);
+    if (next < 0) {
+      xpFill.style.width = '100%';
+      xpTxt.textContent = 'MAX';
+      return;
+    }
+    var from = levelStart(LV.lv), span = Math.max(1, next - from);
+    var p = clamp((LV.exp - from) / span, 0, 1);
+    xpFill.style.width = (p * 100).toFixed(1) + '%';
+    xpTxt.textContent = (LV.exp - from) + ' / ' + span;
+  }
+
+  function addExp(n) {
+    n = Math.round((n || 0) * XP_SCALE);
+    if (n <= 0) return;
+    LV.exp += n;
+    var ups = [];
+    while (LV.lv < MAX_LV && LV.exp >= LEVEL_REQ[LV.lv + 1]) { LV.lv++; ups.push(LV.lv); }
+    if (ups.length) onLevelUp(ups);
+    renderLevel();
+  }
+
+  function onLevelUp(ups) {
+    var lv = LV.lv;
+    /* Lv3 送 8 段栅栏：先用上圈，Lv4 才来第一只鸡 —— 先有圈，后有牲畜 */
+    if (ups.indexOf(3) >= 0) { addItem('fence', 8); }
+    /* Lv5 口袋先白送 2 格，再开放付费扩容 */
+    if (ups.indexOf(5) >= 0) { inv.bag.push(null); inv.bag.push(null); renderPocket(); }
+    lvChip.classList.remove('up');
+    void lvChip.offsetWidth;
+    lvChip.classList.add('up');
+    renderShop();
+    renderPocket();
+    toast('升级！Lv.' + lv + ' · 解锁 ' + (UNLOCK_TEXT[lv] || '新内容'));
+    setStatus('升级到 Lv.' + lv, 'gold');
+    saveGame();
+  }
+
+  /* ---- 口袋升级：每次 +1 格，越加越贵 ---------------------------------- */
+  function pocketCost() {
+    return inv.bag.length >= POCKET.max ? -1 : POCKET.cost(inv.bag.length);
+  }
+  function upgradePocket() {
+    if (inv.bag.length >= POCKET.max) { toast('口袋已经加到最大了（' + POCKET.max + ' 格）'); return false; }
+    var price = pocketCost();
+    if (inv.gold < price) { toast('金币不够，升级要 ' + price); return false; }
+    inv.gold -= price;
+    inv.bag.push(null);
+    syncGold(); renderPocket(); renderShop();
+    toast('口袋升级 · 现在能装 ' + inv.bag.length + ' 格');
+    return true;
+  }
+
+  /* ================================================================ state */
+  var state = { cx: START.x, cy: START.y, x: START.x, y: START.y, moving: false };
+  var facing = 'down';
+  var step = null, queue = [], dest = null, held = [], pending = null;
+  var bump = { t: -1e9, dx: 0, dy: 0 };
+  var walkT = 0, destBorn = 0, showBlocked = false, hover = null;
   var MOVE_MS = 132;
 
+  var DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
+
+  /* ============================================================== elements */
   var stage = document.getElementById('stage');
   var canvas = document.getElementById('game');
-  var ctx = canvas.getContext('2d', { alpha: false });
-
-  var coordEl = document.getElementById('coord');
+  var ctx = canvas.getContext('2d', { alpha:false });
   var statusEl = document.getElementById('status');
+  var lvChip = document.getElementById('lvChip');
+  var lvNum = document.getElementById('lvNum');
+  var xpFill = document.getElementById('xpFill');
+  var xpTxt = document.getElementById('xpTxt');
   var statusDot = document.getElementById('statusdot');
   var toastEl = document.getElementById('toast');
   var sizeEl = document.getElementById('pillsize');
+  var coinChip = document.getElementById('coinChip');
+  var goldNum = document.getElementById('goldNum');
+  var pocketEl = document.getElementById('pocket');
+  var pocketGrid = document.getElementById('pocketGrid');
+  var bagBtn = document.getElementById('bagBtn');
+  var bagCount = document.getElementById('bagCount');
+  var bagMax = document.getElementById('bagMax');
+  var hotbarEl = document.getElementById('hotbar');
+  var hotbarWrap = document.getElementById('hotbarWrap');
+  var barToggle = document.getElementById('barToggle');
+  var tipEl = document.getElementById('tip');
+  var shopPanel = document.getElementById('shopPanel');
+  var shopScrim = document.getElementById('shopScrim');
+  var shopBuy = document.getElementById('shopBuy');
+  var shopSell = document.getElementById('shopSell');
+  var shopGold = document.getElementById('shopGold');
+  var qtyCtl = document.getElementById('qtyCtl');
+  var buyHint = document.getElementById('buyHint');
+  var sellHint = document.getElementById('sellHint');
 
-  /* --------------------------------------------------------------- helpers */
-  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
-  function inBounds(x, y) { return x >= 0 && y >= 0 && x < W && y < H; }
-  function isSolid(x, y) { return blocked[y * W + x] === 1; }
+  /* ---------------------------------------------------------------- icons */
+  var HAND_SVG = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M8.2 13.2V5.6a1.45 1.45 0 0 1 2.9 0v6.1"/>' +
+    '<path d="M11.1 11.7V4.6a1.45 1.45 0 0 1 2.9 0v7"/>' +
+    '<path d="M14 11.6V6.6a1.45 1.45 0 0 1 2.9 0v7.6"/>' +
+    '<path d="M16.9 9.8a1.45 1.45 0 0 1 2.9 0v5.1a6 6 0 0 1-6 6h-1.9a6 6 0 0 1-5.1-2.9l-2-3.4a1.5 1.5 0 0 1 2.5-1.7l1.7 2.2"/></svg>';
 
-  /* ------------------------------------------------------------ collision */
-  // A cell is impassable when any of its layers is flagged solid.
-  var blocked = new Uint8Array(W * H);
-  // Layers are split by height so the player can walk *under* roofs, tree tops
-  // and other tall objects: level 1-2 = ground, level 3-4 = overhead.
-  var OVERHEAD_FROM = 3;
-  var gridGround = new Array(W * H);
-  var gridOver = new Array(W * H);
+  function iconHTML(id, ent) {
+    if (id === 'hand') return HAND_SVG;
+    if (id === 'bucket') return '<img class="px" src="' + tfile(bucketIcon(ent)) + '" alt="">';
+    var it = ITEMS[id];
+    if (!it || !it.icon) return '';
+    return '<img class="px" src="' + tfile(it.icon) + '" alt="">';
+  }
 
-  for (var i = 0; i < W * H; i++) {
-    var cell = MAP.grid[i] || [];
-    var g = [], o = [];
-    for (var j = 0; j < cell.length; j++) {
-      var t = MAP.tiles[cell[j]];
-      if (t.solid) blocked[i] = 1;
-      if (t.lvl >= OVERHEAD_FROM) o.push(cell[j]); else g.push(cell[j]);
+  /* ------------------------------------------------------------- hotbar ui */
+  function renderHotbar() {
+    var html = '';
+    for (var i = 0; i < inv.hot.length; i++) {
+      var s = inv.hot[i];
+      var cls = 'slot' + (i === inv.sel ? ' on' : '') + (s ? '' : ' empty');
+      html += '<div class="' + cls + '" data-hot="' + i + '">';
+      if (s) {
+        html += '<span class="key">' + (i + 1) + '</span>';
+        html += iconHTML(s.id, s);
+        var it = ITEMS[s.id];
+        if (s.id === 'can') {
+          html += '<span class="cnt water' + (inv.water > 0 ? '' : ' dry') + '">' + inv.water + '</span>';
+        } else if (s.id === 'bucket') {
+          var bcls = s.fill <= 0 ? ' dry' : (s.type === 'milk' ? ' milk' : ' water');
+          html += '<span class="cnt' + bcls + '">' + (s.fill || 0) + '</span>';
+        } else if (it && (it.kind === 'seed' || it.kind === 'crop' || it.kind === 'mat' || it.kind === 'deco' || it.kind === 'animal')) {
+          var c = countItem(s.id);
+          if (c > 1) html += '<span class="cnt">' + c + '</span>';
+        }
+      }
+      html += '</div>';
     }
-    gridGround[i] = g;
-    gridOver[i] = o;
+    hotbarEl.innerHTML = html;
   }
 
-  /* ----------------------------------------------------------------- state */
-  var state = {
-    cx: START.x, cy: START.y,   // logical cell
-    x: START.x, y: START.y,     // rendered (float) position
-    moving: false
-  };
-  var step = null;              // active tween
-  var queue = [];               // remaining cells of a path
-  var dest = null;              // highlighted destination
-  var held = [];                // ordered pressed directions
-  var bump = { t: -1e9, dx: 0, dy: 0 };
-  var walkT = 0;
-  var destBorn = 0;
-  var showBlocked = false;
-  var hover = null;
-
-  var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
-
-  /* --------------------------------------------------------------- images */
-  var tileImgs = [];
-  var heroImg = null;
-  var assetsReady = false;
-
-  function preload() {
-    var jobs = MAP.tiles.map(function (t, idx) {
-      return new Promise(function (res) {
-        var im = new Image();
-        im.onload = function () { tileImgs[idx] = im; res(); };
-        im.onerror = function () { tileImgs[idx] = null; res(); };
-        im.src = t.src;
-      });
-    });
-    jobs.push(new Promise(function (res) {
-      var im = new Image();
-      im.onload = function () { heroImg = im; res(); };
-      im.onerror = function () { res(); };
-      im.src = HERO_SRC;
-    }));
-    Promise.all(jobs).then(function () {
-      assetsReady = true;
-      resize();
-    });
+  function renderPocket() {
+    var html = '';
+    for (var i = 0; i < inv.bag.length; i++) {
+      var s = inv.bag[i];
+      html += '<div class="slot' + (s ? '' : ' empty') + '" data-bag="' + i + '">';
+      if (s) {
+        html += iconHTML(s.id, s);
+        if (s.n > 1) html += '<span class="cnt">' + s.n + '</span>';
+      }
+      html += '</div>';
+    }
+    pocketGrid.innerHTML = html;
+    bagCount.textContent = bagSlotsUsed();
+    bagMax.textContent = inv.bag.length;
   }
-  preload();
 
-  /* ----------------------------------------------------------- view/camera */
+  hotbarEl.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-hot]');
+    if (!el) return;
+    var i = +el.getAttribute('data-hot');
+    if (!inv.hot[i]) return;
+    inv.sel = i;
+    renderHotbar();
+    var s = inv.hot[i];
+    var it = ITEMS[s.id];
+    if (s.id === 'can') { setStatus('浇水壶 · 水 ' + inv.water + '/' + CAN_MAX); return; }
+    if (s.id === 'bucket') { setStatus(bucketName(s) + ' · ' + bucketLabel(s)); return; }
+    if (it && it.tip) setStatus(it.name + ' · ' + it.tip);
+    else if (it) setStatus('已选择 ' + it.name);
+  });
+
+  hotbarEl.addEventListener('contextmenu', function (e) {
+    var el = e.target.closest('[data-hot]');
+    if (!el) return;
+    e.preventDefault();
+    var i = +el.getAttribute('data-hot');
+    var s = inv.hot[i];
+    if (!s || s.id === 'hand') return;
+    // 堆叠类物品在口袋里还有存货，只是去掉快捷键
+    if (countItem(s.id) > 0) {
+      inv.hot[i] = null;
+      if (inv.sel === i) inv.sel = 0;
+      renderHotbar();
+      toast('已从工具栏移除 ' + ITEMS[s.id].name);
+      return;
+    }
+    if (bagSlotsUsed() >= inv.bag.length) { toast('口袋满了'); return; }
+    inv.bag[inv.bag.indexOf(null)] = entityForBag(s);
+    inv.hot[i] = null;
+    if (inv.sel === i) inv.sel = 0;
+    renderHotbar(); renderPocket();
+    toast(ITEMS[s.id].name + ' 已放回口袋');
+  });
+
+  pocketGrid.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-bag]');
+    if (!el) return;
+    var i = +el.getAttribute('data-bag');
+    var slot = inv.bag[i];
+    if (!slot) return;
+    var it = ITEMS[slot.id] || { name: slot.id };
+    expandHotbar();          // 工具栏收着的时候先展开，否则看不见东西放进了哪一格
+
+    // 工具栏里已经有同一件东西 → 直接选中它（桶是各自独立的实体，不合并）
+    for (var h = 0; h < inv.hot.length; h++) {
+      if (slot.id !== 'bucket' && inv.hot[h] && inv.hot[h].id === slot.id) {
+        inv.sel = h;
+        renderHotbar();
+        toast('已选择 ' + it.name);
+        return;
+      }
+    }
+
+    var target = -1;
+    for (var k = 0; k < inv.hot.length; k++) if (!inv.hot[k]) { target = k; break; }
+    if (target < 0) target = inv.sel;
+
+    var prev = inv.hot[target];
+
+    if (it.kind === 'tool') {
+      // 工具是实体：真正从口袋搬进工具栏（桶连同桶里的水/奶一起搬）
+      inv.hot[target] = entityForHot(slot);
+      inv.bag[i] = entityForBag(prev);
+    } else {
+      // 种子 / 收成：堆叠留在口袋里，工具栏只放快捷键
+      inv.hot[target] = { id: slot.id };
+      if (prev && ITEMS[prev.id] && ITEMS[prev.id].kind === 'tool') {
+        // 用种子顶掉了镰刀这类工具 → 工具退回口袋
+        var empty = inv.bag.indexOf(null);
+        if (empty < 0) { toast('口袋满了，放不下' + ITEMS[prev.id].name); return; }
+        inv.bag[empty] = entityForBag(prev);
+      }
+    }
+
+    inv.sel = target;
+    renderHotbar(); renderPocket();
+    flashSlot(target);
+    toast(it.name + ' → 栏位 ' + (target + 1));
+  });
+
+  /* 放进去的那一格闪一下，视线能跟着走 */
+  function flashSlot(i) {
+    var el = hotbarEl.querySelector('[data-hot="' + i + '"]');
+    if (!el) return;
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    setTimeout(function () { el.classList.remove('flash'); }, 620);
+  }
+
+  /* 口袋 / 工具栏的开合统一走这几个函数，别的地方别再直接 toggle class */
+  function pocketOpen() { return !pocketEl.classList.contains('out'); }
+  function openPocket() {
+    pocketEl.classList.remove('out');
+    bagBtn.classList.add('on');
+  }
+  /* 走路时自动收起：口袋是覆盖在地图上的，边走边看会挡住视野 */
+  function closePocket() {
+    if (!pocketOpen()) return;
+    pocketEl.classList.add('out');
+    bagBtn.classList.remove('on');
+  }
+  /* 往工具栏放东西时，如果工具栏是收起的，先展开 —— 不然看不到东西放哪了 */
+  function expandHotbar() {
+    if (!hotbarWrap.classList.contains('hidden')) return false;
+    hotbarWrap.classList.remove('hidden');
+    return true;
+  }
+
+  bagBtn.addEventListener('click', function () {
+    if (pocketOpen()) closePocket(); else openPocket();
+  });
+
+  barToggle.addEventListener('click', function () {
+    hotbarWrap.classList.toggle('hidden');
+  });
+
+  /* ================================================================== shop */
+  var shopOpen = false;
+
+  /* 每一行自带数量：默认 1，key 是物品 id（牛奶用 '__milk'）。
+     顶部「统一设」只负责一次性把这些数字批量刷成同一个值。 */
+  var SHOP_N = {};
+  function qtyOf(id) {
+    var n = SHOP_N[id];
+    if (!(n > 0)) return 1;
+    return Math.min(Math.floor(n), 99);
+  }
+  function setQty(id, v) {
+    var n = parseInt(v, 10);
+    if (!(n > 0)) n = 1;
+    if (n > 99) n = 99;
+    SHOP_N[id] = n;
+    return n;
+  }
+  /* 同一种东西还能往口袋里塞多少个（同 id 的空位补满 + 空格各 99） */
+  function bagRoomFor(id) {
+    var room = 0;
+    for (var i = 0; i < inv.bag.length; i++) {
+      var s = inv.bag[i];
+      if (!s) room += 99;
+      else if (s.id === id && s.n < 99) room += 99 - s.n;
+    }
+    return room;
+  }
+
+  /* ---- 行内交易控件：输入框 + 主按钮 + 全部 ----------------------------
+     数量按行记在 SHOP_N 里，默认 1；改数字时按钮上的数字和右侧合计立刻跟着变。
+     重渲染（买卖成功）后仍从 SHOP_N 取值，所以连续买卖不用重新填。          */
+  function qtyHTML(id, kind, off, max) {
+    if (off) return '';
+    var n = qtyOf(id), isBuy = (kind === 'buy');
+    return '<input class="qn" type="text" inputmode="numeric" maxlength="2" value="' + n +
+      '" data-qn="' + id + '"' + (max > 0 ? ' data-max="' + max + '"' : '') +
+      ' title="要几个（1–99）">' +
+      '<button class="act" type="button" data-do="' + kind + '" data-id="' + id + '">' +
+      (isBuy ? '买 ' : '卖 ') + n + '</button>' +
+      '<button class="act all" type="button" data-do="' + kind + 'all" data-id="' + id + '" title="' +
+      (isBuy ? '口袋和金币允许多少就买多少' : '这一类一次卖光') + '">全部</button>';
+  }
+  /* 价格区：把单价带在 data-unit 上，输入数量后只改数字，不重建整行。
+     显示的永远是「这一趟要花 / 能拿多少」，单价挂在 title 上。 */
+  function priceHTML(unit, n) {
+    var nn = n || 1;
+    var total = (unit > 0 ? unit * nn : unit);
+    return '<span class="pr" data-unit="' + unit + '" title="单价 ' + unit +
+      (nn > 1 ? (' × ' + nn + ' = ' + total) : '') + '">' +
+      '<img class="px" src="kenney_tiny-town/Tiles/tile_0093.png" alt=""><b>' + total + '</b></span>';
+  }
+  /* 输入框变动 → 同步 SHOP_N、按钮数字、右侧合计 */
+  function syncRowQty(inp) {
+    var id = inp.getAttribute('data-qn');
+    var n = setQty(id, inp.value);
+    var max = +inp.getAttribute('data-max') || 0;
+    if (max > 0 && n > max) { n = max; SHOP_N[id] = n; inp.value = n; }
+    var row = inp.closest('.row');
+    if (!row) return;
+    var btn = row.querySelector('[data-do="buy"],[data-do="sell"]');
+    if (btn) btn.textContent = (btn.getAttribute('data-do') === 'buy' ? '买 ' : '卖 ') + n;
+    var pr = row.querySelector('.pr[data-unit]');
+    if (pr) {
+      var unit = +pr.getAttribute('data-unit');
+      var b = pr.querySelector('b');
+      if (b && unit > 0) {
+        b.textContent = unit * n;
+        pr.title = '单价 ' + unit + (n > 1 ? (' × ' + n + ' = ' + (unit * n)) : '');
+      }
+    }
+  }
+
+  function openShop() {
+    if (shopOpen) return;
+    shopOpen = true;
+    renderShop();
+    shopScrim.classList.add('on');
+    shopPanel.classList.add('on');
+  }
+  function closeShop() {
+    if (!shopOpen) return;
+    shopOpen = false;
+    shopScrim.classList.remove('on');
+    shopPanel.classList.remove('on');
+  }
+
+
+  function ownsTool(id) {
+    if (countItem(id) > 0) return true;
+    for (var i = 0; i < inv.hot.length; i++) if (inv.hot[i] && inv.hot[i].id === id) return true;
+    return false;
+  }
+
+  function renderShop() {
+    shopGold.textContent = inv.gold;
+    var html = '';
+    for (var i = 0; i < SEED_ORDER.length; i++) {
+      var cid = SEED_ORDER[i];
+      var seedId = 'seed_' + cid;
+      var it = ITEMS[seedId];
+      var owner = countItem(seedId);
+      var lock = !lvOk(it.lv);
+      var can = !lock && inv.gold >= it.price;
+      html += '<div class="row' + (lock ? ' locked' : (can ? '' : ' na')) + '" data-buy="' + seedId + '"' +
+        (lock ? ' data-lock="' + it.lv + '"' : '') + ' title="' + (lock ? ('Lv.' + it.lv + ' 解锁') : '') + '">' +
+        '<img class="px" src="' + tfile(it.shopIcon || it.icon) + '" alt="">' +
+        '<span class="nm">' + it.name + '</span>' +
+        (owner ? '<span class="st">×' + owner + '</span>' : '') +
+        (lock ? '<span class="lk">Lv.' + it.lv + '</span>' : '') +
+        qtyHTML(seedId, 'buy', lock) +
+        priceHTML(it.price, lock ? 1 : qtyOf(seedId)) +
+        '</div>';
+    }
+
+    html += '<div class="sect">牲畜</div>';
+    for (var ai2 = 0; ai2 < ANIMAL_ORDER.length; ai2++) {
+      var animalId = ANIMAL_ORDER[ai2], anIt = ITEMS[animalId];
+      var ownAn = countItem(animalId);
+      var lockAn = !lvOk(anIt.lv);
+      var okAn = !lockAn && inv.gold >= anIt.price;
+      html += '<div class="row' + (lockAn ? ' locked' : (okAn ? '' : ' na')) + '" data-buy="' + animalId + '"' +
+        (lockAn ? ' data-lock="' + anIt.lv + '"' : '') + ' title="' + (lockAn ? ('Lv.' + anIt.lv + ' 解锁') : (anIt.tip || '')) + '">' +
+        '<img class="px" src="' + tfile(anIt.icon) + '" alt="">' +
+        '<span class="nm">' + anIt.name + '</span>' +
+        (ownAn ? '<span class="st">×' + ownAn + '</span>' : '') +
+        (lockAn ? '<span class="lk">Lv.' + anIt.lv + '</span>' : '') +
+        qtyHTML(animalId, 'buy', lockAn) +
+        priceHTML(anIt.price, lockAn ? 1 : qtyOf(animalId)) +
+        '</div>';
+    }
+
+    html += '<div class="sect">工具</div>';
+    for (var t = 0; t < TOOL_ORDER.length; t++) {
+      var toolId = TOOL_ORDER[t], ti = ITEMS[toolId];
+      var isBk = (toolId === 'bucket');
+      var owned = isBk ? allBuckets().length : 0;
+      var has = isBk ? owned >= MAX_BUCKETS : ownsTool(toolId);
+      var lockT = !lvOk(ti.lv);
+      var afford = !lockT && !has && inv.gold >= ti.price;
+      var toolIcon = isBk ? 'farm-72' : ti.icon;
+      html += '<div class="row' + (lockT ? ' locked' : (afford || has ? '' : ' na')) + '" data-buy="' + toolId + '"' +
+        (lockT ? ' data-lock="' + ti.lv + '"' : '') + ' title="' + (lockT ? ('Lv.' + ti.lv + ' 解锁') : (ti.tip || '')) + '">' +
+        '<img class="px" src="' + tfile(toolIcon) + '" alt="">' +
+        '<span class="nm">' + ti.name + '</span>' +
+        (owned && !has && !lockT ? '<span class="st">×' + owned + '/' + MAX_BUCKETS + '</span>' : '') +
+        (lockT ? '<span class="lk">Lv.' + ti.lv + '</span>'
+          : (has ? '<span class="st" style="margin-left:auto">' + (isBk ? '已备齐' : '已拥有') + '</span>'
+                 : '<button class="act" type="button" data-do="buy" data-id="' + toolId + '">买</button>')) +
+        (has && !lockT ? '' : priceHTML(ti.price, 1)) +
+        '</div>';
+    }
+
+    html += '<div class="sect">家什 · 占两格</div>';
+    for (var gi = 0; gi < TROUGH_ORDER.length; gi++) {
+      var gid = TROUGH_ORDER[gi], gi2 = ITEMS[gid];
+      var ownG = countItem(gid);
+      var lockG = !lvOk(gi2.lv);
+      var okG = !lockG && inv.gold >= gi2.price;
+      var gParts = TROUGH_DEF[TROUGH_OF[gid]].empty;
+      /* 槽是两格宽的家什，商店里也用拼起来的样子展示 */
+      var gIcon = (gParts.length === 2)
+        ? '<span class="duo-ic"><img class="px" src="' + tfile(gParts[0]) + '" alt="">' +
+          '<img class="px" src="' + tfile(gParts[1]) + '" alt=""></span>'
+        : '<img class="px" src="' + tfile(gi2.icon) + '" alt="">';
+      html += '<div class="row' + (lockG ? ' locked' : (okG ? '' : ' na')) + '" data-buy="' + gid + '"' +
+        (lockG ? ' data-lock="' + gi2.lv + '"' : '') + ' title="' + (lockG ? ('Lv.' + gi2.lv + ' 解锁') : (gi2.tip || '')) + '">' +
+        gIcon +
+        '<span class="nm">' + gi2.name + '</span>' +
+        (ownG ? '<span class="st">×' + ownG + '</span>' : '') +
+        (lockG ? '<span class="lk">Lv.' + gi2.lv + '</span>' : '') +
+        qtyHTML(gid, 'buy', lockG) +
+        priceHTML(gi2.price, lockG ? 1 : qtyOf(gid)) +
+        '</div>';
+    }
+
+    html += '<div class="sect">装饰</div>';
+    for (var di = 0; di < DECO_ORDER.length; di++) {
+      var decoId = DECO_ORDER[di], dy = ITEMS[decoId];
+      var own = countItem(decoId);
+      var lockD = !lvOk(dy.lv);
+      var ok = !lockD && inv.gold >= dy.price;
+      html += '<div class="row' + (lockD ? ' locked' : (ok ? '' : ' na')) + '" data-buy="' + decoId + '"' +
+        (lockD ? ' data-lock="' + dy.lv + '"' : '') + ' title="' + (lockD ? ('Lv.' + dy.lv + ' 解锁') : (dy.tip || '')) + '">' +
+        '<img class="px" src="' + tfile(dy.icon) + '" alt="">' +
+        '<span class="nm">' + dy.name + '</span>' +
+        (own ? '<span class="st">×' + own + '</span>' : '') +
+        (lockD ? '<span class="lk">Lv.' + dy.lv + '</span>' : '') +
+        qtyHTML(decoId, 'buy', lockD) +
+        priceHTML(dy.price, lockD ? 1 : qtyOf(decoId)) +
+        '</div>';
+    }
+
+    var pocketPrice = pocketCost();
+    var pocketFull = pocketPrice < 0;
+    html += '<div class="sect">口袋</div>';
+    html += '<div class="row' + ((!pocketFull && inv.gold >= pocketPrice) ? '' : ' na') + '" data-pocket="1">' +
+      '<img class="px" src="' + tfile('town-107') + '" alt="">' +
+      '<span class="nm">口袋扩容 · +1 格</span>' +
+      '<span class="st">' + inv.bag.length + '/' + POCKET.max + '</span>' +
+      (pocketFull ? '<span class="st" style="margin-left:auto">满级</span>'
+                  : '<button class="act" type="button">扩容</button>' + priceHTML(pocketPrice, 1)) +
+      '</div>';
+    shopBuy.innerHTML = html;
+
+    var sells = '';
+    var any = false;
+    /* 牛奶不进口袋，直接从桶里卖 */
+    var milkAll = milkTotal();
+    if (milkAll > 0) {
+      any = true;
+      sells += '<div class="row" data-sellmilk="1">' +
+        '<img class="px" src="' + tfile('farm-124') + '" alt="">' +
+        '<span class="nm">牛奶（桶里）</span>' +
+        '<span class="st">×' + milkAll + ' 份</span>' +
+        qtyHTML('__milk', 'sell', false, milkAll) +
+        priceHTML(sellPrice(MILK_PRICE), qtyOf('__milk')) +
+        '</div>';
+    }
+    for (var j = 0; j < SELL_ORDER.length; j++) {
+      var pid = SELL_ORDER[j];
+      var have = countItem(pid);
+      if (!have) continue;
+      any = true;
+      var pi = ITEMS[pid];
+      sells += '<div class="row" data-sell="' + pid + '">' +
+        '<img class="px" src="' + tfile(pi.icon) + '" alt="">' +
+        '<span class="nm">' + pi.name + '</span>' +
+        '<span class="st">×' + have + '</span>' +
+        qtyHTML(pid, 'sell', false, have) +
+        priceHTML(sellPrice(pi.price), qtyOf(pid)) +
+        '</div>';
+    }
+    if (!any) sells = '<div class="row na" style="cursor:default"><span class="nm" style="color:var(--muted)">口袋里还没有收成</span></div>';
+    shopSell.innerHTML = sells;
+
+    /* 顶部「统一设」：只有当所有行的数字都等于它时才高亮 */
+    var qbtns = qtyCtl.querySelectorAll('[data-qty]');
+    var qins = shopPanel.querySelectorAll('.qn');
+    for (var qi = 0; qi < qbtns.length; qi++) {
+      var qv = +qbtns[qi].getAttribute('data-qty'), same = qins.length > 0;
+      for (var vi = 0; vi < qins.length; vi++) { if (+qins[vi].value !== qv) { same = false; break; } }
+      qbtns[qi].classList.toggle('on', same);
+    }
+  }
+
+  shopBuy.addEventListener('click', function (e) {
+    /* 点输入框不算交易：那是要改数量 */
+    if (e.target.classList && e.target.classList.contains('qn')) return;
+
+    var pEl = e.target.closest('[data-pocket]');
+    if (pEl) {
+      if (LV.lv < 5) { toast('口袋扩容 Lv.5 才开放（当前 Lv.' + LV.lv + '）'); return; }
+      upgradePocket(); return;
+    }
+
+    var doEl = e.target.closest('[data-do]');
+    var all = doEl ? /all$/.test(doEl.getAttribute('data-do')) : false;
+    var el = doEl || e.target.closest('[data-buy]');
+    if (!el) return;
+    var id = doEl ? doEl.getAttribute('data-id') : el.getAttribute('data-buy');
+    var it = ITEMS[id];
+    if (!lvOk(it.lv)) {
+      toast(it.name + ' · 要 Lv.' + it.lv + ' 才能买（当前 Lv.' + LV.lv + '）');
+      return;
+    }
+    if (it.kind === 'tool') {
+      /* 工具是实体，一次只能买一把（多买也没意义：手上一把就够了） */
+      if (id === 'bucket') {
+        if (allBuckets().length >= MAX_BUCKETS) { toast('最多备两把桶'); return; }
+      } else if (ownsTool(id)) { toast('已经有一把' + it.name + '了'); return; }
+      if (inv.gold < it.price) { toast('金币不够'); return; }
+      if (bagSlotsUsed() >= inv.bag.length) { toast('口袋满了，先卖掉些东西'); return; }
+      inv.gold -= it.price;
+      if (id === 'bucket') inv.bag[inv.bag.indexOf(null)] = mkBucket();
+      else addItem(id, 1);
+      syncGold();
+      renderShop(); renderPocket(); renderHotbar();
+      toast(id === 'bucket'
+        ? ('买入 ' + it.name + ' · 现在有 ' + allBuckets().length + '/' + MAX_BUCKETS + ' 把')
+        : ('买入 ' + it.name + ' · 点口袋里的它放进工具栏'));
+      return;
+    }
+
+    /* 可堆叠的东西：上限由 行内数量 / 金币 / 口袋余量 三者取小 */
+    var want = all ? Infinity : qtyOf(id);
+    var afford = it.price > 0 ? Math.floor(inv.gold / it.price) : 99;
+    var room = bagRoomFor(id);
+    if (afford < 1) { toast('金币不够（要 ' + it.price + '，现有 ' + inv.gold + '）'); return; }
+    if (room < 1) { toast('口袋满了，先卖掉些东西'); return; }
+    var n = Math.min(want, afford, room, 99);
+    if (n < 1) n = 1;
+
+    inv.gold -= it.price * n;
+    addItem(id, n);
+    syncGold();
+    renderShop(); renderPocket(); renderHotbar();
+
+    var buyMsg = '买入 ' + it.name + ' ×' + n + ' · -' + (it.price * n) + ' 金币';
+    if (n < want) buyMsg += '（最多只能买 ' + n + ' 个）';
+    /* 买牲畜时把"没水没料就不生产"说清楚，不然 Lv4 会得到一只永远不下蛋的鸡 */
+    if (ANIMAL_DEF[id]) {
+      var supB = animalSupply();
+      toast(supB.ok ? (buyMsg + ' · 点口袋里的它放进草地')
+                    : (buyMsg + ' · 但它们现在不生产：' + haltReason(supB)));
+    } else {
+      toast(buyMsg);
+    }
+  });
+
+  shopSell.addEventListener('click', function (e) {
+    /* 点输入框不算交易 */
+    if (e.target.classList && e.target.classList.contains('qn')) return;
+
+    var doEl = e.target.closest('[data-do]');
+    var all = doEl ? /all$/.test(doEl.getAttribute('data-do')) : false;
+
+    var milkEl = e.target.closest('[data-sellmilk]');
+    if (milkEl || (doEl && doEl.getAttribute('data-id') === '__milk')) {
+      var avail = milkTotal();
+      if (!avail) return;
+      var wantM = all ? avail : Math.min(qtyOf('__milk'), avail), sold = 0;
+      while (sold < wantM) {
+        var mb = milkBucket();
+        if (!mb) break;
+        var takeM = Math.min(wantM - sold, mb.fill);
+        mb.fill -= takeM; sold += takeM;
+        if (mb.fill <= 0) clearBucket(mb);
+      }
+      if (!sold) return;
+      var mp = sellPrice(MILK_PRICE);
+      addGold(mp * sold);
+      renderShop(); renderHotbar(); renderPocket();
+      toast('卖出牛奶 ×' + sold + ' · +' + (mp * sold) + ' 金币 · 桶里还剩 ' + milkTotal() + ' 份');
+      return;
+    }
+
+    var el = doEl || e.target.closest('[data-sell]');
+    if (!el) return;
+    var id = doEl ? doEl.getAttribute('data-id') : el.getAttribute('data-sell');
+    var it = ITEMS[id];
+    if (!it) return;
+    var sp = sellPrice(it.price);
+    var have = countItem(id);
+    if (!have) { toast('没有' + it.name + '可卖'); return; }
+    var n = all ? have : Math.min(qtyOf(id), have);
+    var removed = takeItem(id, n);
+    if (!removed) return;
+    addGold(sp * removed);
+    renderShop(); renderPocket(); renderHotbar();
+    toast('卖出 ' + it.name + ' ×' + removed + ' · +' + (sp * removed) + ' 金币');
+  });
+
+  /* 行内数量：边打边同步按钮数字与合计 */
+  shopPanel.addEventListener('input', function (e) {
+    var inp = e.target;
+    if (inp && inp.classList && inp.classList.contains('qn')) syncRowQty(inp);
+  });
+  /* 输入框里的回车 = 立刻按这个数字交易；Esc 只退出输入框，不关店 */
+  shopPanel.addEventListener('keydown', function (e) {
+    var inp = e.target;
+    if (!inp || !inp.classList || !inp.classList.contains('qn')) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      var n = setQty(inp.getAttribute('data-qn'), inp.value);
+      inp.value = n;
+      /* 直接点这一行的主按钮，买卖逻辑只留一份 */
+      var row = inp.closest('.row');
+      var btn = row && row.querySelector('[data-do="buy"],[data-do="sell"]');
+      if (btn) btn.click();
+      return;
+    }
+    if (e.key === 'Escape' || e.key === 'Tab') {
+      if (e.key === 'Escape') inp.blur();
+      e.stopPropagation();      // 别让 Tab 变成"折叠工具栏"，也把 Esc 截在这儿
+      return;
+    }
+    /* 别让数字键 / W A S D / B 漏到世界快捷键上去 */
+    e.stopPropagation();
+  });
+
+  qtyCtl.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-qty]');
+    if (!b) return;
+    var v = +b.getAttribute('data-qty');
+    if (!(v > 0)) return;
+    /* 统一设：把当前所有行的数量一次刷成 v，之后各行还能单独改 */
+    var ins = shopPanel.querySelectorAll('.qn');
+    for (var i = 0; i < ins.length; i++) SHOP_N[ins[i].getAttribute('data-qn')] = v;
+    renderShop();
+  });
+
+  document.getElementById('shopClose').addEventListener('click', closeShop);
+  shopScrim.addEventListener('click', closeShop);
+  var resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', resetGame);
+
+  /* ================================================================ toast */
+  var toastTimer = 0;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1700);
+  }
+
+  var statusKey = '';
+  function setStatus(text, kind) {
+    if (statusKey === text) return;
+    statusKey = text;
+    statusEl.textContent = text;
+    statusDot.className = 'dot' + (kind === 'warn' ? ' warn' : kind === 'gold' ? ' gold' : '');
+  }
+
+  /* ============================================================ view/camera */
   var scale = 2, camX = 0, camY = 0, dpr = 1, viewW = 1, viewH = 1;
   var userZoomed = false;
-  var dotPattern = null;
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
   function fitScale() {
     var s = Math.min(viewW / WORLD_W, viewH / WORLD_H);
-    s = Math.floor(s * 2) / 2;              // snap down to half steps so the whole map fits
+    s = Math.floor(s * 2) / 2;
     return clamp(s, 1, 4);
   }
-
   function resize() {
     var r = stage.getBoundingClientRect();
     viewW = Math.max(1, Math.round(r.width));
@@ -328,56 +2180,27 @@
     if (!userZoomed) scale = fitScale();
     snapCamera();
   }
-
-  function snapCamera() {
+  function camTarget() {
     var vw = viewW / scale, vh = viewH / scale;
-    camX = (WORLD_W <= vw) ? (WORLD_W - vw) / 2
-      : clamp(state.x * TS + TS / 2 - vw / 2, 0, WORLD_W - vw);
-    camY = (WORLD_H <= vh) ? (WORLD_H - vh) / 2
-      : clamp(state.y * TS + TS / 2 - vh / 2, 0, WORLD_H - vh);
+    var tx = (WORLD_W <= vw) ? (WORLD_W - vw) / 2 : clamp(state.x * TS + TS / 2 - vw / 2, 0, WORLD_W - vw);
+    var ty = (WORLD_H <= vh) ? (WORLD_H - vh) / 2 : clamp(state.y * TS + TS / 2 - vh / 2, 0, WORLD_H - vh);
+    return [tx, ty];
   }
-
+  function snapCamera() { var t = camTarget(); camX = t[0]; camY = t[1]; }
   function updateCamera() {
-    var vw = viewW / scale, vh = viewH / scale;
-    var tx, ty;
-    if (WORLD_W <= vw) tx = (WORLD_W - vw) / 2;
-    else tx = clamp(state.x * TS + TS / 2 - vw / 2, 0, WORLD_W - vw);
-    if (WORLD_H <= vh) ty = (WORLD_H - vh) / 2;
-    else ty = clamp(state.y * TS + TS / 2 - vh / 2, 0, WORLD_H - vh);
-    camX += (tx - camX) * 0.16;
-    camY += (ty - camY) * 0.16;
-    if (Math.abs(tx - camX) < 0.05) camX = tx;
-    if (Math.abs(ty - camY) < 0.05) camY = ty;
+    var t = camTarget();
+    camX += (t[0] - camX) * 0.16;
+    camY += (t[1] - camY) * 0.16;
+    if (Math.abs(t[0] - camX) < 0.05) camX = t[0];
+    if (Math.abs(t[1] - camY) < 0.05) camY = t[1];
   }
-
   function setZoom(next) {
     userZoomed = true;
     scale = clamp(Math.round(next * 2) / 2, 1, 4);
     snapCamera();
   }
 
-  /* ----------------------------------------------------------------- toast */
-  var toastTimer = 0;
-  function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1500);
-  }
-
-  /* -------------------------------------------------------------- status UI */
-  var statusKey = '';
-  function setStatus(text, warn) {
-    if (statusKey === text) return;
-    statusKey = text;
-    statusEl.textContent = text;
-    statusDot.classList.toggle('warn', !!warn);
-  }
-  function updateCoord() {
-    coordEl.textContent = 'x ' + state.cx + ' · y ' + state.cy;
-  }
-
-  /* ------------------------------------------------------------------ path */
+  /* ================================================================== path */
   function bfs(sx, sy) {
     var cost = new Int32Array(W * H).fill(-1);
     var prev = new Int32Array(W * H).fill(-1);
@@ -389,17 +2212,27 @@
       var c = q[head++];
       var x = c % W, y = (c / W) | 0;
       var nx, ny, ni;
-      if (y > 0) { nx = x; ny = y - 1; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
-      if (y < H - 1) { nx = x; ny = y + 1; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
-      if (x > 0) { nx = x - 1; ny = y; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
-      if (x < W - 1) { nx = x + 1; ny = y; ni = ny * W + nx; if (!blocked[ni] && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (y > 0) { nx = x; ny = y - 1; ni = ny * W + nx; if (!solidIdx(ni) && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (y < H - 1) { nx = x; ny = y + 1; ni = ny * W + nx; if (!solidIdx(ni) && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (x > 0) { nx = x - 1; ny = y; ni = ny * W + nx; if (!solidIdx(ni) && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
+      if (x < W - 1) { nx = x + 1; ny = y; ni = ny * W + nx; if (!solidIdx(ni) && cost[ni] < 0) { cost[ni] = cost[c] + 1; prev[ni] = c; q[tail++] = ni; } }
     }
     return { cost: cost, prev: prev };
   }
 
-  function goTo(tx, ty) {
-    if (!inBounds(tx, ty)) { toast('地图之外，走不过去'); return; }
-    if (tx === state.cx && ty === state.cy) { queue = []; dest = null; return; }
+  function pathFrom(res, goal, startIdx) {
+    var path = [], cur = goal;
+    while (cur >= 0 && cur !== startIdx) {
+      path.push({ x: cur % W, y: (cur / W) | 0 });
+      cur = res.prev[cur];
+    }
+    path.reverse();
+    return path;
+  }
+
+  function goTo(tx, ty, silent) {
+    if (!inBounds(tx, ty)) { if (!silent) toast('地图之外，走不过去'); return false; }
+    if (tx === state.cx && ty === state.cy) { queue = []; dest = null; return true; }
 
     var res = bfs(state.cx, state.cy);
     var startIdx = state.cy * W + state.cx;
@@ -408,7 +2241,6 @@
     if (!isSolid(tx, ty) && res.cost[ty * W + tx] >= 0) {
       goal = ty * W + tx;
     } else {
-      // blocked (or unreachable) target: land on the closest reachable cell
       var bestD = Infinity, bestCost = Infinity;
       for (var i = 0; i < W * H; i++) {
         if (res.cost[i] < 0) continue;
@@ -416,34 +2248,27 @@
         var d = Math.abs(x - tx) + Math.abs(y - ty);
         if (d < bestD || (d === bestD && res.cost[i] < bestCost)) { bestD = d; bestCost = res.cost[i]; goal = i; }
       }
-      if (isSolid(tx, ty)) toast('这块地过不去，先走到旁边');
+      if (isSolid(tx, ty) && !silent) toast('这块地过不去，先走到旁边');
     }
+    if (goal < 0) { if (!silent) toast('没有可走的路'); return false; }
 
-    if (goal < 0) { toast('没有可走的路'); return; }
-
-    var path = [];
-    var cur = goal;
-    while (cur >= 0 && cur !== startIdx) {
-      path.push({ x: cur % W, y: (cur / W) | 0 });
-      cur = res.prev[cur];
-    }
-    path.reverse();
-
-    if (!path.length) { queue = []; dest = null; return; }
+    var path = pathFrom(res, goal, startIdx);
+    if (!path.length) { queue = []; dest = null; return true; }
 
     queue = path;
     dest = { x: goal % W, y: (goal / W) | 0 };
     destBorn = performance.now();
     setStatus('寻路中');
     if (!step) tryStep();
+    return true;
   }
 
-  /* --------------------------------------------------------------- movement */
+  /* ============================================================= movement */
   function hitWall(dx, dy) {
     var now = performance.now();
     if (now - bump.t > 260) {
       bump.t = now; bump.dx = dx; bump.dy = dy;
-      setStatus('前方不可通行', true);
+      setStatus('前方不可通行', 'warn');
     }
     if (queue.length) { queue = []; dest = null; }
   }
@@ -461,6 +2286,7 @@
     if (!next && held.length) {
       var d = held[held.length - 1];
       var v = DIRS[d];
+      facing = d;
       var nx = state.cx + v[0], ny = state.cy + v[1];
       if (!inBounds(nx, ny) || isSolid(nx, ny)) { hitWall(v[0], v[1]); return; }
       next = { x: nx, y: ny };
@@ -469,13 +2295,932 @@
     if (!next) return;
     if (queue.length) queue.shift();
 
-    step = {
-      fx: state.x, fy: state.y,
-      tx: next.x, ty: next.y,
-      t0: performance.now(), dur: MOVE_MS
-    };
+    closePocket();          // 一迈步就把口袋收起来，别挡着看路
+    step = { fx: state.x, fy: state.y, tx: next.x, ty: next.y, t0: performance.now(), dur: MOVE_MS };
     state.moving = true;
-    setStatus(queue.length ? '寻路中' : '行走中');
+    if (!held.length) setStatus(queue.length ? '寻路中' : '行走中');
+  }
+
+  /* =========================================================== interaction */
+  function faceTo(p) {
+    var dx = p.x - state.cx, dy = p.y - state.cy;
+    if (dx === 1) facing = 'right'; else if (dx === -1) facing = 'left';
+    else if (dy === 1) facing = 'down'; else if (dy === -1) facing = 'up';
+  }
+
+  function cropStageName(c, e) {
+    var last = c.stages.length - 1;
+    if (e.s === 0) return '苗';
+    if (e.s === last) return '成熟';
+    return '生长中';
+  }
+  /* 整轮生长时长（秒），只用来在提示里报个数 */
+  function cropTotal(c) {
+    var t = 0;
+    for (var i = 0; i < c.dur.length; i++) t += c.dur[i];
+    return t * GROWTH_SCALE;
+  }
+
+  function isShopCell(x, y) { return x === SHOP.x && y === SHOP.y; }
+  function shopReach() {
+    return Math.abs(state.cx - SHOP.x) + Math.abs(state.cy - SHOP.y) <= 1;
+  }
+
+  /* ---- 水井：站在上下左右任意一格就能打水 ---------------------------- */
+  function isWellCell(x, y) { return inBounds(x, y) && wellCell[y * W + x] === 1; }
+  function wellReach() {
+    return isWellCell(state.cx, state.cy) ||
+           isWellCell(state.cx + 1, state.cy) || isWellCell(state.cx - 1, state.cy) ||
+           isWellCell(state.cx, state.cy + 1) || isWellCell(state.cx, state.cy - 1);
+  }
+  function canFull() { return inv.water >= CAN_MAX; }
+  function refillCan(quiet) {
+    if (canFull()) { if (!quiet) toast('水壶已经满了（' + CAN_MAX + '/' + CAN_MAX + '）'); return false; }
+    inv.water = CAN_MAX;
+    renderHotbar();
+    if (!quiet) { toast('打满了水 · ' + CAN_MAX + '/' + CAN_MAX); setStatus('水壶已满'); }
+    return true;
+  }
+
+  /* 桶打水：空桶、缺水的桶都能一次打满 */
+  function bucketAtWell() {
+    var b = curBucket();
+    if (!b) { toast('手里没拿桶'); return false; }
+    if (b.type === 'milk' && b.fill > 0) { toast('桶里是牛奶 · 先去卖掉再打水'); return true; }
+    b.type = 'water';
+    b.fill = BUCKET_MAX;
+    renderHotbar();
+    toast('打满一桶水 · ' + BUCKET_MAX + '/' + BUCKET_MAX);
+    setStatus('水桶已满');
+    return true;
+  }
+
+  function isInteractive(x, y) {
+    if (!inBounds(x, y)) return false;
+    var k = cellKey(x, y);
+    return !!(crops[k] || berries[k] || trees[k] || saplings[k] || rocks[k] ||
+              animals[k] || troughAt(x, y) || fences[k] ||
+              isShopCell(x, y) || isWellCell(x, y));
+  }
+
+  function currentTool() {
+    var hot = inv.hot[inv.sel];
+    return hot ? hot.id : 'hand';
+  }
+
+  function actAt(x, y) {
+    if (!inBounds(x, y)) return false;
+    var k = cellKey(x, y);
+
+    // 商店：站在推车旁边就能开
+    if (isShopCell(x, y) && shopReach()) { openShop(); return true; }
+
+    var tool = currentTool();
+    var crop = crops[k];
+    var berry = berries[k];
+    var tree = trees[k];
+    var sap = saplings[k];
+    var rock = rocks[k];
+
+    /* ---- 牲畜：进入产出状态就收，没到点就摸一下看进度 ---- */
+    var an = animals[k];
+    if (an) {
+      var adef = ANIMAL_DEF[an.kind];
+      if (!an.ready) {
+        var sup0 = animalSupply();
+        if (!sup0.ok) {
+          /* 停产是"沉默的失败"，按 F 是最直接的"这只鸡怎么了"查询动作 */
+          toast(adef.name + ' 停工 · ' + haltReason(sup0));
+          setStatus(adef.name + ' · 停工', 'warn');
+          return true;
+        }
+        var left0 = Math.max(1, Math.ceil((adef.cycle - an.prod) / ANIMAL_RATE));
+        toast(adef.name + ' 生产中 · 约 ' + left0 + ' 秒后能收');
+        setStatus(adef.name + ' · 生产中');
+        return true;
+      }
+      if (an.kind === 'cow') {
+        if (tool !== 'bucket') { toast('牛奶要用空桶接 · 把桶拿在手上'); return true; }
+        var mb2 = curBucket();
+        if (!mb2) { toast('手里没拿桶'); return true; }
+        if (mb2.type === 'water' && mb2.fill > 0) {
+          // 身上还带着另一把桶的话，换那把来装
+          var spare = null, bl = allBuckets();
+          for (var bi = 0; bi < bl.length; bi++) {
+            if (bl[bi] !== mb2 && bl[bi].type !== 'water' && bl[bi].fill < BUCKET_MAX) { spare = bl[bi]; break; }
+          }
+          if (!spare) { toast('桶里的水还没倒掉，挤不了奶'); return true; }
+          toast('这把桶里是水 · 用另一把空桶接');
+          mb2 = spare;
+        }
+        if (mb2.type === 'milk' && mb2.fill >= BUCKET_MAX) { toast('牛奶桶满了（' + BUCKET_MAX + '/' + BUCKET_MAX + '），先去卖掉'); return true; }
+        if (mb2.type !== 'milk') { mb2.type = 'milk'; mb2.fill = 0; }
+        var gotMilk = Math.min(adef.yield || 1, BUCKET_MAX - mb2.fill);
+        mb2.fill += gotMilk;
+        an.ready = false; an.prod = 0;
+        addExp(adef.exp);
+        spawnBits(x, y, '#f6f3e6', 5);
+        renderHotbar(); renderPocket();
+        toast('挤了 ' + gotMilk + ' 份牛奶 · 桶里 ' + mb2.fill + '/' + BUCKET_MAX);
+        setStatus('挤牛奶', 'gold');
+        return true;
+      }
+      var gotP = addItem(adef.item, adef.yield || 1);
+      an.ready = false; an.prod = 0;
+      addExp(adef.exp);
+      spawnBits(x, y, an.kind === 'chicken' ? '#f0e2c4' : '#f6f3e8', 6);
+      renderPocket(); renderHotbar();
+      toast(gotP ? ('收下 ' + ITEMS[adef.item].name + ' ×' + (adef.yield || 1))
+                 : ('口袋满了 · ' + ITEMS[adef.item].name + '没收进来'));
+      setStatus('收集 ' + ITEMS[adef.item].name, 'gold');
+      return true;
+    }
+
+    /* ---- 水槽 / 饲料槽 ---- */
+    var tr = troughAt(x, y);
+    if (tr) {
+      var tdef = TROUGH_DEF[tr.kind];
+      if (tool === 'shovel') {                     // 放错了能收回来
+        delete troughs[cellKey(tr.x, tr.y)];
+        blocked[cellKey(tr.x, tr.y)] = 0;
+        blocked[cellKey(tr.x + 1, tr.y)] = 0;
+        addItem(TROUGH_ITEM[tr.kind], 1);
+        renderPocket(); renderHotbar();
+        toast('收起' + tdef.name + '（还剩 ' + (tr.amt || 0).toFixed(1) + ' 份）');
+        return true;
+      }
+      if (tr.kind === 'water') {
+        if (troughFull(tr)) { toast('水槽是满的 · 牲畜有水喝了'); return true; }
+        var wb = curBucket();
+        if (!wb || wb.type !== 'water' || wb.fill <= 0) {
+          toast('要用装满水的水桶（去水井打水）· 一次倒 ' + TROUGH_WATER + ' 份');
+          return true;
+        }
+        if (wb.fill < TROUGH_WATER) {
+          toast('桶里只剩 ' + wb.fill + ' 份水，装槽要 ' + TROUGH_WATER + ' 份');
+          return true;
+        }
+        wb.fill -= TROUGH_WATER;
+        if (wb.fill <= 0) clearBucket(wb);
+        tr.amt = TROUGH_CAP;
+        spawnBits(x, y, '#7fc3e2', 6);
+        renderHotbar();
+        toast('倒水进槽 · 桶里还剩 ' + wb.fill + '/' + BUCKET_MAX);
+        setStatus('装满水槽', 'gold');
+        return true;
+      }
+      /* 饲料槽 */
+      if (troughFull(tr)) { toast('饲料槽是满的'); return true; }
+      if (tool !== 'wheat') {
+        toast(countItem('wheat') >= FEED_WHEAT
+          ? ('选出小麦，再对着饲料槽按 F · 一次放 ' + FEED_WHEAT + ' 个')
+          : ('要 ' + FEED_WHEAT + ' 个小麦才装得满（现有 ' + countItem('wheat') + '）'));
+        return true;
+      }
+      if (countItem('wheat') < FEED_WHEAT) {
+        toast('小麦不够 · 要 ' + FEED_WHEAT + ' 个（现有 ' + countItem('wheat') + '）');
+        return true;
+      }
+      takeItem('wheat', FEED_WHEAT);
+      tr.amt = TROUGH_CAP;
+      spawnBits(x, y, '#e8c46a', 7);
+      toast('倒满饲料 · 小麦 -' + FEED_WHEAT);
+      setStatus('装满饲料槽', 'gold');
+      return true;
+    }
+
+    /* ---- 浆果丛移植：铲子挖起来变成苗（Lv7 起） ---- */
+    if (berry && tool === 'shovel') {
+      if (!lvOk(BERRY_LV)) {
+        toast('浆果丛 · 要 Lv.' + BERRY_LV + ' 才能挖走（当前 Lv.' + LV.lv + '）');
+        setStatus('等级不足', 'warn');
+        return true;
+      }
+      if (countItem('berry_bush') === 0 && bagSlotsUsed() >= inv.bag.length) {
+        toast('口袋满了，腾一格再挖');
+        return true;
+      }
+      var ripeExtra = 0;
+      if (berry.ripe) { ripeExtra = BERRY_GOLD; addGold(BERRY_GOLD); }
+      delete berries[k];
+      var gotB = addItem('berry_bush', 1);
+      renderPocket(); renderHotbar();
+      toast(gotB
+        ? ('挖起浆果丛 → 1 株苗' + (ripeExtra ? ' · 顺手摘了浆果 +' + ripeExtra + ' 金币' : ''))
+        : '口袋满了，苗没拿上');
+      setStatus('挖浆果丛', 'gold');
+      return true;
+    }
+
+    /* ---- 树 / 树苗：斧头砍倒，树顶跟着一起没 ---- */
+    if (tree || sap) {
+      var what = tree ? tree.name : SAPLING[sap.kind].name;
+      if (tool !== 'axe') { toast(what + ' · 要用斧头才砍得动'); return true; }
+      var woodN = tree ? WOOD_TREE : WOOD_SAPLING;
+      if (tree) delete trees[k]; else delete saplings[k];
+      blocked[k] = 0;
+      var gotW = addItem('wood', woodN);
+      addExp(WOOD_EXP);
+      spawnBits(x, y - (tree && tree.top ? 1 : 0), tree ? '#7b5a35' : '#8a6a44', 8);
+      renderPocket(); renderHotbar();
+      toast('砍倒 ' + what + ' · 木头 +' + woodN + (gotW ? '' : '（口袋满了）'));
+      setStatus('砍倒 ' + what, 'gold');
+      return true;
+    }
+
+    /* ---- 栅栏 / 栅栏门：铲子能拆，拆下来收回口袋 ---- */
+    var fen = fences[k];
+    if (fen) {
+      var fenName = fen.gate ? '栅栏门' : '栅栏';
+      if (tool !== 'shovel') { toast(fenName + ' · 用铲子才能拆掉'); return true; }
+      delete fences[k];
+      blocked[k] = 0;
+      addItem(fen.gate ? 'fence_gate' : 'fence', 1);
+      renderPocket(); renderHotbar();
+      toast('拆下 1 个' + fenName);
+      setStatus('拆栅栏');
+      return true;
+    }
+
+    /* ---- 岩石：镐子敲碎 ---- */
+    if (rock) {
+      if (tool !== 'pickaxe') { toast('岩石 · 要用镐子才敲得动'); return true; }
+      delete rocks[k];
+      blocked[k] = 0;
+      var gotS = addItem('stone', STONE_ROCK);
+      addExp(STONE_EXP);
+      spawnBits(x, y, '#9aa4ad', 8);
+      renderPocket(); renderHotbar();
+      toast('敲碎岩石 · 石头 +' + STONE_ROCK + (gotS ? '' : '（口袋满了）'));
+      setStatus('敲石头', 'gold');
+      return true;
+    }
+
+    /* ---- 装饰 / 牲畜 / 家什：把口袋里的东西摆到地上 ---- */
+    var toolDef = ITEMS[tool];
+    if (toolDef && toolDef.place) {
+      /* 水槽占两格：面朝左就朝左边铺开，否则从面前那格往右铺 */
+      if (toolDef.place === 'trough_water' || toolDef.place === 'trough_feed') {
+        var ax = (facing === 'left') ? x - 1 : x;
+        if (countItem(tool) <= 0) { toast(toolDef.name + ' 用完了'); return true; }
+        if (!canPlaceTrough(ax, y)) { toast('摆不下 · ' + toolDef.name + '要占两格空地'); return true; }
+        var tk = TROUGH_OF[toolDef.place];
+        troughs[cellKey(ax, y)] = { x: ax, y: y, kind: tk, amt: 0 };
+        blocked[cellKey(ax, y)] = 1;
+        blocked[cellKey(ax + 1, y)] = 1;
+        takeItem(tool, 1);
+        toast('放下' + TROUGH_DEF[tk].name + ' · 对它可以倒水 / 倒饲料');
+        setStatus('布置家什');
+        return true;
+      }
+
+      if (x === state.cx && y === state.cy) { toast('挪到旁边一格再摆'); return true; }
+      if (!canPlaceAt(x, y)) { toast('这块地摆不下'); return true; }
+      if (countItem(tool) <= 0) { toast(toolDef.name + ' 用完了'); return true; }
+      if (toolDef.place === 'fence' || toolDef.place === 'gate') {
+        var isGate = toolDef.place === 'gate';
+        fences[k] = { x: x, y: y, gate: isGate };
+        blocked[k] = isGate ? 0 : 1;
+        takeItem(tool, 1);
+        renderPocket(); renderHotbar();
+        toast(isGate ? '放下一扇栅栏门 · 人能从这儿穿过去' : '放下 1 截栅栏 · 挨着的会自动接上');
+        setStatus('布置栅栏');
+        return true;
+      }
+      if (toolDef.place === 'rock') {
+        rocks[k] = { x:x, y:y };
+        blocked[k] = 1;
+      } else if (toolDef.place === 'berry') {
+        /* 移植过来的浆果丛：从苗开始长，acc 归零，熟了接上正常再生节奏 */
+        berries[k] = { x:x, y:y, ripe:false, acc:0, planted:true };
+      } else if (ANIMAL_DEF[toolDef.place]) {
+        settleAnimal(spawnAnimal(toolDef.place, x, y));
+      } else {
+        saplings[k] = { x:x, y:y, kind:toolDef.place, acc:0 };
+        blocked[k] = 1;
+      }
+      takeItem(tool, 1);
+      if (ANIMAL_DEF[toolDef.place]) {
+        var supP = animalSupply();
+        toast(supP.ok
+          ? ('放下 ' + toolDef.name + ' · 它会自己溜达')
+          : ('放下 ' + toolDef.name + ' · 但它现在不生产：' + haltReason(supP)));
+      } else if (toolDef.place === 'berry') {
+        toast('种下浆果丛苗 · 3 分钟后结浆果');
+      } else {
+        toast('放下 ' + toolDef.name + (toolDef.place === 'rock' ? '' : ' · 慢慢长大'));
+      }
+      setStatus('布置装饰');
+      return true;
+    }
+
+    /* ---- 种子：种在空耕地上 ---- */
+    if (tool.indexOf('seed_') === 0) {
+      var seedDef = ITEMS[tool];
+      var seedCrop = CROPS[seedDef.crop];
+      if (!lvOk(seedCrop.lv)) {
+        toast(seedCrop.name + ' · 要 Lv.' + seedCrop.lv + ' 才能种（当前 Lv.' + LV.lv + '）');
+        setStatus('等级不足', 'warn');
+        return true;
+      }
+      if (crop) {
+        if (crop.s === seedCrop.stages.length - 1) { toast('已经长熟了，用镰刀收吧'); return true; }
+        toast('这格已经有' + seedCrop.name + '了'); return true;
+      }
+      if (!fieldCell[k]) { toast('只能种在耕地上'); return false; }
+      if (countItem(tool) <= 0) { toast('种子用完了'); return true; }
+      takeItem(tool, 1);
+      crops[k] = { t: seedDef.crop, s: 0, acc: 0 };
+      toast('种下了' + CROPS[seedDef.crop].name + '（' + seedDef.name + '）');
+      setStatus('已播种');
+      return true;
+    }
+
+    /* ---- 镰刀：收割成熟作物 ---- */
+    if (tool === 'scythe') {
+      if (!crop) { toast('这里没有可收割的东西'); return true; }
+      var C = CROPS[crop.t];
+      var lastS = C.stages.length - 1;
+      if (crop.s < lastS) { toast(C.name + '还没长熟'); return true; }
+      /* 野外/自己种的都看等级：不够就"失败但不破坏"，等级到了还能回来收 */
+      if (!lvOk(C.lv)) {
+        toast('野生的' + C.name + ' · 要 Lv.' + C.lv + ' 才能收（当前 Lv.' + LV.lv + '）');
+        setStatus('等级不足', 'warn');
+        return true;
+      }
+      crop.s = lastS + 1;      // → 枯茬
+      crop.acc = 0;
+      var nYield = C.yield || 1;
+      var ok = addItem(C.item, nYield);
+      addExp(C.exp);
+      toast('收割 ' + C.name + ' ×' + nYield + (ok ? '' : '（口袋满了）'));
+      setStatus('收割 ' + C.name, 'gold');
+      renderPocket(); renderHotbar();
+      return true;
+    }
+
+    /* ---- 浇水壶：湿润 + 30% 加速，一次管 10 分钟 ---- */
+    if (tool === 'can') {
+      if (!crop && !fieldCell[k]) { toast('这里浇不了水'); return false; }
+      if (crop && crop.s >= CROPS[crop.t].stages.length - 1) { toast('已经熟了，浇不动了'); return true; }
+      if (wet[k] > 0) { toast('这块地还湿着 · 还能润 ' + Math.ceil(wet[k] / 60) + ' 分钟'); return true; }
+      if (inv.water <= 0) { toast('水壶空了，去水井打水'); setStatus('水壶空了', 'warn'); return true; }
+      inv.water--;
+      wet[k] = WET_TIME;
+      renderHotbar();
+      toast((crop ? ('浇了水，' + CROPS[crop.t].name + ' 长得更快') : '耕地湿润了') +
+            ' · 10 分钟内都算数 · 剩 ' + inv.water + '/' + CAN_MAX);
+      return true;
+    }
+
+    /* ---- 锄头：把地面开垦成耕地 ---- */
+    if (tool === 'hoe') {
+      if (isSolid(x, y) || isShopCell(x, y) || isWellCell(x, y)) { toast('这里开不了地'); return true; }
+      if (fences[k]) { toast('先把栅栏拆了'); return true; }
+      if (fieldCell[k]) { toast('这里已经是耕地了'); return true; }
+      if (crop) { toast('先把这株' + CROPS[crop.t].name + '处理掉'); return true; }
+      if (berry) { toast('浆果丛挡着，挖不动'); return true; }
+      fieldCell[k] = 1;
+      retileAround(x, y);
+      toast('开垦出一块耕地');
+      setStatus('开垦耕地');
+      return true;
+    }
+
+    /* ---- 铲子：耕地还原成草地 ---- */
+    if (tool === 'shovel') {
+      if (!fieldCell[k]) { toast('这里不是耕地'); return true; }
+      var hadCrop = !!crop;
+      if (hadCrop) delete crops[k];
+      delete wet[k];
+      fieldCell[k] = 0;
+      farmTileOf[k] = null;
+      wetTileOf[k] = null;
+      retileAround(x, y);
+      toast(hadCrop ? '铲掉了作物，地变回草地' : '耕地变回草地');
+      setStatus('恢复草地');
+      return true;
+    }
+
+    /* ---- 桶：浇不了地；有水的桶可以对着空地倒空 ---- */
+    if (tool === 'bucket') {
+      if (crop || fieldCell[k]) { toast('桶浇不了地 · 作物要用浇水壶'); return true; }
+      var gb = curBucket();
+      if (!gb) { toast('手里没拿桶'); return true; }
+      if (gb.type === 'water' && gb.fill > 0) {
+        clearBucket(gb);
+        renderHotbar();
+        toast('倒空了桶里的水');
+        setStatus('空桶');
+        return true;
+      }
+      if (gb.type === 'milk' && gb.fill > 0) {
+        toast('桶里是牛奶（' + gb.fill + '/' + BUCKET_MAX + '）· 去商店卖掉');
+        return true;
+      }
+      toast('空桶 · 去水井打水，或对准产出状态的牛');
+      return true;
+    }
+
+    /* ---- 空手 ---- */
+    if (tool === 'hand' || tool === '') {
+      if (berry) {
+        if (!lvOk(BERRY_LV)) {
+          toast('浆果丛 · 要 Lv.' + BERRY_LV + ' 才能采（当前 Lv.' + LV.lv + '）');
+          setStatus('等级不足', 'warn');
+          return true;
+        }
+        if (berry.ripe) {
+          berry.ripe = false;
+          berry.acc = 0;
+          addGold(BERRY_GOLD);
+          addExp(BERRY_EXP);
+          toast('摘下浆果 +' + BERRY_GOLD + ' 金币');
+          setStatus('采摘浆果', 'gold');
+          return true;
+        }
+        toast('浆果还没熟，再等等');
+        return true;
+      }
+      if (crop) {
+        var Cc = CROPS[crop.t];
+        if (crop.s === Cc.stages.length) {
+          delete crops[k];
+          toast('清掉了枯萎的' + Cc.name);
+          return true;
+        }
+        if (crop.s === Cc.stages.length - 1) {
+          toast('要用镰刀收割');
+          return true;
+        }
+        toast(Cc.name + '还在长');
+        return true;
+      }
+      toast('这里没什么可做的');
+      return false;
+    }
+
+    return false;
+  }
+
+  /* 这一格对当前工具是否有意义 */
+  function workable(x, y, tool) {
+    if (!inBounds(x, y)) return false;
+    var k = cellKey(x, y);
+    var an = animals[k];
+    var tr = troughAt(x, y);
+    if (fences[k]) return tool === 'shovel';   // 栅栏只能用铲子拆
+    if (berries[k] && tool === 'shovel') return true;   // 铲子能把浆果丛挖成苗
+    if (tool === 'bucket') {
+      if (tr) return tr.kind === 'water' && !troughFull(tr);
+      if (an) return an.kind === 'cow' && an.ready;
+      // 空地上按 F = 倒掉桶里的水
+      var wb2 = curBucket();
+      return !!wb2 && wb2.type === 'water' && wb2.fill > 0 && !fieldCell[k] && !crops[k];
+    }
+    if (tr) {
+      if (tool === 'shovel') return true;
+      if (troughFull(tr)) return false;
+      if (tr.kind === 'feed') return tool === 'wheat' && countItem('wheat') >= FEED_WHEAT;
+      return false;
+    }
+    if (an) return true;                       // 牲畜：走近就能收 / 看进度
+    if (tool.indexOf('seed_') === 0) return fieldCell[k] === 1 && !crops[k];
+    if (tool === 'scythe') return !!crops[k];
+    if (tool === 'can') return !!(crops[k] || fieldCell[k]) && !(wet[k] > 0);
+    if (tool === 'axe') return !!(trees[k] || saplings[k]);
+    if (tool === 'pickaxe') return !!rocks[k];
+    if (tool === 'hoe') return !fieldCell[k] && !crops[k] && !berries[k] && !fences[k] &&
+      !isSolid(x, y) && !isShopCell(x, y) && !isWellCell(x, y);
+    if (tool === 'shovel') return fieldCell[k] === 1;
+    var it = ITEMS[tool];
+    if (it && it.place) return canPlaceHeldAt(x, y);
+    return !!(crops[k] || berries[k] || trees[k] || saplings[k] || rocks[k]);
+  }
+
+  /* 装饰 / 牲畜能不能摆在这一格：空地、别压着东西、也别摆自己脚下 */
+  function canPlaceAt(x, y) {
+    if (!inBounds(x, y)) return false;
+    var k = cellKey(x, y);
+    if (x === state.cx && y === state.cy) return false;
+    return !isSolid(x, y) && !fieldCell[k] && !crops[k] && !berries[k] &&
+           !trees[k] && !saplings[k] && !rocks[k] && !troughAt(x, y) && !fences[k] &&
+           !isShopCell(x, y) && !isWellCell(x, y);
+  }
+  /* 水槽要占横着的两格 */
+  function canPlaceTrough(ax, ay) {
+    return canPlaceAt(ax, ay) && canPlaceAt(ax + 1, ay);
+  }
+  /* 手上的东西（单格 / 两格）能不能摆在这一格 */
+  function canPlaceHeldAt(x, y) {
+    var def = ITEMS[currentTool()];
+    if (!def || !def.place) return false;
+    if (def.place === 'trough_water' || def.place === 'trough_feed') {
+      return canPlaceTrough((facing === 'left') ? x - 1 : x, y);
+    }
+    return canPlaceAt(x, y);
+  }
+
+  /* 手上的东西按 F 会摆在哪几格：给地图上的虚影用
+     返回 { ok, cells:[{x,y,file}] }，没拿可摆放的东西就返回 null */
+  function placePreview() {
+    var id = currentTool();
+    var def = ITEMS[id];
+    if (!def || !def.place) return null;
+    if (countItem(id) <= 0) return null;
+    var f = DIRS[facing] || DIRS.down;
+    var fx = state.cx + f[0], fy = state.cy + f[1];
+    if (!inBounds(fx, fy)) return null;
+
+    if (def.place === 'trough_water' || def.place === 'trough_feed') {
+      var ax = (facing === 'left') ? fx - 1 : fx;
+      if (!inBounds(ax, fy) || !inBounds(ax + 1, fy)) return null;
+      var tiles = TROUGH_DEF[TROUGH_OF[def.place]].empty;
+      return {
+        ok: canPlaceTrough(ax, fy),
+        cells: [{ x: ax, y: fy, file: tiles[0] }, { x: ax + 1, y: fy, file: tiles[1] }]
+      };
+    }
+
+    var file = def.icon;
+    if (ANIMAL_DEF[def.place]) file = ANIMAL_DEF[def.place].icon;
+    else if (SAPLING[def.place]) file = SAPLING[def.place].tile;
+    else if (def.place === 'berry') file = BERRY_SEED;
+    else if (def.place === 'fence') file = fenceTile(fx, fy, true);   // 虚影按接上以后的样子显示
+    else if (def.place === 'gate') file = 'town-69';
+    return { ok: canPlaceAt(fx, fy), cells: [{ x: fx, y: fy, file: file }] };
+  }
+
+  /* 对某一格动手；这格实在没东西可做就静默返回 false
+     fromClick=true 表示「点地图走过去顺手做」，这种情况绝不用掉树苗 / 岩石：
+     空地上点一下只会走路，摆装饰要自己面朝那格按 F */
+  function interactAt(x, y, fromClick) {
+    if (!inBounds(x, y)) return false;
+    if (isShopCell(x, y) && shopReach()) { openShop(); return true; }
+    var k = cellKey(x, y);
+    var tool = currentTool();
+    var toolDef = ITEMS[tool];
+    if (fromClick && toolDef && toolDef.place) return false;
+    if (workable(x, y, tool)) return actAt(x, y);
+    if (crops[k] || berries[k] || trees[k] || saplings[k] || rocks[k] ||
+        animals[k] || troughAt(x, y) || fences[k]) return actAt(x, y);   // 工具不对，让 actAt 给提示
+    return false;
+  }
+
+  /* 在水井边打水。autoSwitch=true 时（点了水井）自动换浇水壶；
+     allowOnField=false 时，脚下有田就先顾着浇水 */
+  function wellInteract(autoSwitch, allowOnField) {
+    if (!wellReach()) return false;
+    var tool = currentTool();
+    if (tool === 'bucket') { bucketAtWell(); return true; }
+    if (tool !== 'can') {
+      if (!autoSwitch) return false;
+      if (!selectTool('can')) {
+        if (ensureTool('bucket')) { renderHotbar(); bucketAtWell(); return true; }
+        toast('需要浇水壶或空桶才能打水');
+        return true;
+      }
+      renderHotbar();
+    }
+    if (!allowOnField) {
+      var k = cellKey(state.cx, state.cy);
+      if (crops[k] || fieldAt(state.cx, state.cy)) return false;
+    }
+    if (canFull()) { toast('水壶已经满了（' + CAN_MAX + '/' + CAN_MAX + '）'); return true; }
+    refillCan();
+    setStatus('打满了水');
+    return true;
+  }
+
+  /* F：对人物面前那一格动手（脚下这格也照顾）；站到推车 / 水井旁则开店、打水；
+     树和岩石是实心的站不上去，所以顺手照顾「面前那一格」 */
+  function useTool() {
+    var f = DIRS[facing] || DIRS.down;
+    var fx = state.cx + f[0], fy = state.cy + f[1];
+    var tool0 = currentTool();
+    var def0 = ITEMS[tool0];
+
+    /* 手里是树苗 / 岩石 / 牲畜 / 水槽：F 只往「面前那格」摆，点空地不会替你做主 */
+    if (def0 && def0.place) {
+      if (inBounds(fx, fy) && canPlaceHeldAt(fx, fy)) {
+        actAt(fx, fy);
+        renderPocket(); renderHotbar();
+        return;
+      }
+      /* 面前那格被东西占着就照常照顾它（摘浆果 / 砍树…），否则只提醒一句 */
+      var fk0 = inBounds(fx, fy) ? cellKey(fx, fy) : -1;
+      var busy = fk0 >= 0 && (crops[fk0] || berries[fk0] || trees[fk0] ||
+        saplings[fk0] || rocks[fk0] || animals[fk0] || troughAt(fx, fy) ||
+        fieldCell[fk0] || isShopCell(fx, fy) || isWellCell(fx, fy));
+      if (!busy) {
+        toast('面朝一块空草地按 F，才能把' + def0.name + '摆下');
+        renderPocket(); renderHotbar();
+        return;
+      }
+    }
+
+    if (shopReach()) { openShop(); return; }
+    if (wellInteract(false, false)) { renderPocket(); renderHotbar(); return; }
+
+    if (inBounds(fx, fy)) {
+      var fk = cellKey(fx, fy);
+      if (trees[fk] || saplings[fk] || rocks[fk] || animals[fk] || troughAt(fx, fy) || berries[fk]) {
+        var want = toolForCell(fx, fy);
+        if (want && ensureTool(want)) renderHotbar();
+        actAt(fx, fy);
+        renderPocket(); renderHotbar();
+        return;
+      }
+    }
+
+    var k = cellKey(state.cx, state.cy);
+    if (!interactAt(state.cx, state.cy, false)) {
+      var tool = currentTool();
+      if (tool === 'hoe') toast('脚下这块地开不了');
+      else if (tool === 'shovel') toast('脚下不是耕地，铲不了');
+      else if (tool === 'axe') toast('面前要对着树才砍得动');
+      else if (tool === 'pickaxe') toast('面前要对着岩石才敲得动');
+      else if (tool === 'bucket') toast('空桶 · 去水井打水，或对准产出状态的牛');
+      else if (tool === 'wheat') toast('小麦要对着空饲料槽按 F');
+      else toast(fieldCell[k] ? '站到耕地上，选中种子再按 F' : '脚下没有能互动的东西');
+    }
+    renderPocket();
+    renderHotbar();
+  }
+
+  /* 走到某格之后，自动换最合适的工具再动手 */
+  function toolForCell(x, y) {
+    var k = cellKey(x, y);
+    var an = animals[k];
+    if (an) {
+      if (!an.ready) return null;
+      return an.kind === 'cow' ? 'bucket' : 'hand';
+    }
+    var tr = troughAt(x, y);
+    if (tr) {
+      if (troughFull(tr)) return null;
+      if (tr.kind === 'water') return 'bucket';
+      return countItem('wheat') >= FEED_WHEAT ? 'wheat' : null;
+    }
+    var c = crops[k];
+    if (c) {
+      var C = CROPS[c.t];
+      if (c.s >= C.stages.length) return 'hand';
+      if (c.s === C.stages.length - 1) return 'scythe';
+      return null;
+    }
+    if (berries[k]) {
+      /* 拿着铲子就是来挖走的，别自作主张换成空手去摘 */
+      if (currentTool() === 'shovel') return 'shovel';
+      return berries[k].ripe ? 'hand' : null;
+    }
+    if (trees[k] || saplings[k]) return 'axe';
+    if (rocks[k]) return 'pickaxe';
+    return null;
+  }
+  function selectTool(id) {
+    for (var i = 0; i < inv.hot.length; i++) {
+      if (inv.hot[i] && inv.hot[i].id === id) { inv.sel = i; return true; }
+    }
+    return false;
+  }
+  /* 工具栏里没有这把工具，但口袋里有一把 → 自动请上工具栏 */
+  /* 把口袋里的一把桶取出来（连桶里的水/奶一起） */
+  function takeBagBucket() {
+    for (var i = 0; i < inv.bag.length; i++) {
+      if (isBucket(inv.bag[i])) { var b = inv.bag[i]; inv.bag[i] = null; return b; }
+    }
+    return null;
+  }
+  function ensureTool(id) {
+    if (selectTool(id)) return true;
+    if (id === 'hand' || countItem(id) <= 0) return false;
+    for (var i = 0; i < inv.hot.length; i++) {
+      if (!inv.hot[i]) {
+        if (id === 'bucket') {
+          var bb = takeBagBucket();
+          if (!bb) return false;
+          inv.hot[i] = bb;                 // 桶是实体：整只搬，别再新建一只
+        } else {
+          inv.hot[i] = { id:id };
+        }
+        inv.sel = i; return true;
+      }
+    }
+    return false;
+  }
+
+  /* 点地图 → 走到 → 顺手把该做的事做掉，不用再按 F */
+  function resolvePending() {
+    if (!pending) return;
+    var p = pending; pending = null;
+    // 牲畜会长腿跑：它挪到旁边一格了也照样顺手摸一下
+    if (p.animal) {
+      if (animals[cellKey(p.animal.x, p.animal.y)] === p.animal) { p.x = p.animal.x; p.y = p.animal.y; }
+      else return;
+    }
+    if (!inBounds(p.x, p.y)) return;
+
+    var d = Math.abs(p.x - state.cx) + Math.abs(p.y - state.cy);
+    if (d > 1) return;
+    faceTo(p);
+
+    if (isShopCell(p.x, p.y) && shopReach()) { openShop(); return; }
+    if (isWellCell(p.x, p.y) && wellReach()) { wellInteract(true, true); renderPocket(); renderHotbar(); return; }
+
+    var cell = (d === 0) ? { x: state.cx, y: state.cy } : p;
+    var want = toolForCell(cell.x, cell.y);
+    if (want && ensureTool(want)) renderHotbar();
+
+    interactAt(cell.x, cell.y, true);
+    renderPocket(); renderHotbar();
+  }
+
+  /* ================================================================ update */
+  var lastT = 0;
+  var haltNotified = false;      // 断料提示只弹一次，补水补料后复位
+
+  /* 砍树 / 敲石头时飞起来的小碎屑 */
+  var bits = [];
+  function spawnBits(x, y, color, n) {
+    for (var i = 0; i < n; i++) {
+      bits.push({
+        x: x * TS + 3 + Math.random() * 10,
+        y: y * TS + 4 + Math.random() * 8,
+        vx: (Math.random() - 0.5) * 30,
+        vy: -16 - Math.random() * 28,
+        t: 0, life: 0.45 + Math.random() * 0.35,
+        c: color, s: Math.random() < 0.45 ? 2 : 1
+      });
+    }
+  }
+
+  /* ============================================================== animals */
+  /* 牲畜占一格，像人一样一格一格挪；攒够时间就 ready（头顶冒产出物图标） */
+  function animalFree(x, y) {
+    if (!inBounds(x, y)) return false;
+    var i = cellKey(x, y);
+    if (blocked[i] || animals[i]) return false;
+    if (fences[i] && fences[i].gate) return false;              // 栅栏门只给人过，牲畜绕不进去
+    if (fieldCell[i] || crops[i] || berries[i]) return false;   // 别踩坏庄稼
+    if (x === state.cx && y === state.cy) return false;
+    return true;
+  }
+
+  function spawnAnimal(kind, x, y) {
+    var def = ANIMAL_DEF[kind];
+    var an = {
+      kind: kind, x: x, y: y, px: x, py: y,
+      fx: x, fy: y, dir: Math.random() < 0.5 ? 'left' : 'right',
+      moving: false, t0: 0, dur: def.speed, walkT: 0,
+      wait: 0.9 + Math.random() * 1.6,
+      prod: 0, ready: false, seed: Math.random() * 6.28
+    };
+    animals[cellKey(x, y)] = an;
+    return an;
+  }
+
+  function startAnimalStep(an, rate) {
+    var dirs = ['up', 'down', 'left', 'right'];
+    for (var i = dirs.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = dirs[i]; dirs[i] = dirs[j]; dirs[j] = tmp;
+    }
+    for (var d = 0; d < dirs.length; d++) {
+      var v = DIRS[dirs[d]];
+      var nx = an.x + v[0], ny = an.y + v[1];
+      if (!animalFree(nx, ny)) continue;
+      delete animals[cellKey(an.x, an.y)];
+      an.fx = an.x; an.fy = an.y;
+      an.x = nx; an.y = ny;
+      animals[cellKey(nx, ny)] = an;
+      an.dir = dirs[d];
+      an.moving = true; an.walkT = 0; an.t0 = performance.now();
+      return;
+    }
+    an.wait = (1.6 + Math.random() * 1.6) / rate;
+  }
+
+  /* 产出计时只走 dt，跟走不走路无关：动物被栅栏圈住、站着不动，照样按周期下蛋。
+     行动频率减半只是让画面安静下来，不改变产能。 */
+  function updateAnimals(now, dt, supply) {
+    var keys = Object.keys(animals);       // 走动会改 key，先取快照
+    /* 停产时动物几乎不动，一眼就能看出"出事了" */
+    var rate = supply.ok ? ANIMAL_ACTION_RATE : ANIMAL_ACTION_RATE * 0.4;
+    for (var ki = 0; ki < keys.length; ki++) {
+      var an = animals[keys[ki]];
+      if (!an) continue;
+      var def = ANIMAL_DEF[an.kind];
+      an.halt = !supply.ok && !an.ready;    // 已经产好的不算停工，它只是在等你来收
+      if (an.moving) {
+        var t = (now - an.t0) / an.dur;
+        if (t >= 1) {
+          an.px = an.x; an.py = an.y;
+          an.moving = false; an.walkT = 0;
+          an.wait = (1.3 + Math.random() * 2.8) / rate;
+        } else {
+          an.px = an.fx + (an.x - an.fx) * t;
+          an.py = an.fy + (an.y - an.fy) * t;
+          an.walkT = t;
+        }
+      } else {
+        an.wait -= dt;
+        if (an.wait <= 0) startAnimalStep(an, rate);
+      }
+      /* 水料缺一样就完全停产：不是"慢一点"，是零 */
+      if (!supply.ok) continue;
+      if (!an.ready) {
+        an.prod += dt * ANIMAL_RATE;
+        if (an.prod >= def.cycle) { an.prod = def.cycle; an.ready = true; }
+      }
+    }
+  }
+
+  /* 刚放下的动物先站一会儿，别一落地就溜达走 */
+  function settleAnimal(an) { an.wait = 1.6 + Math.random() * 1.2; an.prod = 0; an.ready = false; }
+
+  function tick(now, dt) {
+    // 作物生长：浇过水的格子 ×1.3（湿润管 10 分钟，跟种几轮无关）
+    for (var k in crops) {
+      var e = crops[k];
+      var C = CROPS[e.t];
+      var lastS = C.stages.length - 1;
+      if (e.s >= lastS) continue;
+      var boost = (wet[k] > 0) ? WATER_BOOST : 1;
+      e.acc += dt * boost;
+      var need = (C.dur[e.s] || 1) * GROWTH_SCALE;
+      while (e.s < lastS && e.acc >= need) {
+        e.acc -= need; e.s++;
+        need = (C.dur[e.s] || 1) * GROWTH_SCALE;
+      }
+      if (e.s >= lastS) e.acc = 0;
+    }
+    // 树苗长大：头顶那格空着才能长成大树
+    for (var sk in saplings) {
+      var sp = saplings[sk];
+      if (sp.acc < TREE_GROW) sp.acc += dt;
+      if (sp.acc < TREE_GROW) continue;
+      var upY = sp.y - 1;
+      if (upY < 0) { sp.acc = TREE_GROW; continue; }
+      var upIdx = cellKey(sp.x, upY);
+      if (blocked[upIdx] || trees[upIdx] || saplings[upIdx] || rocks[upIdx]) {
+        sp.acc = TREE_GROW;
+        continue;
+      }
+      var def = SAPLING[sp.kind];
+      delete saplings[sk];
+      trees[sk] = { x: sp.x, y: sp.y, trunk: def.trunk, top: def.top, name: TREE_TRUNK[def.trunk].name };
+      spawnBits(sp.x, sp.y - 1, '#6f9c5c', 5);
+    }
+    // 浆果再生
+    for (var bk in berries) {
+      var b = berries[bk];
+      if (b.ripe) continue;
+      b.acc += dt;
+      if (b.acc >= BERRY_REGROW) { b.ripe = true; b.acc = 0; }
+    }
+    // 湿土计时
+    for (var wk in wet) {
+      wet[wk] -= dt;
+      if (wet[wk] <= 0) delete wet[wk];
+    }
+    // 牲畜：只有"还在攒产出"的才吃料 → 边生产边按食量扣 → 再决定动不动
+    var herd = herdInfo();
+    var supply = animalSupply();
+    if (herd.n > 0) {
+      if (herd.active <= 0) {
+        /* 全都在等着收：不干活，自然也不消耗，更不该报"停工" */
+        haltNotified = false;
+        supply = { water: supply.water, feed: supply.feed, ok: true };
+      } else if (!supply.ok) {
+        if (!haltNotified) {
+          haltNotified = true;
+          toast('牲畜停工：' + haltReason(supply));
+          setStatus('水料断了 · 牲畜停工', 'warn');
+        }
+      } else {
+        haltNotified = false;
+        var perSec = herd.active * dt / TROUGH_UNIT;   // 份
+        drainTrough('water', perSec);
+        drainTrough('feed', perSec);
+        supply = animalSupply();
+      }
+    } else {
+      haltNotified = false;
+    }
+    updateAnimals(now, dt, supply);
+    // 碎屑
+    for (var bi = bits.length - 1; bi >= 0; bi--) {
+      var p = bits[bi];
+      p.t += dt;
+      if (p.t >= p.life) { bits.splice(bi, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 160 * dt;
+    }
+    // 每 5 秒存一次
+    saveAcc += dt;
+    if (saveAcc >= 5) { saveAcc = 0; saveGame(); }
   }
 
   function update(now) {
@@ -486,46 +3231,30 @@
       state.y = step.fy + (step.ty - step.fy) * t;
       walkT = t;
       if (t >= 1) {
+        var ndx = step.tx - step.fx, ndy = step.ty - step.fy;
+        if (Math.abs(ndx) > Math.abs(ndy)) facing = ndx > 0 ? 'right' : 'left';
+        else facing = ndy > 0 ? 'down' : 'up';
         state.cx = step.tx; state.cy = step.ty;
         state.x = state.cx; state.y = state.cy;
         step = null;
         state.moving = false;
-        updateCoord();
-        if (!queue.length) { dest = null; setStatus('待机'); }
+        if (!queue.length) { dest = null; if (!pending) setStatus('待机'); }
         tryStep();
       }
     } else {
       tryStep();
     }
+    if (pending && !step && !queue.length) resolvePending();
   }
 
-  /* ---------------------------------------------------------------- drawing */
-  function makeDotPattern() {
-    var p = document.createElement('canvas');
-    p.width = 14; p.height = 14;
-    var pc = p.getContext('2d');
-    pc.fillStyle = 'rgba(52,74,56,.13)';
-    pc.beginPath(); pc.arc(7, 7, 1, 0, Math.PI * 2); pc.fill();
-    return ctx.createPattern(p, 'repeat');
-  }
-
+  /* =============================================================== drawing */
   function drawBoardBackground() {
     ctx.fillStyle = '#e9eddf';
     ctx.fillRect(0, 0, viewW, viewH);
-    if (!dotPattern) dotPattern = makeDotPattern();
-    if (dotPattern) {
-      ctx.save();
-      ctx.fillStyle = dotPattern;
-      ctx.fillRect(0, 0, viewW, viewH);
-      ctx.restore();
-    }
   }
-
   function drawMapShadow() {
-    var x0 = Math.round(-camX * scale);
-    var y0 = Math.round(-camY * scale);
-    var w = Math.round(WORLD_W * scale);
-    var h = Math.round(WORLD_H * scale);
+    var x0 = Math.round(-camX * scale), y0 = Math.round(-camY * scale);
+    var w = Math.round(WORLD_W * scale), h = Math.round(WORLD_H * scale);
     ctx.save();
     ctx.shadowColor = 'rgba(34,50,36,.26)';
     ctx.shadowBlur = 26;
@@ -535,72 +3264,383 @@
     ctx.restore();
   }
 
+  function drawSprite(id, x, y) {
+    var im = img(tfile(id));
+    if (im && im.complete && im.naturalWidth) ctx.drawImage(im, x, y, TS, TS);
+  }
+
+  /* 按格子画（树顶画在树干上面一格） */
+  function drawTile(id, cx, cy) {
+    var im = img(tfile(id));
+    if (im && im.complete && im.naturalWidth) ctx.drawImage(im, cx * TS, cy * TS, TS, TS);
+  }
+
+  function drawShopMark(now) {
+    var px = SHOP.x * TS, py = SHOP.y * TS;
+    var bob = Math.sin(now / 620) * 0.6;
+    drawSprite(SHOP.sprite, px, py + bob);
+
+    var label = '商店';
+    ctx.save();
+    ctx.font = '600 5px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    var w = ctx.measureText(label).width + 6;
+    var bx = px + TS / 2, by = py - 7.5 + bob;
+    bx = clamp(bx, w / 2 + 1, WORLD_W - w / 2 - 1);   // 靠地图边缘时别被裁掉
+    ctx.fillStyle = 'rgba(255,251,240,.95)';
+    ctx.strokeStyle = 'rgba(53,107,76,.55)';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    var r = 2.2;
+    ctx.moveTo(bx - w / 2 + r, by - 3.2);
+    ctx.arcTo(bx + w / 2, by - 3.2, bx + w / 2, by + 3.2, r);
+    ctx.arcTo(bx + w / 2, by + 3.2, bx - w / 2, by + 3.2, r);
+    ctx.arcTo(bx - w / 2, by + 3.2, bx - w / 2, by - 3.2, r);
+    ctx.arcTo(bx - w / 2, by - 3.2, bx + w / 2, by - 3.2, r);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#356b4c';
+    ctx.fillText(label, bx, by + 0.2);
+    ctx.restore();
+  }
+
+  function drawRipeSpark(now, x, y) {
+    var t = (now / 900) % 1;
+    var a = 0.45 + 0.4 * Math.sin(now / 240);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = '#f6d377';
+    var cx = x * TS + TS / 2, cy = y * TS + 1 - Math.sin(t * Math.PI) * 1.4;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 1.6);
+    ctx.lineTo(cx + 1.2, cy);
+    ctx.lineTo(cx, cy + 1.6);
+    ctx.lineTo(cx - 1.2, cy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* 栅栏 / 栅栏门：每格一张图，靠 fenceTile 按四邻挑 */
+  function drawFence(f) {
+    var im = img(tfile(fenceSprite(f)));
+    if (im && im.complete) ctx.drawImage(im, f.x * TS, f.y * TS, TS, TS);
+  }
+
+  /* 水槽 / 饲料槽：左右两格拼成一件；上方一条余量条，见底变红 */
+  function drawTrough(tr, now) {
+    var has = (tr.amt || 0) > 0;
+    var set = has ? TROUGH_DEF[tr.kind].full : TROUGH_DEF[tr.kind].empty;
+    var a = img(tfile(set[0])), b = img(tfile(set[1]));
+    if (a && a.complete) ctx.drawImage(a, tr.x * TS, tr.y * TS, TS, TS);
+    if (b && b.complete) ctx.drawImage(b, (tr.x + 1) * TS, tr.y * TS, TS, TS);
+
+    var p = clamp((tr.amt || 0) / TROUGH_CAP, 0, 1);
+    var bw = TS * 2 - 6, bx = tr.x * TS + 3, by = tr.y * TS + 0.8;
+    ctx.save();
+    ctx.fillStyle = 'rgba(24,38,28,.40)';
+    ctx.fillRect(bx, by, bw, 2);
+    ctx.fillStyle = p <= 0 ? '#c2603f' : (p < 0.25 ? '#d08a3e' : (tr.kind === 'water' ? '#5fa8cc' : '#c8a94e'));
+    ctx.fillRect(bx, by, bw * p, 2);
+    /* 空了就红框呼吸，别让玩家看不出"牲畜为什么不动" */
+    if (p <= 0 && now) {
+      var al = 0.35 + 0.35 * Math.sin(now / 320);
+      ctx.strokeStyle = 'rgba(194,96,63,' + al.toFixed(3) + ')';
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(tr.x * TS + 0.6, tr.y * TS + 0.6, TS * 2 - 1.2, TS - 1.2);
+    }
+    ctx.restore();
+  }
+
+  /* 预放置虚影：手里拿着树苗 / 岩石 / 牲畜 / 水槽时，面前那格（两格）铺一层半透明预览。
+     能摆 = 绿色脉动，摆不下 = 红色淡影 */
+  function drawPlaceGhost(now) {
+    var pv = placePreview();
+    if (!pv) return;
+    var pulse = pv.ok ? (0.5 + 0.14 * Math.sin(now / 300)) : 0.26;
+    for (var i = 0; i < pv.cells.length; i++) {
+      var c = pv.cells[i];
+      var X = c.x * TS, Y = c.y * TS;
+
+      ctx.fillStyle = pv.ok ? 'rgba(86,168,110,.18)' : 'rgba(198,86,64,.18)';
+      ctx.fillRect(X, Y, TS, TS);
+
+      var im = img(tfile(c.file));
+      if (im && im.complete && im.naturalWidth) {
+        ctx.globalAlpha = pulse;
+        ctx.drawImage(im, X, Y, TS, TS);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.strokeStyle = pv.ok ? 'rgba(58,132,84,.9)' : 'rgba(196,86,64,.8)';
+      ctx.lineWidth = 0.7;
+      ctx.setLineDash([2, 1.6]);
+      ctx.strokeRect(X + 0.5, Y + 0.5, TS - 1, TS - 1);
+      ctx.setLineDash([]);
+    }
+  }
+
+  /* 牲畜：走动时按插值位置画；能收了就在头顶浮出产出物的图标 */
+  function drawAnimal(an, now) {
+    var def = ANIMAL_DEF[an.kind];
+    var px = (an.moving ? an.px : an.x) * TS;
+    var py = (an.moving ? an.py : an.y) * TS;
+
+    ctx.fillStyle = 'rgba(26,40,28,.20)';
+    ctx.beginPath();
+    ctx.ellipse(px + TS / 2, py + TS - 1.3, 4.6, 1.9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var bob = an.moving
+      ? -Math.abs(Math.sin(an.walkT * Math.PI)) * 1.1
+      : Math.sin(now / 900 + an.seed) * 0.22;
+    var im = img(tfile(def.icon));
+    if (im && im.complete && im.naturalWidth) {
+      if (an.dir === 'left') {
+        ctx.save();
+        ctx.translate(px + TS, py + bob);
+        ctx.scale(-1, 1);
+        ctx.drawImage(im, 0, 0, TS, TS);
+        ctx.restore();
+      } else {
+        ctx.drawImage(im, px, py + bob, TS, TS);
+      }
+    }
+
+    /* 停产：头顶飘一个灰白「…」，比任何提示文字都直接 */
+    if (an.halt && !an.ready) {
+      var hx = px + TS / 2, hy = py - 5.2 + bob;
+      ctx.save();
+      ctx.globalAlpha = 0.72 + 0.2 * Math.sin(now / 300 + an.seed);
+      ctx.fillStyle = 'rgba(255,252,244,.92)';
+      ctx.beginPath(); ctx.arc(hx, hy, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(194,96,63,.7)';
+      ctx.lineWidth = 0.45;
+      ctx.stroke();
+      ctx.fillStyle = '#b0542f';
+      ctx.font = '600 4px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('…', hx, hy + 0.15);
+      ctx.restore();
+    }
+
+    /* 产出就绪：头顶冒一个小气泡，里面是 farm-125 / 124 / 123 */
+    if (!an.ready) return;
+    var pim = img(tfile(def.ready));
+    if (!pim || !pim.complete || !pim.naturalWidth) return;
+    var bx = px + TS / 2, by = py - 7.4 + bob + Math.sin(now / 460 + an.seed) * 0.55;
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,253,244,.88)';
+    ctx.beginPath();
+    ctx.arc(bx, by + 3.2, 4.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(53,107,76,.45)';
+    ctx.lineWidth = 0.45;
+    ctx.stroke();
+    ctx.drawImage(pim, bx - 3.2, by, 6.4, 6.4);
+    ctx.restore();
+  }
+
+  function drawHero(now) {
+    var px = state.x * TS, py = state.y * TS;
+    var nb = 0, age = now - bump.t;
+    if (age >= 0 && age < 180) {
+      var k = 1 - age / 180;
+      nb = Math.sin(k * Math.PI) * 1.6 * k;
+    }
+    px += bump.dx * nb;
+    py += bump.dy * nb;
+
+    ctx.fillStyle = 'rgba(26,40,28,.22)';
+    ctx.beginPath();
+    ctx.ellipse(px + TS / 2, py + TS - 1.2, 4.7, 2.0, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var bob = state.moving ? -Math.abs(Math.sin(walkT * Math.PI)) * 1.3 : Math.sin(now / 760) * 0.28;
+    var im = img(HERO);
+    if (im && im.complete && im.naturalWidth) {
+      if (facing === 'left') {
+        ctx.save();
+        ctx.translate(px + TS, py + bob);
+        ctx.scale(-1, 1);
+        ctx.drawImage(im, 0, 0, TS, TS);
+        ctx.restore();
+      } else {
+        ctx.drawImage(im, px, py + bob, TS, TS);
+      }
+    }
+  }
+
   function drawWorld(now) {
     var x0 = Math.max(0, Math.floor(camX / TS) - 1);
     var y0 = Math.max(0, Math.floor(camY / TS) - 1);
     var x1 = Math.min(W - 1, Math.ceil((camX + viewW / scale) / TS) + 1);
     var y1 = Math.min(H - 1, Math.ceil((camY + viewH / scale) / TS) + 1);
 
-    // pass 1 — ground: everything the player walks on top of
+    // 地面
     for (var y = y0; y <= y1; y++) {
       for (var x = x0; x <= x1; x++) {
-        var list = gridGround[y * W + x];
+        var i = y * W + x;
+        var list = gridGround[i];
         for (var k = 0; k < list.length; k++) {
-          var im = tileImgs[list[k]];
-          if (im) ctx.drawImage(im, x * TS, y * TS, TS, TS);
+          var im = img(list[k]);
+          if (im && im.complete) ctx.drawImage(im, x * TS, y * TS, TS, TS);
+        }
+        // 耕地：动态层（会随相邻关系换拼接瓦片）
+        if (farmTileOf[i]) {
+          var fim = img(farmTileOf[i]);
+          if (fim && fim.complete) ctx.drawImage(fim, x * TS, y * TS, TS, TS);
+          if (wet[i] > 0 && wetTileOf[i]) {
+            var wim = img(wetTileOf[i]);
+            if (wim && wim.complete) ctx.drawImage(wim, x * TS, y * TS, TS, TS);
+          }
         }
       }
     }
 
-    // hovered cell (aiming aid)
+    // 目标格提示（点过的那一格 / 当前要动手的格子）
+    if (pending && inBounds(pending.x, pending.y)) {
+      var isAct = isInteractive(pending.x, pending.y);
+      ctx.strokeStyle = isAct ? 'rgba(214,164,66,.9)' : 'rgba(255,255,255,.5)';
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash(isAct ? [2, 2] : []);
+      ctx.strokeRect(pending.x * TS + 1, pending.y * TS + 1, TS - 2, TS - 2);
+      ctx.setLineDash([]);
+    }
+
     if (hover) {
-      ctx.strokeStyle = hover.blocked ? 'rgba(196,92,68,.85)' : 'rgba(255,255,255,.85)';
+      ctx.strokeStyle = hover.blocked ? 'rgba(196,92,68,.85)' : 'rgba(255,255,255,.8)';
       ctx.lineWidth = 1;
       ctx.strokeRect(hover.x * TS + 0.5, hover.y * TS + 0.5, TS - 1, TS - 1);
-      ctx.strokeStyle = 'rgba(30,46,34,.35)';
+      ctx.strokeStyle = 'rgba(30,46,34,.32)';
       ctx.lineWidth = 0.5;
       ctx.strokeRect(hover.x * TS - 0.25, hover.y * TS - 0.25, TS + 0.5, TS + 0.5);
     }
 
-    // planned path
     if (queue.length) {
-      ctx.fillStyle = 'rgba(38,84,58,.45)';
+      ctx.fillStyle = 'rgba(38,84,58,.42)';
       for (var q = 0; q < queue.length; q++) {
         ctx.beginPath();
-        ctx.arc(queue[q].x * TS + TS / 2, queue[q].y * TS + TS / 2, 1.6, 0, Math.PI * 2);
+        ctx.arc(queue[q].x * TS + TS / 2, queue[q].y * TS + TS / 2, 1.5, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
-    // destination ring
     if (dest) {
-      var age = (now - destBorn) / 1000;
-      var pulse = 0.5 + 0.5 * Math.sin(age * 4.4);
-      var cx = dest.x * TS + TS / 2, cy = dest.y * TS + TS / 2;
+      var ag = (now - destBorn) / 1000;
+      var pulse = 0.5 + 0.5 * Math.sin(ag * 4.4);
+      var dcx = dest.x * TS + TS / 2, dcy = dest.y * TS + TS / 2;
       ctx.save();
-      ctx.strokeStyle = 'rgba(38,84,58,' + (0.45 + 0.35 * pulse).toFixed(3) + ')';
+      ctx.strokeStyle = 'rgba(38,84,58,' + (0.4 + 0.32 * pulse).toFixed(3) + ')';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 3, 5.4 + pulse * 0.9, 3.1 + pulse * 0.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(dcx, dcy + 3, 5.4 + pulse * 0.9, 3.1 + pulse * 0.5, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
 
-    // the player stands between ground and overhead layers
-    drawHero(now);
+    // 动态层：作物 / 浆果 / 商店 / 玩家 —— 按 y 排序
+    var draws = [];
+    var ck, ent;
+    for (ck in crops) {
+      ent = crops[ck];
+      (function (key, e) {
+        var cx = key % W, cy = (key / W) | 0;
+        var onIt = (cx === state.cx && cy === state.cy);
+        draws.push({ y: cy + (onIt ? 0.34 : 0.62), f: function () {
+          var C = CROPS[e.t];
+          var spriteId = (e.s >= C.stages.length) ? C.dry : C.stages[e.s];
+          var im2 = img(tfile(spriteId));
+          if (im2 && im2.complete) ctx.drawImage(im2, cx * TS, cy * TS, TS, TS);
+          if (e.s === C.stages.length - 1) drawRipeSpark(now, cx, cy);
+        }});
+      })(+ck, ent);
+    }
+    for (ck in berries) {
+      (function (key, b) {
+        var cx = key % W, cy = (key / W) | 0;
+        var onIt = (cx === state.cx && cy === state.cy);
+        draws.push({ y: cy + (onIt ? 0.34 : 0.62), f: function () {
+          var spriteId = b.ripe ? BERRY_RIPE : (b.planted ? BERRY_SEED : BERRY_BARE);
+          var im2 = img(tfile(spriteId));
+          if (im2 && im2.complete) ctx.drawImage(im2, cx * TS, cy * TS, TS, TS);
+          if (b.ripe) drawRipeSpark(now, cx, cy);
+        }});
+      })(+ck, berries[ck]);
+    }
+    draws.push({ y: SHOP.y + 0.62, f: function () { drawShopMark(now); } });
+    for (ck in trees) {
+      (function (t2) {
+        draws.push({ y: t2.y + 0.62, f: function () {
+          if (t2.top) drawTile(t2.top, t2.x, t2.y - 1);
+          drawTile(t2.trunk, t2.x, t2.y);
+        }});
+      })(trees[ck]);
+    }
+    for (ck in saplings) {
+      (function (sp) {
+        draws.push({ y: sp.y + 0.62, f: function () {
+          drawTile(SAPLING[sp.kind].tile, sp.x, sp.y);
+        }});
+      })(saplings[ck]);
+    }
+    for (ck in rocks) {
+      (function (rk) {
+        draws.push({ y: rk.y + 0.62, f: function () { drawTile(ROCK_TILE, rk.x, rk.y); } });
+      })(rocks[ck]);
+    }
+    for (ck in fences) {
+      (function (f2) {
+        /* 门是能站人的，排序排在人物后面，免得人站门里被门挡住 */
+        draws.push({ y: f2.y + (f2.gate ? 0.30 : 0.62), f: function () { drawFence(f2); } });
+      })(fences[ck]);
+    }
+    for (var wi = 0; wi < wells.length; wi++) {
+      (function (w) {
+        draws.push({ y: w.y + 0.62, f: function () {
+          var wim = img(w.file);
+          if (wim && wim.complete) ctx.drawImage(wim, w.x * TS, w.y * TS, TS, TS);
+        }});
+      })(wells[wi]);
+    }
+    for (ck in troughs) {
+      (function (tr) {
+        draws.push({ y: tr.y + 0.62, f: function () { drawTrough(tr, now); } });
+      })(troughs[ck]);
+    }
+    for (ck in animals) {
+      (function (a2) {
+        draws.push({ y: a2.y + 0.5, f: function () { drawAnimal(a2, now); } });
+      })(animals[ck]);
+    }
+    draws.push({ y: state.y + 0.5, f: function () { drawHero(now); } });
 
-    // pass 2 — overhead: roofs, tree tops, walls — these hide the player
+    draws.sort(function (a, b) { return a.y - b.y; });
+    for (var d = 0; d < draws.length; d++) draws[d].f();
+
+    drawPlaceGhost(now);
+
+    // 高层：屋顶 / 树冠
     for (var oy = y0; oy <= y1; oy++) {
       for (var ox = x0; ox <= x1; ox++) {
         var over = gridOver[oy * W + ox];
         for (var m = 0; m < over.length; m++) {
-          var oim = tileImgs[over[m]];
-          if (oim) ctx.drawImage(oim, ox * TS, oy * TS, TS, TS);
+          var oim = img(over[m]);
+          if (oim && oim.complete) ctx.drawImage(oim, ox * TS, oy * TS, TS, TS);
         }
       }
     }
 
-    // pass 3 — debug overlay on top of everything
+    // 砍树 / 敲石头崩出来的碎屑
+    for (var bi = 0; bi < bits.length; bi++) {
+      var bp = bits[bi];
+      ctx.globalAlpha = Math.max(0, 1 - bp.t / bp.life);
+      ctx.fillStyle = bp.c;
+      ctx.fillRect(bp.x, bp.y, bp.s, bp.s);
+    }
+    ctx.globalAlpha = 1;
+
     if (showBlocked) {
       for (var yy = y0; yy <= y1; yy++) {
         for (var xx = x0; xx <= x1; xx++) {
@@ -615,35 +3655,15 @@
     }
   }
 
-  function drawHero(now) {
-    if (!heroImg) return;
-    var px = state.x * TS, py = state.y * TS;
-
-    // bump nudge when a move is refused
-    var nb = 0;
-    var age = now - bump.t;
-    if (age >= 0 && age < 180) {
-      var k = 1 - age / 180;
-      nb = Math.sin(k * Math.PI) * 1.6 * k;
-    }
-    px += bump.dx * nb;
-    py += bump.dy * nb;
-
-    // shadow
-    ctx.fillStyle = 'rgba(26,40,28,.22)';
-    ctx.beginPath();
-    ctx.ellipse(px + TS / 2, py + TS - 1.2, 4.7, 2.0, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // bob while walking / breathing while idle
-    var bob = state.moving ? -Math.abs(Math.sin(walkT * Math.PI)) * 1.3 : Math.sin(now / 760) * 0.28;
-
-    ctx.drawImage(heroImg, px, py + bob, TS, TS);
-  }
-
   function render(now) {
+    var dt = lastT ? Math.min(0.25, (now - lastT) / 1000) : 0;
+    lastT = now;
+
     update(now);
+    tick(now, dt);
     updateCamera();
+
+    if (lastPtr && now - lastTipT > 240) { lastTipT = now; refreshTip(); }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
@@ -658,7 +3678,7 @@
     requestAnimationFrame(render);
   }
 
-  /* ----------------------------------------------------------------- input */
+  /* ================================================================= input */
   function dirOf(e) {
     switch (e.key) {
       case 'ArrowUp': case 'w': case 'W': return 'up';
@@ -670,33 +3690,75 @@
   }
 
   window.addEventListener('keydown', function (e) {
+    /* 焦点在输入框里（商店的行内数量）：别把按键当成世界快捷键 */
+    var tgt = e.target;
+    if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) {
+      if (e.key === 'Escape') { tgt.blur(); e.stopPropagation(); }
+      return;
+    }
+    if (e.key === 'Escape') {
+      if (shopOpen) { closeShop(); return; }
+      closePocket();
+      queue = []; dest = null; pending = null; setStatus('待机');
+      return;
+    }
+
+    if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      pending = null;
+      useTool();
+      return;
+    }
+
+    if (e.key >= '1' && e.key <= '7') {
+      var i = +e.key - 1;
+      if (inv.hot[i]) {
+        inv.sel = i; renderHotbar();
+        if (inv.hot[i].id === 'can') setStatus('浇水壶 · 水 ' + inv.water + '/' + CAN_MAX);
+        if (inv.hot[i].id === 'bucket') setStatus(bucketName() + ' · ' + bucketLabel());
+      }
+      return;
+    }
+
+    if (e.key === 'b' || e.key === 'B') {
+      bagBtn.click();
+      return;
+    }
+
     var d = dirOf(e);
     if (d) {
       e.preventDefault();
       if (held.indexOf(d) === -1) held.push(d);
-      queue = []; dest = null;            // manual input cancels a planned path
+      // 手动走 = 取消寻路和“走过去再互动”的意图
+      queue = []; dest = null; pending = null;
       tryStep();
       return;
     }
-    if (e.key === 'Escape') { queue = []; dest = null; setStatus('待机'); }
+
     if (e.key === '+' || e.key === '=' || e.key === ']') setZoom(scale + 0.5);
     if (e.key === '-' || e.key === '_' || e.key === '[') setZoom(scale - 0.5);
     if (e.key === '0') { userZoomed = false; scale = fitScale(); snapCamera(); }
+    if (e.key === 'Tab') { e.preventDefault(); hotbarWrap.classList.toggle('hidden'); }
   }, { passive: false });
 
   window.addEventListener('keyup', function (e) {
     var d = dirOf(e);
     if (!d) return;
-    var idx = held.indexOf(d);
-    if (idx !== -1) held.splice(idx, 1);
+    var i = held.indexOf(d);
+    if (i !== -1) held.splice(i, 1);
   });
 
   window.addEventListener('blur', function () { held = []; });
+  window.addEventListener('beforeunload', saveGame);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) saveGame();
+  });
 
-  function cellFromEvent(e) {
+  function cellFromEvent(e) { return cellFromXY(e.clientX, e.clientY); }
+  function cellFromXY(cxp, cyp) {
     var r = canvas.getBoundingClientRect();
-    var wx = (e.clientX - r.left) / scale + camX;
-    var wy = (e.clientY - r.top) / scale + camY;
+    var wx = (cxp - r.left) / scale + camX;
+    var wy = (cyp - r.top) / scale + camY;
     return { x: Math.floor(wx / TS), y: Math.floor(wy / TS) };
   }
 
@@ -705,21 +3767,162 @@
     e.preventDefault();
     var c = cellFromEvent(e);
     if (!inBounds(c.x, c.y)) { toast('地图之外，走不过去'); return; }
-    goTo(c.x, c.y);
+
+    pending = { x: c.x, y: c.y, animal: animals[cellKey(c.x, c.y)] || null };   // 到了就顺手互动，不用再按 F
+    var act = isInteractive(c.x, c.y);
+    if (act) setStatus('走过去看看');
+    goTo(c.x, c.y, act);
   });
 
   canvas.addEventListener('pointermove', function (e) {
     var c = cellFromEvent(e);
-    var bad = !inBounds(c.x, c.y) || isSolid(c.x, c.y);
-    canvas.style.cursor = bad ? 'not-allowed' : 'pointer';
+    var solid = !inBounds(c.x, c.y) || isSolid(c.x, c.y);
+    var ck2 = inBounds(c.x, c.y) ? cellKey(c.x, c.y) : -1;
+    var friendly = inBounds(c.x, c.y) && (isShopCell(c.x, c.y) || isWellCell(c.x, c.y) ||
+      trees[ck2] || saplings[ck2] || rocks[ck2] || animals[ck2] || troughAt(c.x, c.y) ||
+      fences[ck2]);
+    var bad = solid && !friendly;
+    canvas.style.cursor = bad ? 'not-allowed' : (isInteractive(c.x, c.y) ? 'grab' : 'pointer');
     hover = inBounds(c.x, c.y) ? { x: c.x, y: c.y, blocked: bad } : null;
+
+    lastPtr = { x: e.clientX, y: e.clientY };
+    updateTip(e.clientX, e.clientY, c, bad);
+
     if (!step && !held.length) {
-      if (bad) setStatus('不可通行', true);
+      if (bad) setStatus('不可通行', 'warn');
       else if (statusKey === '不可通行' || statusKey === '前方不可通行') setStatus('待机');
     }
   });
 
-  canvas.addEventListener('pointerleave', function () { hover = null; });
+  canvas.addEventListener('pointerleave', function () {
+    hover = null;
+    lastPtr = null;
+    tipEl.classList.remove('show');
+  });
+
+  // 状态会变（成熟 / 枯萎 / 摘走），提示框定时刷新一下
+  var lastPtr = null, lastTipT = 0;
+  function refreshTip() {
+    if (!lastPtr) return;
+    var c = cellFromXY(lastPtr.x, lastPtr.y);
+    var bad = !inBounds(c.x, c.y) || isSolid(c.x, c.y);
+    updateTip(lastPtr.x, lastPtr.y, c, bad);
+  }
+
+  /* -------------------------------------------------------------- tooltip */
+  function updateTip(cxp, cyp, c, bad) {
+    if (!inBounds(c.x, c.y)) { tipEl.classList.remove('show'); return; }
+    var k = cellKey(c.x, c.y);
+    var txt = '';
+
+    if (isShopCell(c.x, c.y)) {
+      txt = '<b>旅行商人</b><div class="m">站在旁边按 F，或直接点它</div>';
+    } else if (animals[k]) {
+      var anT = animals[k], adefT = ANIMAL_DEF[anT.kind];
+      if (anT.ready) {
+        txt = '<b>' + adefT.name + '</b><div class="m">' +
+          (anT.kind === 'cow' ? '可以挤奶 · 手上拿空桶按 F' : '可以收了 · 走近按 F') + '</div>';
+      } else if (anT.halt) {
+        txt = '<b>' + adefT.name + '（停工）</b><div class="m">' + haltReason(animalSupply()) + '</div>';
+      } else {
+        var pp = Math.round(anT.prod / adefT.cycle * 100);
+        txt = '<b>' + adefT.name + '</b><div class="m">攒产出 ' + pp + '% · 食量 ' +
+          adefT.appetite.toFixed(1) + '</div>' +
+          '<span class="bar"><i style="width:' + pp + '%"></i></span>';
+      }
+    } else if (troughAt(c.x, c.y)) {
+      var trT = troughAt(c.x, c.y), tdT = TROUGH_DEF[trT.kind];
+      var amtT = trT.amt || 0;
+      var herdT = herdInfo();
+      /* 只有还在攒产出的牲畜吃料：全都在等收的时候，槽是不会再掉余量的 */
+      var minsT = herdT.active > 0 ? amtT * TROUGH_UNIT / herdT.active / 60 : 0;
+      var noteT = herdT.n === 0 ? ''
+        : (herdT.active > 0
+            ? (' · 按当前 ' + herdT.working + ' 只在产出的还能撑 ' + fmtMins(minsT))
+            : ' · 牲畜都在等收，暂不消耗');
+      if (troughFull(trT)) {
+        txt = '<b>' + tdT.name + '</b><div class="m">装满 5 份' + noteT +
+          '<br>铲子可以把它收起来</div>';
+      } else if (amtT > 0) {
+        txt = '<b>' + tdT.name + '</b><div class="m">还剩 ' + amtT.toFixed(1) + ' 份' +
+          (herdT.n
+            ? (herdT.active > 0 ? (' · 约 ' + fmtMins(minsT) + ' 见底') : ' · 暂不消耗')
+            : '') + '</div>' +
+          '<span class="bar"><i style="width:' + (amtT / TROUGH_CAP * 100).toFixed(0) + '%"></i></span>';
+      } else if (trT.kind === 'water') {
+        txt = '<b>空水槽</b><div class="m">拿水桶倒 ' + TROUGH_WATER + ' 份水进来 · 没水牲畜停工</div>';
+      } else {
+        txt = '<b>空饲料槽</b><div class="m">拿 ' + FEED_WHEAT + ' 个小麦倒进来 · 没料牲畜停工</div>';
+      }
+    } else if (fences[k]) {
+      var fenT = fences[k];
+      txt = '<b>' + (fenT.gate ? '栅栏门' : '栅栏') + '</b><div class="m">' +
+        (fenT.gate ? '能从这儿穿过去 · 铲子可拆' : '挨着的栅栏会自动接上 · 铲子可拆') + '</div>';
+    } else if (isWellCell(c.x, c.y)) {
+      txt = '<b>水井</b><div class="m">站在旁边用浇水壶打水 · ' + inv.water + '/' + CAN_MAX +
+        (ownsTool('bucket') ? '<br>拿桶按 F 也能一次打满' : '') + '</div>';
+    } else if (trees[k] || (c.y + 1 < H && trees[k + W])) {
+      var tr = trees[k] || trees[k + W];     // 树顶那格也算这棵树
+      txt = '<b>' + tr.name + '</b><div class="m">斧头砍倒 · 木头 +' + WOOD_TREE +
+        (ownsTool('axe') ? '' : ' · 商店有卖斧头') + '</div>';
+    } else if (saplings[k]) {
+      var sp = saplings[k];
+      var pct = Math.min(100, Math.round(sp.acc / TREE_GROW * 100));
+      txt = '<b>' + SAPLING[sp.kind].name + '</b><div class="m">' +
+        (sp.acc >= TREE_GROW ? '头顶太挤，暂时长不大' : '生长中 ' + pct + '% · 砍了得 1 木头') +
+        '</div><span class="bar"><i style="width:' + pct + '%"></i></span>';
+    } else if (rocks[k]) {
+      txt = '<b>岩石</b><div class="m">镐子敲碎 · 石头 +' + STONE_ROCK + '</div>';
+    } else if (berries[k]) {
+      var b = berries[k];
+      if (!lvOk(BERRY_LV)) {
+        txt = '<b>浆果丛</b><div class="m">Lv.' + BERRY_LV + ' 解锁 · 现在采不了' +
+          (LV.lv >= 2 ? '<br>铲子也要 Lv.' + BERRY_LV + ' 才能把它挖回家' : '') + '</div>';
+      } else if (b.ripe) {
+        txt = '<b>浆果丛</b><div class="m">熟透了 · 空手摘 +' + BERRY_GOLD + ' 金币 · 铲子能挖走</div>';
+      } else {
+        var p = Math.round(b.acc / BERRY_REGROW * 100);
+        txt = '<b>' + (b.planted ? '浆果丛（移植）' : '浆果丛') + '</b><div class="m">结果中 ' + p +
+          '% · 周期 ' + Math.round(BERRY_REGROW / 60) + ' 分钟</div>' +
+          '<span class="bar"><i style="width:' + p + '%"></i></span>';
+      }
+    } else if (crops[k]) {
+      var ent = crops[k], C = CROPS[ent.t];
+      var lastS = C.stages.length - 1;
+      if (ent.s > lastS) {
+        txt = '<b>' + C.name + '</b><div class="m">枯茬 · 空手清掉</div>';
+      } else if (ent.s === lastS) {
+        txt = lvOk(C.lv)
+          ? '<b>' + C.name + '</b><div class="m">成熟 · 镰刀收割 ×' + (C.yield || 1) + ' · +' + C.exp + ' 经验</div>'
+          : '<b>' + C.name + '（野生）</b><div class="m">Lv.' + C.lv + ' 解锁 · 现在割不动</div>';
+      } else {
+        var prog = Math.round(ent.acc / (C.dur[ent.s] || 1) * 100);
+        txt = '<b>' + C.name + '</b><div class="m">' + cropStageName(C, ent) +
+          (wet[k] > 0 ? ' · 湿润 ×1.3' : '') + ' · 共 ' + Math.round(cropTotal(C) / 60 * 10) / 10 + ' 分钟</div>' +
+          '<span class="bar"><i style="width:' + prog + '%"></i></span>';
+      }
+    } else if (fieldCell[k]) {
+      txt = '<b>耕地</b><div class="m">' + (wet[k] > 0 ? ('湿润 · 还能润 ' + Math.ceil(wet[k] / 60) + ' 分钟 · ') : '') +
+        '站上来选中种子按 F 播种 · 铲子可还原</div>';
+    } else {
+      var heldDef = ITEMS[currentTool()];
+      if (heldDef && heldDef.place && canPlaceHeldAt(c.x, c.y)) {
+        txt = '<b>' + heldDef.name + '</b><div class="m">面朝这格按 F 放下 · 点空地只会走路</div>';
+      }
+    }
+
+    if (!txt) { tipEl.classList.remove('show'); return; }
+
+    tipEl.innerHTML = txt;
+    tipEl.classList.add('show');
+    var r = stage.getBoundingClientRect();
+    var x = cxp - r.left + 14;
+    var y = cyp - r.top + 16;
+    var tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+    if (x + tw > viewW - 8) x = cxp - r.left - tw - 12;
+    if (y + th > viewH - 8) y = cyp - r.top - th - 12;
+    tipEl.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+  }
 
   canvas.addEventListener('wheel', function (e) {
     e.preventDefault();
@@ -737,12 +3940,27 @@
     blockBtn.classList.toggle('is-on', showBlocked);
   });
 
-  /* ------------------------------------------------------------------- boot */
+  /* ================================================================== boot */
+  var resumed = loadGame();
   sizeEl.textContent = W + ' × ' + H + ' 瓦片';
-  updateCoord();
+  goldNum.textContent = inv.gold;
+  shopGold.textContent = inv.gold;
+  renderLevel();
+  renderHotbar();
+  renderPocket();
   resize();
+
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stage);
   window.addEventListener('resize', resize);
+
+  preload(function () {
+    resize();
+    setStatus('待机');
+    setTimeout(function () {
+      toast(resumed ? ('接着上次的进度 · Lv.' + LV.lv + ' · ' + inv.gold + ' 金币')
+                    : '先种下口袋里的胡萝卜 · 收割会给经验，升级解锁新作物');
+    }, 700);
+  });
   requestAnimationFrame(render);
 })();
 </script>
